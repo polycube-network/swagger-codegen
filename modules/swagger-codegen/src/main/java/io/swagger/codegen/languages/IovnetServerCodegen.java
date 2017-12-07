@@ -7,7 +7,8 @@ import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.*;
 import io.swagger.codegen.utils.ModelUtils;
-
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.util.*;
 import java.io.File;
 
@@ -158,7 +159,9 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         	if(l != null){
 		    	l.get(l.size() - 1).put("lastKey", "true");
 		    	for(int i = 0; i < l.size(); i++){
-		    		l.get(i).put("varName", toVarName(l.get(i).get("name"))); //used in update method 
+		    		l.get(i).put("varName", toVarName(l.get(i).get("name"))); //used in update method
+                    l.get(i).put("getter", toLowerCamelCase("get_" + l.get(i).get("varName")));
+                    l.get(i).put("setter", toLowerCamelCase("set_" + l.get(i).get("varName")));
         			if(l.get(i).get("type").equals("integer"))
         				l.get(i).put("type", "int32_t");
         			if(l.get(i).get("type").equals("string"))
@@ -213,6 +216,13 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         		method = "set_";
         	else if(bodyParam != null)
         		method = "update";
+        }
+        else if(op.httpMethod.equals("PATCH")){
+            op.vendorExtensions.put("x-response-code", "OK");
+            if(bodyParam != null && bodyParam.isPrimitiveType)
+                method = "set_";
+            else if(bodyParam != null)
+                method = "update";
         }	
         else if(op.httpMethod.equals("GET")){
         	op.vendorExtensions.put("x-response-code", "OK");
@@ -238,6 +248,29 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         op.vendorExtensions.put("x-codegen-iovnet-router-path", pathForRouter);
 
         return op;
+    }
+
+    private String toUpperCamelCase(String stringToConvert) {
+        StringBuffer result = new StringBuffer();
+        Matcher m = Pattern.compile("(?:\\B_|\\b\\-|^)([a-zA-Z0-9])").matcher(stringToConvert);
+        while (m.find()) {
+            m.appendReplacement(result, m.group(1).toUpperCase());
+        }
+        m.appendTail(result);
+        return result.toString();
+    }
+
+    private String toLowerCamelCase(String stringToConvert) {
+        StringBuffer result = new StringBuffer();
+        Matcher m = Pattern.compile("(?:\\B_|\\b\\-)([a-zA-Z0-9])").matcher(stringToConvert);
+        while (m.find()) {
+            m.appendReplacement(result, m.group(1).toUpperCase());
+        }
+        m.appendTail(result);
+
+        String newString = Character.toLowerCase(result.charAt(0)) + result.substring(1);
+
+        return newString;
     }
     
     private List<Map<String, String>> getCallMethodSequence(String method, String path, CodegenOperation op){
@@ -267,6 +300,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         		//split the path in two substring, in particular we consider the second to get the params 
         		//linked to the particular path element
         		String[] st = path.split("/" + path_without_keys.get(i));	
+                if(st.length <= 1)
+                    break;
 				for(String str : st[1].split("/")){
 					//get each key name in the path until a new path element is reached 
 					if(str.length() > 2 && str.charAt(0) == '{'){
@@ -278,18 +313,18 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 				}
 				int index = method_parameters_name.size();
 				//put the object name
-				m.put("varName", path_without_keys.get(i));
+				m.put("varName", toVarName(path_without_keys.get(i)));
 				//if i == 0 the path element is the service
 				if(i == 0)
 					methodCall = "get_iomodule";
 				else if(lastCall && i != 1) //the last path element has a particular method basing on httpMethod
-					methodCall = path_without_keys.get(i-1) + "->" + method + initialCaps(path_without_keys.get(i));
+					methodCall = path_without_keys.get(i-1) + "->" + method + toUpperCamelCase(path_without_keys.get(i));
 				else if(lastCall && i == 1)
-					methodCall = path_without_keys.get(i-1) + "." + method + initialCaps(path_without_keys.get(i));
+					methodCall = path_without_keys.get(i-1) + "." + method + toUpperCamelCase(path_without_keys.get(i));
 				else if(i == 1) //the second path element has a get method but called by .
-					methodCall = path_without_keys.get(i-1) + ".get_" + initialCaps(path_without_keys.get(i));
+					methodCall = path_without_keys.get(i-1) + ".get_" + toUpperCamelCase(path_without_keys.get(i));
 				else //the remaining methods are all get
-					methodCall = path_without_keys.get(i-1) + "->get_" + initialCaps(path_without_keys.get(i));
+					methodCall = path_without_keys.get(i-1) + "->get_" + toUpperCamelCase(path_without_keys.get(i));
 				methodCall += "(";
 				if(lastCall && bodyParam != null && op.operationId.contains("List"))
 					methodCall += "i";
@@ -310,7 +345,15 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 					else
 						methodCall += "->";
 				}
-				m.put("methodCall", methodCall);
+
+                if(methodCall.indexOf("get_iomodule") != -1){
+                    m.put("methodCall", methodCall);
+                } else if(methodCall.toLowerCase().indexOf("get_ports") != -1){
+                    m.put("methodCall", methodCall.replaceAll("(?i)(get_ports)", "get_ports"));
+                } else {
+                    m.put("methodCall", toLowerCamelCase(methodCall));
+                }
+
 				if(lastCall){
 				//mark the last method call, useful to determine if have to apply the return in template
 					m.put("lastCall", "true");
@@ -321,12 +364,20 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 				//if the method is update and this is the last object call the update on the last element
 				if(method.equals("update") && i == (len - 1)){
 					Map<String, String> m2 = new HashMap<String, String>();
-					m2.put("varName", path_without_keys.get(i));
+					m2.put("varName", toVarName(path_without_keys.get(i)));
 					if(i == 0)
-						methodCall = path_without_keys.get(i) + "." + method + "(" + bodyParam.paramName + ")";
+						methodCall = toUpperCamelCase(path_without_keys.get(i)) + "." + method + "(" + bodyParam.paramName + ")";
 					else
-						methodCall = path_without_keys.get(i) + "->" + method + "(" + bodyParam.paramName + ")";
-					m2.put("methodCall", methodCall);
+						methodCall = toUpperCamelCase(path_without_keys.get(i)) + "->" + method + "(" + bodyParam.paramName + ")";
+
+					if(methodCall.indexOf("get_iomodule") != -1){
+                        m2.put("methodCall", methodCall);
+                    } else if(methodCall.toLowerCase().indexOf("get_ports") != -1){
+                        m2.put("methodCall", methodCall.replaceAll("(?i)(get_ports)", "get_ports"));
+                    } else {
+                        m2.put("methodCall", toLowerCamelCase(methodCall));
+                    }
+
 					m2.put("lastCall", "true");
 					l.add(m2);
 				}
@@ -338,8 +389,10 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     @Override
     public CodegenProperty fromProperty(String name, Property p) {
     	CodegenProperty property = super.fromProperty(name, p);
-    	property.getter = "get_"+ getterAndSetterCapitalize(name);
-    	property.setter = "set_"+ getterAndSetterCapitalize(name);
+    	property.getter = toLowerCamelCase("get_"+ getterAndSetterCapitalize(name));
+    	property.setter = toLowerCamelCase("set_"+ getterAndSetterCapitalize(name));
+        property.nameInCamelCase = toUpperCamelCase(name);
+        property.name = toLowerCamelCase(name);
 
     	return property;
     }
@@ -604,17 +657,20 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
     @Override
     public String toVarName(String name) {
+        String newName = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+
         if (typeMapping.keySet().contains(name) || typeMapping.values().contains(name)
                 || importMapping.values().contains(name) || defaultIncludes.contains(name)
                 || languageSpecificPrimitives.contains(name)) {
-            return name;
+            return toLowerCamelCase(newName);
         }
 
         if (name.length() > 1) {
-            return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+            return toLowerCamelCase(newName);
+            //Character.toUpperCase(name.charAt(0)) + name.substring(1)
         }
 
-        return name;
+        return toLowerCamelCase(newName);
     }
 
 	@Override

@@ -62,21 +62,21 @@ public:
   {{/isPrimitiveType}}
   {{/isNotContainer}}
   {{^required}}
-  bool {{baseName}}_IsSet() const;
-  void unset_{{name}}();
+  bool {{name}}IsSet() const;
+  void unset{{name}}();
   {{/required}}
 
   {{/vars}}
 protected:
   {{#vars}}
   {{#isNotContainer}}
-  {{{datatype}}} m_{{name}};
+  {{{datatype}}} m_{{nameInCamelCase}};
   {{/isNotContainer}}
   {{^isNotContainer}}
-  std::vector<{{complexType}}Schema> m_{{name}};
+  std::vector<{{complexType}}Schema> m_{{nameInCamelCase}};
   {{/isNotContainer}}
   {{^required}}
-  bool m_{{name}}IsSet;{{/required}}
+  bool m_{{nameInCamelCase}}IsSet;{{/required}}
   {{/vars}}
 };
 

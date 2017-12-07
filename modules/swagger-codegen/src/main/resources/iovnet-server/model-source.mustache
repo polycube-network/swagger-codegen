@@ -11,10 +11,10 @@ namespace {{this}} {
 {{/modelNamespaceDeclarations}}
 
 {{classname}}Schema::{{classname}}Schema() {
-  {{#vars}}{{#isNotContainer}}{{#isPrimitiveType}}m_{{name}} = {{{defaultValue}}};
-  {{/isPrimitiveType}}{{^isPrimitiveType}}{{#isString}}m_{{name}} = {{{defaultValue}}};
-  {{/isString}}{{#isDateTime}}m_{{name}} = {{{defaultValue}}};
-  {{/isDateTime}}{{/isPrimitiveType}}{{/isNotContainer}}{{^required}}m_{{name}}IsSet = false;
+  {{#vars}}{{#isNotContainer}}{{#isPrimitiveType}}m_{{nameInCamelCase}} = {{{defaultValue}}};
+  {{/isPrimitiveType}}{{^isPrimitiveType}}{{#isString}}m_{{nameInCamelCase}} = {{{defaultValue}}};
+  {{/isString}}{{#isDateTime}}m_{{nameInCamelCase}} = {{{defaultValue}}};
+  {{/isDateTime}}{{/isPrimitiveType}}{{/isNotContainer}}{{^required}}m_{{nameInCamelCase}}IsSet = false;
   {{/required}}{{/vars}}
 }
 
@@ -27,15 +27,15 @@ void {{classname}}Schema::validate() {
 nlohmann::json {{classname}}Schema::toJson() const {
   nlohmann::json val = nlohmann::json::object();
 
-  {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^required}}if(m_{{name}}IsSet) {
-      val["{{baseName}}"] = m_{{name}};
+  {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^required}}if(m_{{nameInCamelCase}}IsSet) {
+      val["{{baseName}}"] = m_{{nameInCamelCase}};
   }
 
-  {{/required}}{{#required}}val["{{baseName}}"] = m_{{name}};
+  {{/required}}{{#required}}val["{{baseName}}"] = m_{{nameInCamelCase}};
   {{/required}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
   {
     nlohmann::json jsonArray;
-    for (auto& item : m_{{name}}) {
+    for (auto& item : m_{{nameInCamelCase}}) {
       jsonArray.push_back(ModelBase::toJson(item));
     }
     {{#required}}val["{{baseName}}"] = jsonArray;
@@ -45,10 +45,10 @@ nlohmann::json {{classname}}Schema::toJson() const {
     }
     {{/required}}
   }
-  {{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}{{^required}}if(m_{{name}}IsSet) {
-      val["{{baseName}}"] = ModelBase::toJson(m_{{name}});
+  {{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}{{^required}}if(m_{{nameInCamelCase}}IsSet) {
+      val["{{baseName}}"] = ModelBase::toJson(m_{{nameInCamelCase}});
   }
-  {{/required}}{{#required}}val["{{baseName}}"] = ModelBase::toJson(m_{{name}});
+  {{/required}}{{#required}}val["{{baseName}}"] = ModelBase::toJson(m_{{nameInCamelCase}});
   {{/required}}{{/isPrimitiveType}}{{/isListContainer}}{{/vars}}
 
   return val;
@@ -67,15 +67,15 @@ void {{classname}}Schema::fromJson(nlohmann::json& val) {
   {{/required}}{{/isListContainer}}
   {{/isPrimitiveType}}
   {{#isListContainer}}
-  m_{{name}}.clear();
+  m_{{nameInCamelCase}}.clear();
   for (auto& item : val["{{baseName}}"]) {
-      {{#isPrimitiveType}}m_{{name}}.push_back(item);
-      {{/isPrimitiveType}}{{^isPrimitiveType}}{{#items.isString}}m_{{name}}.push_back(item);
-      {{/items.isString}}{{^items.isString}}{{#items.isDateTime}}m_{{name}}.push_back(item);
+      {{#isPrimitiveType}}m_{{nameInCamelCase}}.push_back(item);
+      {{/isPrimitiveType}}{{^isPrimitiveType}}{{#items.isString}}m_{{nameInCamelCase}}.push_back(item);
+      {{/items.isString}}{{^items.isString}}{{#items.isDateTime}}m_{{nameInCamelCase}}.push_back(item);
       {{/items.isDateTime}}{{^items.isDateTime}}
       {{{items.datatype}}}Schema newItem;
       newItem.fromJson(item);
-      m_{{name}}.push_back(newItem);
+      m_{{nameInCamelCase}}.push_back(newItem);
       {{/items.isDateTime}}{{/items.isString}}{{/isPrimitiveType}}
   }
   {{/isListContainer}}
@@ -198,25 +198,25 @@ nlohmann::json {{classname}}Schema::getComplexElements() {
 }
 
 {{#vars}}{{^isNotContainer}}std::vector<{{complexType}}Schema>& {{classname}}Schema::{{getter}}() {
-  return m_{{name}};
+  return m_{{nameInCamelCase}};
 }
 
 {{/isNotContainer}}{{#isNotContainer}}{{{datatype}}}{{^isPrimitiveType}}Schema{{/isPrimitiveType}} {{classname}}Schema::{{getter}}() const {
-  return m_{{name}};
+  return m_{{nameInCamelCase}};
 }
 
 void {{classname}}Schema::{{setter}}({{{datatype}}}{{^isPrimitiveType}}Schema{{/isPrimitiveType}} value) {
-  m_{{name}} = value;
-  {{^required}}m_{{name}}IsSet = true;{{/required}}
+  m_{{nameInCamelCase}} = value;
+  {{^required}}m_{{nameInCamelCase}}IsSet = true;{{/required}}
 }
 {{/isNotContainer}}
 
-{{^required}}bool {{classname}}Schema::{{baseName}}_IsSet() const {
-  return m_{{name}}IsSet;
+{{^required}}bool {{classname}}Schema::{{name}}IsSet() const {
+  return m_{{nameInCamelCase}}IsSet;
 }
 
-void {{classname}}Schema::unset_{{name}}() {
-  m_{{name}}IsSet = false;
+void {{classname}}Schema::unset{{name}}() {
+  m_{{nameInCamelCase}}IsSet = false;
 }
 {{/required}}
 {{/vars}}

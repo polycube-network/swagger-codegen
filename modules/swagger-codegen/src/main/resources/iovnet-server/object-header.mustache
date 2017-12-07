@@ -33,7 +33,7 @@ enum class {{classname}}{{name}}{
 class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{/vendorExtensions.x-inherits-from}}public {{classname}}Interface {
 public:
   {{^vendorExtensions.x-parent}}
-  {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{baseName}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}Schema &schema, IOModuleType type = IOModuleType::TYPE_CLS);
+  {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}Schema &schema, IOModuleType type = IOModuleType::TYPE_CLS);
   {{/vendorExtensions.x-parent}}
   {{#vendorExtensions.x-parent}}
   {{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}Schema &schema);
@@ -42,8 +42,8 @@ public:
   
   {{#vendorExtensions.x-parent}}
   static void create({{{this}}} &parent, const {{classname}}Schema &schema);
-  static std::shared_ptr<{{classname}}> get({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{baseName}}}{{/vendorExtensions.x-is-key}}{{/vars}});
-  static void remove({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{baseName}}}{{/vendorExtensions.x-is-key}}{{/vars}});
+  static std::shared_ptr<{{classname}}> get({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
+  static void remove({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
   {{#vendorExtensions.x-is-list}}
   static std::vector<std::shared_ptr<{{classname}}>> get({{vendorExtensions.x-parent}} &parent);
   static void remove({{vendorExtensions.x-parent}} &parent);
@@ -58,11 +58,11 @@ public:
   /// {{description}}
   /// </summary>
   {{^isNotContainer}}
-  std::shared_ptr<{{complexType}}> get_{{name}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
-  std::vector<std::shared_ptr<{{complexType}}>> get_All_{{name}}() override;
-  void add_{{name}}(const {{complexType}}Schema &conf) override;
-  void del_{{name}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
-  void del_All_{{name}}() override;
+  std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
+  std::vector<std::shared_ptr<{{complexType}}>> getAll{{nameInCamelCase}}() override;
+  void add{{nameInCamelCase}}(const {{complexType}}Schema &conf) override;
+  void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
+  void delAll{{nameInCamelCase}}() override;
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}
@@ -74,19 +74,19 @@ public:
   {{/vendorExtensions.x-is-key}}
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
-  std::shared_ptr<{{complexType}}> get_{{name}}() override;
+  std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}() override;
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  void add_{{name}}(const {{complexType}}Schema &value) override;
-  void del_{{name}}() override;
+  void add{{nameInCamelCase}}(const {{complexType}}Schema &value) override;
+  void del{{nameInCamelCase}}() override;
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isPrimitiveType}}
   {{/isNotContainer}}
   {{#isEnum}}
   
-  static std::string {{baseName}}_to_string({{classname}}{{name}} value);
-  static {{classname}}{{name}} string_to_{{baseName}}(const std::string &str);
+  static std::string enum_to_string({{classname}}{{name}} value);
+  static {{classname}}{{name}} string_to_enum(const std::string &str);
   {{/isEnum}}
   {{/vars}}
      

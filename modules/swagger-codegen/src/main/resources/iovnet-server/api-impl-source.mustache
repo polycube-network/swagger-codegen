@@ -36,8 +36,8 @@ void {{classname}}Impl::create_{{classVarName}}_by_id(const std::string &name, c
   auto iter;
   bool inserted;
 
-  if(localSchema.type_IsSet() && !localSchema.get_Type().empty()) {
-    switch(localSchema.get_Type()) {
+  if(localSchema.typeIsSet() && !localSchema.getType().empty()) {
+    switch(localSchema.getType()) {
       case "TYPE_XDP_SKB":
         std::tie(iter, inserted) = iomodules.emplace(std::piecewise_construct,
                                                      std::forward_as_tuple(name),

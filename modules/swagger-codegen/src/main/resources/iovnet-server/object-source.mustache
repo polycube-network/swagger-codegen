@@ -5,23 +5,21 @@
 {{^vendorExtensions.x-parent}}
 #include "{{classname}}_dp.h"
 
-{{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{baseName}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}Schema &schema, IOModuleType type): IOModule(name, generate_code(), type){
-
+{{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}Schema &schema, IOModuleType type): IOModule(name, generate_code(), type){
   {{#vars}}
-  
   {{^isNotContainer}}
   for(auto &i : schema.{{getter}}())
-      add_{{name}}(i);
+      add{{nameInCamelCase}}(i);
   {{/isNotContainer}}
   {{#isNotContainer}} 
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  if(schema.{{baseName}}_IsSet())
+  if(schema.{{name}}IsSet())
   {{#isPrimitiveType}}
       {{setter}}(schema.{{getter}}());
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
-      add_{{name}}(schema.{{getter}}());
+      add{{nameInCamelCase}}(schema.{{getter}}());
   {{/isPrimitiveType}}
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
@@ -40,20 +38,19 @@
 void {{classname}}::update(const {{classname}}Schema &schema) { 
   //throw std::runtime_error("Method not implemented");
   {{#vars}}
-  
   {{^isNotContainer}}
   for(auto &i : schema.{{getter}}()){ 
       {{#vendorExtensions.x-key-list}}
-      auto &{{name}} = i.get_{{varName}}();
+      auto &{{varName}} = i.{{getter}}();
       {{/vendorExtensions.x-key-list}}
-      auto m = get_{{name}}({{#vendorExtensions.x-key-list}}{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+      auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
       m->update(i);
   }
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  if(schema.{{baseName}}_IsSet())
+  if(schema.{{name}}IsSet())
   {{#isPrimitiveType}}
       {{setter}}(schema.{{getter}}());
   {{/isPrimitiveType}}
@@ -88,11 +85,11 @@ void {{classname}}::create({{{this}}} &parent, const {{classname}}Schema &schema
   throw std::runtime_error("Method not implemented");
 }
 
-std::shared_ptr<{{classname}}> {{classname}}::get({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{baseName}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
+std::shared_ptr<{{classname}}> {{classname}}::get({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
   throw std::runtime_error("Method not implemented");
 }
 
-void {{classname}}::remove({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{baseName}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
+void {{classname}}::remove({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
   throw std::runtime_error("Method not implemented");
 }
 
@@ -110,23 +107,23 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
 
 {{#vars}}
 {{^isNotContainer}}
-std::shared_ptr<{{complexType}}> {{classname}}::get_{{name}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
-  return {{complexType}}::get(*this, {{#vendorExtensions.x-key-list}}{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
+  return {{complexType}}::get(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
 }
 
-std::vector<std::shared_ptr<{{complexType}}>> {{classname}}::get_All_{{name}}(){
+std::vector<std::shared_ptr<{{complexType}}>> {{classname}}::getAll{{nameInCamelCase}}(){
   return {{complexType}}::get(*this);
 }
 
-void {{classname}}::add_{{name}}(const {{complexType}}Schema &conf){
+void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}Schema &conf){
   {{complexType}}::create(*this, conf);
 }
 
-void {{classname}}::del_{{name}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
-  {{complexType}}::remove(*this, {{#vendorExtensions.x-key-list}}{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+void {{classname}}::del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
+  {{complexType}}::remove(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
 }
 
-void {{classname}}::del_All_{{name}}(){
+void {{classname}}::delAll{{nameInCamelCase}}(){
   {{complexType}}::remove(*this);
 }
 
@@ -149,17 +146,17 @@ void {{classname}}::{{setter}}({{{datatype}}} &value){
 {{/isPrimitiveType}}
 
 {{^isPrimitiveType}}
-std::shared_ptr<{{complexType}}> {{classname}}::get_{{name}}(){
+std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}(){
   return {{complexType}}::get(*this);
 }
 
 {{^vendorExtensions.x-is-key}}
 {{^isReadOnly}}
-void {{classname}}::add_{{name}}(const {{complexType}}Schema &value){
+void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}Schema &value){
   {{complexType}}::create(*this, value); 
 }
 
-void {{classname}}::del_{{name}}(){
+void {{classname}}::del{{nameInCamelCase}}(){
   {{complexType}}::remove(*this);
 }
 
@@ -169,7 +166,7 @@ void {{classname}}::del_{{name}}(){
 {{/isNotContainer}}
 {{#isEnum}}
 
-std::string {{classname}}::{{baseName}}_to_string({{classname}}{{name}} value){
+std::string {{classname}}::enum_to_string({{classname}}{{name}} value){
   switch(value){
       {{#allowableValues.values}}
       case {{classname}}{{name}}::{{value}}:
@@ -180,7 +177,7 @@ std::string {{classname}}::{{baseName}}_to_string({{classname}}{{name}} value){
   }
 }
 
-{{classname}}{{name}} {{classname}}::string_to_{{baseName}}(const std::string &str){
+{{classname}}{{name}} {{classname}}::string_to_enum(const std::string &str){
   switch(str){
       {{#allowableValues.values}}
       case "{{stringValue}}":
