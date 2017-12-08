@@ -30,7 +30,7 @@
 {{/vendorExtensions.x-parent}}
 
 {{#vendorExtensions.x-parent}}
-{{classname}}:{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}Schema &schema): parent_(parent) { }
+{{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}Schema &schema): parent_(parent) { }
 {{/vendorExtensions.x-parent}}
 
 {{classname}}::~{{classname}}() { }
@@ -40,24 +40,25 @@ void {{classname}}::update(const {{classname}}Schema &schema) {
   {{#vars}}
   {{^isNotContainer}}
   for(auto &i : schema.{{getter}}()){ 
-      {{#vendorExtensions.x-key-list}}
-      auto &{{varName}} = i.{{getter}}();
-      {{/vendorExtensions.x-key-list}}
-      auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
-      m->update(i);
+    {{#vendorExtensions.x-key-list}}
+    auto &{{varName}} = i.{{getter}}();
+    {{/vendorExtensions.x-key-list}}
+    auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+    m->update(i);
   }
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  if(schema.{{name}}IsSet())
+  if(schema.{{name}}IsSet()){
   {{#isPrimitiveType}}
-      {{setter}}(schema.{{getter}}());
+    {{setter}}(schema.{{getter}}());
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
-      auto &m = {{getter}}();
-      m->update(schema);
+    auto m = {{getter}}();
+    m->update(schema.{{getter}}());
   {{/isPrimitiveType}}
+  }
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isNotContainer}}

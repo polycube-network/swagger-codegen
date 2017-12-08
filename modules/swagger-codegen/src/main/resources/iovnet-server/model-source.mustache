@@ -215,7 +215,7 @@ void {{classname}}Schema::{{setter}}({{{datatype}}}{{^isPrimitiveType}}Schema{{/
   return m_{{nameInCamelCase}}IsSet;
 }
 
-void {{classname}}Schema::unset{{name}}() {
+void {{classname}}Schema::unset{{nameInCamelCase}}() {
   m_{{nameInCamelCase}}IsSet = false;
 }
 {{/required}}

@@ -63,7 +63,7 @@ public:
   {{/isNotContainer}}
   {{^required}}
   bool {{name}}IsSet() const;
-  void unset{{name}}();
+  void unset{{nameInCamelCase}}();
   {{/required}}
 
   {{/vars}}

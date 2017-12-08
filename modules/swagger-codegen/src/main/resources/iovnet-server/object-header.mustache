@@ -20,6 +20,9 @@ class {{{this}}};
 {{/vendorExtensions.x-parent}}
 
 using namespace io::swagger::server::model;
+{{^vendorExtensions.x-parent}}
+using iovnet::service::IOModuleType;
+{{/vendorExtensions.x-parent}}
 
 {{#vars}}
 {{#isEnum}}
@@ -39,7 +42,11 @@ public:
   {{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}Schema &schema);
   {{/vendorExtensions.x-parent}}
   virtual ~{{classname}}();
-  
+  {{^vendorExtensions.x-parent}}
+  std::string generate_code();
+  std::vector<std::string> generate_code_vector();
+  {{/vendorExtensions.x-parent}}
+
   {{#vendorExtensions.x-parent}}
   static void create({{{this}}} &parent, const {{classname}}Schema &schema);
   static std::shared_ptr<{{classname}}> get({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
