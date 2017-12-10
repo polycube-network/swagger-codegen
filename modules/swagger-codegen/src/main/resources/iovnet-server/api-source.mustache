@@ -64,16 +64,16 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
       switch (request.help_type()) {
         case HelpType::SHOW:
           #ifdef NODE_IS_LIST_CONTAINER
-          val["params"] = {{baseType}}::getKeys();
+          val["params"] = {{baseType}}Schema::getKeys();
           val["elements"] = {{operationIdSnakeCase}}_get_list();
           #else // element is complex
-          val["params"] = {{baseType}}::getElements();
+          val["params"] = {{baseType}}Schema::getElements();
           #endif
         break;
 
         case HelpType::ADD:
           #ifdef NODE_IS_LIST_CONTAINER
-          val["params"] = {{baseType}}::getKeys();
+          val["params"] = {{baseType}}Schema::getKeys();
           #else
           response.send(iovnet::service::Http::Code::Bad_Request);
           return;
@@ -82,7 +82,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
 
         case HelpType::SET:
           #ifndef NODE_IS_LIST_CONTAINER
-          val["params"] = {{baseType}}::getWritableLeafs();
+          val["params"] = {{baseType}}Schema::getWritableLeafs();
           # else
           response.send(iovnet::service::Http::Code::Bad_Request);
           return;
@@ -91,7 +91,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
 
         case HelpType::DEL:
           #ifdef NODE_IS_LIST_CONTAINER
-          val["params"] = {{baseType}}::getKeys();
+          val["params"] = {{baseType}}Schema::getKeys();
           val["elements"] = {{operationIdSnakeCase}}_get_list();
           #else
           response.send(iovnet::service::Http::Code::Bad_Request);
@@ -103,16 +103,16 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
           #ifdef NODE_IS_LIST_CONTAINER
           auto cmds = {"add", "del", "show"};
           val["commands"] = cmds;
-          val["params"] = {{baseType}}::getKeys();
+          val["params"] = {{baseType}}Schema::getKeys();
           val["elements"] = {{operationIdSnakeCase}}_get_list();
           #else // complex type
           auto cmds = {"set", "show"};
           val["commands"] = cmds;
-          val["params"] = {{baseType}}::getComplexElements();
+          val["params"] = {{baseType}}Schema::getComplexElements();
           #endif
         break;
       }
-      response.send(iovnet::service::Http::Code::OK, val.dump(4));
+      response.send(iovnet::service::Http::Code::Ok, val.dump(4));
       return;
     }
     {{/primitiveType}}
@@ -138,8 +138,13 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{/isListContainer}}
     {{/isPrimitiveType}}
     {{#isPrimitiveType}}
+    {{^isEnum}}
     // The conversion is done automatically by the json library
     {{paramName}} = request_body;
+    {{/isEnum}}
+    {{#isEnum}}
+    {{paramName}} = {{vendorExtensions.x-enum-class}}Schema::string_to_enum{{baseName}}(request_body);
+    {{/isEnum}}
     {{/isPrimitiveType}}
     {{/bodyParam}}
     {{/hasBodyParam}}
@@ -148,7 +153,12 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     auto x = {{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
     nlohmann::json response_body;
     {{#returnTypeIsPrimitive}}
+    {{#returnSimpleType}}
     response_body = x;
+    {{/returnSimpleType}}
+    {{^returnSimpleType}}
+    response_body = {{vendorExtensions.x-enum-class}}Schema::enum{{returnBaseType}}_to_string(x);
+    {{/returnSimpleType}}
     {{/returnTypeIsPrimitive}}
     {{^returnTypeIsPrimitive}}
     {{#isListContainer}}

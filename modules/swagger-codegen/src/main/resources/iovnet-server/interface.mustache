@@ -21,7 +21,7 @@ using namespace io::swagger::server::model;
 class {{classname}}Interface {
 public:
   
-  virtual void update(const {{classname}}Schema &conf) = 0;
+  virtual void update(const {{classname}}Schema &schema) = 0;
   virtual {{classname}}Schema toSchema() = 0;
   {{#vars}}
   
@@ -29,18 +29,18 @@ public:
   /// {{description}}
   /// </summary>
   {{^isNotContainer}}
-  virtual std::shared_ptr<{{complexType}}> get_{{name}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
+  virtual std::shared_ptr<{{complexType}}> get_{{name}}({{#vendorExtensions.x-key-list}}const std::string &{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
   virtual std::vector<std::shared_ptr<{{complexType}}>> get_All_{{name}}() = 0;
-  virtual void add_{{name}}(const {{complexType}}Schema &conf) = 0;
-  virtual void del_{{name}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
+  virtual void add_{{name}}(const {{complexType}}Schema &schema) = 0;
+  virtual void del_{{name}}({{#vendorExtensions.x-key-list}}const std::string &{{name}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
   virtual void del_All_{{name}}() = 0;
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}
-  virtual {{{datatype}}} {{getter}}() = 0;
+  virtual {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} {{getter}}() = 0;
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  virtual void {{setter}}({{{datatype}}} &value) = 0;
+  virtual void {{setter}}(const {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} &value) = 0;
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isPrimitiveType}}

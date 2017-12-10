@@ -21,6 +21,15 @@
 namespace {{this}} {
 {{/modelNamespaceDeclarations}}
 
+{{#vars}}
+{{#isEnum}}
+enum class {{classname}}{{name}}{
+  {{#_enum}}{{this}} {{/_enum}} 
+};
+
+{{/isEnum}}
+{{/vars}}
+
 /// <summary>
 /// {{description}}
 /// </summary>
@@ -49,12 +58,12 @@ public:
   /// {{description}}
   /// </summary>
   {{^isNotContainer}}
-  std::vector<{{complexType}}Schema>& {{getter}}();
+  const std::vector<{{complexType}}Schema>& {{getter}}() const;
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}
-  {{{datatype}}} {{getter}}() const;
-  void {{setter}}({{{datatype}}} value);
+  {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} {{getter}}() const;
+  void {{setter}}({{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} value);
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
   {{{datatype}}}Schema {{getter}}() const;
@@ -62,21 +71,30 @@ public:
   {{/isPrimitiveType}}
   {{/isNotContainer}}
   {{^required}}
-  bool {{name}}IsSet() const;
-  void unset{{nameInCamelCase}}();
+  bool {{baseName}}_IsSet() const;
+  void unset_{{nameInCamelCase}}();
   {{/required}}
-
+	{{#isEnum}}
+  
+  static std::string enum{{name}}_to_string(const {{classname}}{{name}} &value);
+  static {{classname}}{{name}} string_to_enum{{name}}(const std::string &str);
+  {{/isEnum}}
   {{/vars}}
 protected:
   {{#vars}}
   {{#isNotContainer}}
-  {{{datatype}}} m_{{nameInCamelCase}};
+  {{#isPrimitiveType}}
+  {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} m_{{name}};
+  {{/isPrimitiveType}}
+  {{^isPrimitiveType}}
+  {{{datatype}}}Schema m_{{name}};
+  {{/isPrimitiveType}}
   {{/isNotContainer}}
   {{^isNotContainer}}
-  std::vector<{{complexType}}Schema> m_{{nameInCamelCase}};
+  std::vector<{{complexType}}Schema> m_{{name}};
   {{/isNotContainer}}
   {{^required}}
-  bool m_{{nameInCamelCase}}IsSet;{{/required}}
+  bool m_{{name}}IsSet;{{/required}}
   {{/vars}}
 };
 

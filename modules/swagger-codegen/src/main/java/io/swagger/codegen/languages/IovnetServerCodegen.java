@@ -231,6 +231,12 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         
         if (op.operationId.contains("List")) {
           op.vendorExtensions.put("x-is-list", true);
+          if(bodyParam != null && !bodyParam.isPrimitiveType){
+      			op.bodyParam.dataType = op.bodyParam.dataType.replace(">", "Schema>");	
+      			op.bodyParam.baseType += "Schema";
+      		}
+          if(op.httpMethod.equals("PUT"))
+          	op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
           if(op.returnType != null && !op.returnTypeIsPrimitive)
           	op.returnType = op.returnType.replace(">", "Schema>");
           if(method.equals("del_") || method.equals("get_")) //in case of list we return the whole object and not only 				one element
@@ -238,7 +244,9 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         }
         else{
         	if(op.returnType != null && !op.returnTypeIsPrimitive)
-          		op.returnType += "Schema";
+          	op.returnType += "Schema";
+          if(bodyParam != null && !bodyParam.isPrimitiveType)
+        		op.bodyParam.dataType += "Schema";
         }
         	
 		
@@ -339,7 +347,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 				}
 				methodCall += ")";
 				//check if is the lastCall method and if the returnType is not primitive in order to call the toSchema() properly
-				if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive){
+				if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive && !op.operationId.contains("List")){
 					if(i == 0)
 						methodCall += ".";
 					else
@@ -406,21 +414,21 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 			CodegenModel model = (CodegenModel) models.get("model");
 			List<CodegenProperty> lp = model.vars;
 			for(CodegenProperty p : lp){
-				List<String> lenum = p._enum;
-				if(lenum != null){
+				List<String> lenum = p._enum;//retrieve enum list
+				if(lenum != null){//if it is not empty
 					List<Map<String, String>> l = new ArrayList<Map<String, String>>(); 
 					for(int j = 0; j < lenum.size(); j++){
 						Map<String, String> mv = new HashMap<String, String>();
-						mv.put("value", lenum.get(j).toUpperCase());
-						mv.put("stringValue", lenum.get(j).toLowerCase());
+						mv.put("value", lenum.get(j).toUpperCase());//save the enum value
+						mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value 
 						l.add(mv);
 						if(j < lenum.size() - 1)
-							lenum.set(j, lenum.get(j).toUpperCase() + ",");
+							lenum.set(j, lenum.get(j).toUpperCase() + ",");//add comma if the value there are more values 
 						else
 							lenum.set(j, lenum.get(j).toUpperCase()); 
 					}
 					if(p.allowableValues != null)
-						p.allowableValues.put("values", l);
+						p.allowableValues.put("values", l); //add allowable values to enum
 				}
 			}
 				
@@ -440,6 +448,46 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         List<CodegenOperation> operationList = (List<CodegenOperation>) operations.get("operation");
         for (CodegenOperation op : operationList) {
             op.httpMethod = op.httpMethod.substring(0, 1).toUpperCase() + op.httpMethod.substring(1).toLowerCase();
+            List<String> names = new ArrayList<String>();
+            String var = null;
+            //get varname to build enum name
+	    			if(op.vendorExtensions.get("x-call-sequence-method") != null){
+			  			for(Map<String, String> m : (List<Map<String, String>>)op.vendorExtensions.get("x-call-sequence-method")){
+			  				if(m.get("lastCall") == null)
+			  					names.add(m.get("varName"));
+			  				else
+			  					var = m.get("varName");
+			  			}
+			  		}
+			  		String name = null;//this string will store the enum name
+			  		if(names.size() > 1){
+			  				for(int i = 1; i < names.size(); i++){
+			  						if(name != null)
+			  								name += initialCaps(names.get(i));
+			  						else
+			  								name = initialCaps(names.get(i));
+			  				}
+			  		}
+			  		else if(names.size() == 1)
+			  				name = initialCaps(names.get(0));
+            if(op.bodyParam != null && op.bodyParam.vendorExtensions.get("x-is-enum") != null){
+				    	op.bodyParam.isEnum = true;
+				    	op.bodyParam.vendorExtensions.remove("x-is-enum");
+				    	op.bodyParam.vendorExtensions.put("x-enum-class", name); //enum  class name
+				    	op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
+				    	op.bodyParam.dataType = name + op.bodyParam.baseName; //enum datatType
+				    }
+				    
+            if(op.responses != null){ //in case  the return type is enum
+				    	for(CodegenResponse r : op.responses){
+				    		if(r.vendorExtensions.get("x-is-enum") != null){
+					  			op.returnType = name + initialCaps(var);
+					  			op.returnBaseType = initialCaps(var);
+					  			op.returnSimpleType = false; 
+					  			op.vendorExtensions.put("x-enum-class", name);
+						  	}
+				    	}
+        		}
         }
 
         return objs;
@@ -468,7 +516,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
           supportingFiles.add(new SupportingFile("service-lib.mustache", "src", service_name_camel_case + "-lib.cpp"));
           supportingFiles.add(new SupportingFile("service-src-cmake.mustache", "src", "CMakeLists.txt"));
         }
-		
+		/*
 		List<Object> modelsList = (List<Object>) objs.get("models");
 		for(int i = 0; i < modelsList.size(); i++){		
 			Map<String, Object> models = (Map<String, Object>) modelsList.get(i);
@@ -495,7 +543,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 					}
 				}	
 			}
-		}	
+		}	*/
 		
         return objs;
     }
@@ -651,7 +699,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     
     @Override
     public String toModelFilename(String name) {
-    	name = name.replace("Schema", "");
+    	//name = name.replace("Schema", "");
         return initialCaps(name);
     }
 

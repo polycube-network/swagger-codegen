@@ -45,6 +45,7 @@ public:
   {{^vendorExtensions.x-parent}}
   std::string generate_code();
   std::vector<std::string> generate_code_vector();
+  void packet_in(iovnet::service::Port &port, iovnet::service::PacketInMetadata &md, const std::vector<uint8_t> &packet) override;
   {{/vendorExtensions.x-parent}}
 
   {{#vendorExtensions.x-parent}}
@@ -73,10 +74,10 @@ public:
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}
-  {{{datatype}}} {{getter}}() override;
+  {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} {{getter}}() override;
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  void {{setter}}({{{datatype}}} &value) override;
+  void {{setter}}({{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} &value) override;
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isPrimitiveType}}

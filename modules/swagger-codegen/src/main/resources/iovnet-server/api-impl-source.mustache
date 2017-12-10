@@ -33,30 +33,28 @@ void {{classname}}Impl::create_{{classVarName}}_by_id(const std::string &name, c
   }
 
   {{baseName}}Schema localSchema(schema);
-  auto iter;
-  bool inserted;
 
   if(localSchema.typeIsSet() && !localSchema.getType().empty()) {
     switch(localSchema.getType()) {
-      case "TYPE_XDP_SKB":
-        std::tie(iter, inserted) = iomodules.emplace(std::piecewise_construct,
-                                                     std::forward_as_tuple(name),
-                                                     std::forward_as_tuple(name, schema, IOModuleType::TYPE_XDP_SKB));
+      case IOModuleType::TYPE_XDP_SKB:
+        iomodules.emplace(std::piecewise_construct,
+                                   std::forward_as_tuple(name),
+                                   std::forward_as_tuple(name, schema, IOModuleType::TYPE_XDP_SKB));
         break;
-      case "TYPE_XDP_SKB":
-        std::tie(iter, inserted) = iomodules.emplace(std::piecewise_construct,
-                                                     std::forward_as_tuple(name),
-                                                     std::forward_as_tuple(name, schema, IOModuleType::TYPE_XDP_DRV));
+      case IOModuleType::TYPE_XDP_DRV:
+				iomodules.emplace(std::piecewise_construct,
+		                               std::forward_as_tuple(name),
+		                               std::forward_as_tuple(name, schema, IOModuleType::TYPE_XDP_DRV));
         break;
       default:
-        std::tie(iter, inserted) = iomodules.emplace(std::piecewise_construct,
-                                                     std::forward_as_tuple(name),
-                                                     std::forward_as_tuple(name, schema));
+        iomodules.emplace(std::piecewise_construct,
+                                   std::forward_as_tuple(name),
+                                   std::forward_as_tuple(name, schema));
     }
   } else {
-    std::tie(iter, inserted) = iomodules.emplace(std::piecewise_construct,
-                                                 std::forward_as_tuple(name),
-                                                 std::forward_as_tuple(name, schema));
+    iomodules.emplace(std::piecewise_construct,
+                                   std::forward_as_tuple(name),
+                                   std::forward_as_tuple(name, schema));
   }
 }
 
@@ -69,7 +67,7 @@ void {{classname}}Impl::delete_{{classVarName}}_by_id(const std::string &name) {
 
 std::string {{classname}}Impl::read_{{classVarName}}_uuid_by_id(const std::string &name) {
   auto &&m = get_iomodule(name);
-  return m.get_uuid();
+  return m.get_Uuid();
 }
 
 std::vector<{{baseName}}Schema> {{classname}}Impl::read_{{classVarName}}_list_by_id() {
@@ -119,53 +117,53 @@ std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_ports_list_by_
 */
 PortsSchema {{classname}}Impl::create_{{classVarName}}_ports_by_id(const std::string &name, const PortsSchema &ports) {
   auto &&m = get_iomodule(name);
-    return m.add_ports(ports);
+    return m.add_Ports(ports);
 }
 
 PortsSchema {{classname}}Impl::read_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
-  return m.get_ports(portsName)->toSchema();
+  return m.get_Ports(portsName)->toSchema();
 }
 
 void {{classname}}Impl::update_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsSchema &ports) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_ports(portsName);
+  auto &&p = m.get_Ports(portsName);
   p->update(ports);
 }
 
 void {{classname}}Impl::delete_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
-  m.del_port(portsName)
+  m.del_Ports(portsName)
 }
 
 std::string {{classname}}Impl::read_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_ports(portsName);
-  return p->getPeer();
+  auto &&p = m.get_Ports(portsName);
+  return p->get_Peer();
 }
 
-std::string {{classname}}Impl::read_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName) {
+PortsStatus {{classname}}Impl::read_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_ports(portsName);
-  return p->getStatus();
+  auto &&p = m.get_Ports(portsName);
+  return p->get_Status();
 }
 
 std::string {{classname}}Impl::read_{{classVarName}}_ports_uuid_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
   auto &&p = m.get_ports(portsName);
-  return p->getUuid();
+  return p->get_Uuid();
 }
 
 void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName, const std::string &peer) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_ports(portsName);
-  p->setPeer(peer);
+  auto &&p = m.get_Ports(portsName);
+  p->set_Peer(peer);
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName, const std::string &status) {
+void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName, const PortsStatus &status) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_ports(portsName);
-  p->setStatus(status);
+  auto &&p = m.get_Ports(portsName);
+  p->set_Status(status);
 }
 
 
@@ -183,32 +181,37 @@ void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::st
 */
 {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
 {{classname}}Impl::{{operationIdSnakeCase}}({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
-   {{#vendorExtensions.x-call-sequence-method}}
-   {{^lastCall}}
-  auto &&{{{varName}}} = {{{methodCall}}};
-  {{/lastCall}}
-  {{#lastCall}}
-  {{^vendorExtensions.x-is-list}}
-  {{#returnType}}return {{{methodCall}}}{{^returnTypeIsPrimitive}}toSchema(){{/returnTypeIsPrimitive}};{{/returnType}}
-  {{^returnType}}{{{methodCall}}};{{/returnType}}
-  {{/vendorExtensions.x-is-list}}
-  {{#vendorExtensions.x-is-list}}
-  {{^returnType}}
-  {{^noIteration}}for(auto &i : {{{varName}}})
-   {{{methodCall}}};
-  {{/noIteration}}
-  {{#noIteration}}{{{methodCall}}};{{/noIteration}}
-  {{/returnType}}
-  {{#returnType}}
-  auto &&{{{varName}}} = {{{methodCall}}};
-  {{{returnType}}} m;
-  for(auto &i : {{{varName}}})
-   m.push_back(i->toSchema());
-  return m;
-  {{/returnType}}
-  {{/vendorExtensions.x-is-list}}
-  {{/lastCall}}
-  {{/vendorExtensions.x-call-sequence-method}}
+  {{^vendorExtensions.x-is-list-update}}
+	{{#vendorExtensions.x-call-sequence-method}}
+	{{^lastCall}}
+	auto &&{{{varName}}} = {{{methodCall}}};
+	{{/lastCall}}
+	{{#lastCall}}
+	{{^vendorExtensions.x-is-list}}
+	{{#returnType}}return {{{methodCall}}}{{^returnTypeIsPrimitive}}toSerializer(){{/returnTypeIsPrimitive}};{{/returnType}}
+	{{^returnType}}{{{methodCall}}};{{/returnType}}
+	{{/vendorExtensions.x-is-list}}
+	{{#vendorExtensions.x-is-list}}
+	{{^returnType}}
+	{{^noIteration}}for(auto &i : value)
+		{{{methodCall}}};
+	{{/noIteration}}
+	{{#noIteration}}{{{methodCall}}};{{/noIteration}}
+	{{/returnType}}
+	{{#returnType}}
+	auto &&{{{varName}}} = {{{methodCall}}};
+	{{{returnType}}} m;
+	for(auto &i : {{{varName}}})
+		m.push_back(i->toSerializer());
+	return m;
+	{{/returnType}}
+	{{/vendorExtensions.x-is-list}}
+	{{/lastCall}}
+	{{/vendorExtensions.x-call-sequence-method}}
+	{{/vendorExtensions.x-is-list-update}}
+	{{#vendorExtensions.x-is-list-update}}
+	throw std::runtime_error("Method not supported");
+	{{/vendorExtensions.x-is-list-update}}
 }
 
 {{/vendorExtensions.x-has-default-impl}}
