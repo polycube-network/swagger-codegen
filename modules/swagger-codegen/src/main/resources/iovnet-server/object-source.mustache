@@ -30,18 +30,18 @@
 {{/vendorExtensions.x-parent}}
 
 {{#vendorExtensions.x-parent}}
-{{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}Schema &schema): parent_(parent) { }
+{{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}Schema &schema): parent_(parent){{#vendorExtensions.x-classname-inherited}}, {{this}}(p){{/vendorExtensions.x-classname-inherited}} { }
 {{/vendorExtensions.x-parent}}
 
 {{classname}}::~{{classname}}() { }
 
 void {{classname}}::update(const {{classname}}Schema &schema) { 
-  //throw std::runtime_error("Method not implemented");
+
   {{#vars}}
   {{^isNotContainer}}
   for(auto &i : schema.{{getter}}()){ 
     {{#vendorExtensions.x-key-list}}
-    auto &{{varName}} = i.{{getter}}();
+    auto {{varName}} = i.{{getter}}();
     {{/vendorExtensions.x-key-list}}
     auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
     m->update(i);
@@ -76,7 +76,7 @@ void {{classname}}::update(const {{classname}}Schema &schema) {
   {{/isNotContainer}}
   {{/vars}}
   
-  //I don't know how to generate code to particular element (for example portsAccess and portsTrunk)
+  //add method call to complex object
   
   return schema;
 }
@@ -86,11 +86,11 @@ void {{classname}}::create({{{this}}} &parent, const {{classname}}Schema &schema
   throw std::runtime_error("Method not implemented");
 }
 
-std::shared_ptr<{{classname}}> {{classname}}::get({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
+std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
   throw std::runtime_error("Method not implemented");
 }
 
-void {{classname}}::remove({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
+void {{classname}}::removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
   throw std::runtime_error("Method not implemented");
 }
 
@@ -109,7 +109,7 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
 {{#vars}}
 {{^isNotContainer}}
 std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
-  return {{complexType}}::get(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+  return {{complexType}}::getEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
 }
 
 std::vector<std::shared_ptr<{{complexType}}>> {{classname}}::getAll{{nameInCamelCase}}(){
@@ -121,7 +121,7 @@ void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}Schema &conf){
 }
 
 void {{classname}}::del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
-  {{complexType}}::remove(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+  {{complexType}}::removeEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
 }
 
 void {{classname}}::delAll{{nameInCamelCase}}(){
@@ -138,7 +138,7 @@ void {{classname}}::delAll{{nameInCamelCase}}(){
 
 {{^vendorExtensions.x-is-key}}
 {{^isReadOnly}}
-void {{classname}}::{{setter}}({{{datatype}}} &value){
+void {{classname}}::{{setter}}(const {{{datatype}}} &value){
   throw std::runtime_error("Method not implemented");
 }
 
@@ -148,7 +148,7 @@ void {{classname}}::{{setter}}({{{datatype}}} &value){
 
 {{^isPrimitiveType}}
 std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}(){
-  return {{complexType}}::get(*this);
+  return {{complexType}}::getEntry(*this);
 }
 
 {{^vendorExtensions.x-is-key}}
@@ -158,37 +158,13 @@ void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}Schema &value){
 }
 
 void {{classname}}::del{{nameInCamelCase}}(){
-  {{complexType}}::remove(*this);
+  {{complexType}}::removeEntry(*this);
 }
 
 {{/isReadOnly}}
 {{/vendorExtensions.x-is-key}}
 {{/isPrimitiveType}}
 {{/isNotContainer}}
-{{#isEnum}}
-
-std::string {{classname}}::enum_to_string({{classname}}{{name}} value){
-  switch(value){
-      {{#allowableValues.values}}
-      case {{classname}}{{name}}::{{value}}:
-          return "{{stringValue}}";
-      {{/allowableValues.values}}
-      default:
-          throw std::runtime_error("Bad {{classname}} {{name}}");
-  }
-}
-
-{{classname}}{{name}} {{classname}}::string_to_enum(const std::string &str){
-  switch(str){
-      {{#allowableValues.values}}
-      case "{{stringValue}}":
-          return {{classname}}{{name}}::{{value}};
-      {{/allowableValues.values}}
-      default:
-          throw std::runtime_error("{{classname}} {{name}} is invalid");
-  }
-}
-{{/isEnum}}
 {{/vars}}
 
 {{/model}}{{/models}}

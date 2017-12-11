@@ -143,7 +143,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{paramName}} = request_body;
     {{/isEnum}}
     {{#isEnum}}
-    {{paramName}} = {{vendorExtensions.x-enum-class}}Schema::string_to_enum{{baseName}}(request_body);
+    {{paramName}} = {{vendorExtensions.x-enum-class}}::string_to_enum{{baseName}}(request_body);
     {{/isEnum}}
     {{/isPrimitiveType}}
     {{/bodyParam}}
@@ -157,7 +157,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     response_body = x;
     {{/returnSimpleType}}
     {{^returnSimpleType}}
-    response_body = {{vendorExtensions.x-enum-class}}Schema::enum{{returnBaseType}}_to_string(x);
+    response_body = {{vendorExtensions.x-enum-class}}::enum{{returnBaseType}}_to_string(x);
     {{/returnSimpleType}}
     {{/returnTypeIsPrimitive}}
     {{^returnTypeIsPrimitive}}

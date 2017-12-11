@@ -204,33 +204,35 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         	op.returnType = null;
         	op.returnBaseType = null;
         	op.vendorExtensions.put("x-response-code", "Created");
-        	method = "add_";
+        	method = "add";
         }
         else if(op.httpMethod.equals("DELETE")){
-        	op.vendorExtensions.put("x-response-code", "OK");
-        	method = "del_";
+        	op.vendorExtensions.put("x-response-code", "Ok");
+        	method = "del";
         }
         else if(op.httpMethod.equals("PUT")){
-        	op.vendorExtensions.put("x-response-code", "OK");
+        	op.vendorExtensions.put("x-response-code", "Ok");
         	if(bodyParam != null && bodyParam.isPrimitiveType)
-        		method = "set_";
+        		method = "set";
         	else if(bodyParam != null)
         		method = "update";
         }
         else if(op.httpMethod.equals("PATCH")){
-            op.vendorExtensions.put("x-response-code", "OK");
+            op.vendorExtensions.put("x-response-code", "Ok");
             if(bodyParam != null && bodyParam.isPrimitiveType)
-                method = "set_";
+                method = "set";
             else if(bodyParam != null)
                 method = "update";
         }	
         else if(op.httpMethod.equals("GET")){
-        	op.vendorExtensions.put("x-response-code", "OK");
-        	method = "get_";
+        	op.vendorExtensions.put("x-response-code", "Ok");
+        	method = "get";
         }
         
         if (op.operationId.contains("List")) {
           op.vendorExtensions.put("x-is-list", true);
+          if(op.httpMethod.equals("PUT") || op.httpMethod.equals("PATCH"))
+          	op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
           if(bodyParam != null && !bodyParam.isPrimitiveType){
       			op.bodyParam.dataType = op.bodyParam.dataType.replace(">", "Schema>");	
       			op.bodyParam.baseType += "Schema";
@@ -239,8 +241,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
           	op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
           if(op.returnType != null && !op.returnTypeIsPrimitive)
           	op.returnType = op.returnType.replace(">", "Schema>");
-          if(method.equals("del_") || method.equals("get_")) //in case of list we return the whole object and not only 				one element
-          	method += "All_";
+          if(method.equals("del") || method.equals("get")) //in case of list we return the whole object and not only 				one element
+          	method += "All";
         }
         else{
         	if(op.returnType != null && !op.returnTypeIsPrimitive)
@@ -248,8 +250,9 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
           if(bodyParam != null && !bodyParam.isPrimitiveType)
         		op.bodyParam.dataType += "Schema";
         }
-        	
-		
+        
+        if(bodyParam != null)
+					op.bodyParam.paramName = "value";
         op.vendorExtensions.put("x-call-sequence-method", getCallMethodSequence(method, path, op));
         
         String pathForRouter = path.replaceAll("\\{(.*?)}", ":$1");
@@ -330,9 +333,9 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 				else if(lastCall && i == 1)
 					methodCall = path_without_keys.get(i-1) + "." + method + toUpperCamelCase(path_without_keys.get(i));
 				else if(i == 1) //the second path element has a get method but called by .
-					methodCall = path_without_keys.get(i-1) + ".get_" + toUpperCamelCase(path_without_keys.get(i));
+					methodCall = path_without_keys.get(i-1) + ".get" + toUpperCamelCase(path_without_keys.get(i));
 				else //the remaining methods are all get
-					methodCall = path_without_keys.get(i-1) + "->get_" + toUpperCamelCase(path_without_keys.get(i));
+					methodCall = path_without_keys.get(i-1) + "->get" + toUpperCamelCase(path_without_keys.get(i));
 				methodCall += "(";
 				if(lastCall && bodyParam != null && op.operationId.contains("List"))
 					methodCall += "i";
@@ -365,7 +368,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 				if(lastCall){
 				//mark the last method call, useful to determine if have to apply the return in template
 					m.put("lastCall", "true");
-					if(methodCall.contains("_All_"))
+					if(methodCall.contains("getAll") || methodCall.contains("delAll"))
 						m.put("noIteration", "true");	
 				}	
 				l.add(m);
@@ -397,8 +400,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     @Override
     public CodegenProperty fromProperty(String name, Property p) {
     	CodegenProperty property = super.fromProperty(name, p);
-    	property.getter = toLowerCamelCase("get_"+ getterAndSetterCapitalize(name));
-    	property.setter = toLowerCamelCase("set_"+ getterAndSetterCapitalize(name));
+    	property.getter = toLowerCamelCase("get"+ getterAndSetterCapitalize(name));
+    	property.setter = toLowerCamelCase("set"+ getterAndSetterCapitalize(name));
         property.nameInCamelCase = toUpperCamelCase(name);
         property.name = toLowerCamelCase(name);
 
@@ -419,6 +422,12 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 					List<Map<String, String>> l = new ArrayList<Map<String, String>>(); 
 					for(int j = 0; j < lenum.size(); j++){
 						Map<String, String> mv = new HashMap<String, String>();
+						if(model.vendorExtensions.get("x-parent") == null && p.baseName.contains("type")){
+							p.datatype = "IOModuleType";
+							p.vendorExtensions.put("x-is-iomodule-type", "true");
+						}
+						else
+							p.datatype = model.name + p.nameInCamelCase;
 						mv.put("value", lenum.get(j).toUpperCase());//save the enum value
 						mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value 
 						l.add(mv);
@@ -444,7 +453,9 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         String classname = (String) operations.get("classname");
         operations.put("classnameSnakeUpperCase", DefaultCodegen.underscore(classname).toUpperCase());
         operations.put("classnameSnakeLowerCase", DefaultCodegen.underscore(classname).toLowerCase());
-
+        
+        String s = classname.replace("Api", "Type");
+        
         List<CodegenOperation> operationList = (List<CodegenOperation>) operations.get("operation");
         for (CodegenOperation op : operationList) {
             op.httpMethod = op.httpMethod.substring(0, 1).toUpperCase() + op.httpMethod.substring(1).toLowerCase();
@@ -473,18 +484,23 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             if(op.bodyParam != null && op.bodyParam.vendorExtensions.get("x-is-enum") != null){
 				    	op.bodyParam.isEnum = true;
 				    	op.bodyParam.vendorExtensions.remove("x-is-enum");
-				    	op.bodyParam.vendorExtensions.put("x-enum-class", name); //enum  class name
+				    	op.bodyParam.vendorExtensions.put("x-enum-class", name + "Schema"); //enum  class name
 				    	op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
-				    	op.bodyParam.dataType = name + op.bodyParam.baseName; //enum datatType
+				    	op.bodyParam.dataType = name + op.bodyParam.baseName; //enum dataType
+				    	if(op.bodyParam.dataType.equals(s)){
+				    		op.bodyParam.dataType = "IOModuleType";
+				    	}
 				    }
 				    
             if(op.responses != null){ //in case  the return type is enum
 				    	for(CodegenResponse r : op.responses){
 				    		if(r.vendorExtensions.get("x-is-enum") != null){
 					  			op.returnType = name + initialCaps(var);
+					  			if(op.returnType.equals(s))
+					  				op.returnType = "IOModuleType";
 					  			op.returnBaseType = initialCaps(var);
 					  			op.returnSimpleType = false; 
-					  			op.vendorExtensions.put("x-enum-class", name);
+					  			op.vendorExtensions.put("x-enum-class", name + "Schema");
 						  	}
 				    	}
         		}

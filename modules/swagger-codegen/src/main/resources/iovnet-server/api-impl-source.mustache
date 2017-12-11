@@ -34,7 +34,7 @@ void {{classname}}Impl::create_{{classVarName}}_by_id(const std::string &name, c
 
   {{baseName}}Schema localSchema(schema);
 
-  if(localSchema.typeIsSet() && !localSchema.getType().empty()) {
+  if(localSchema.typeIsSet()) {
     switch(localSchema.getType()) {
       case IOModuleType::TYPE_XDP_SKB:
         iomodules.emplace(std::piecewise_construct,
@@ -67,7 +67,7 @@ void {{classname}}Impl::delete_{{classVarName}}_by_id(const std::string &name) {
 
 std::string {{classname}}Impl::read_{{classVarName}}_uuid_by_id(const std::string &name) {
   auto &&m = get_iomodule(name);
-  return m.get_Uuid();
+  return m.getUuid();
 }
 
 std::vector<{{baseName}}Schema> {{classname}}Impl::read_{{classVarName}}_list_by_id() {
@@ -92,78 +92,74 @@ std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_list_by_id_get
 void {{classname}}Impl::create_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsSchema> &ports) {
    auto &&m = get_iomodule(name);
    for (auto &port : ports) {
-        m.add_ports(port); 
+        m.addPorts(port); 
    }
 }
 
 std::vector<PortsSchema> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id(const std::string &name) {
-  throw std::runtime_error("Method not implemented");
+  throw std::runtime_error("Method not supported");
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsSchema> &ports) {
-  throw std::runtime_error("Method not implemented");
+void {{classname}}Impl::replace_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsSchema> &ports) {
+  throw std::runtime_error("Method not supported");
 }
 
 void {{classname}}Impl::delete_{{classVarName}}_ports_list_by_id(const std::string &name) {
-  throw std::runtime_error("Method not implemented");
-}
-
-std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id_get_list() {
-  return std::vector<std::string>();
+  throw std::runtime_error("Method not supported");
 }
 
 /*
 * Ports related functions
 */
-PortsSchema {{classname}}Impl::create_{{classVarName}}_ports_by_id(const std::string &name, const PortsSchema &ports) {
+void {{classname}}Impl::create_{{classVarName}}_ports_by_id(const std::string &name, const PortsSchema &ports) {
   auto &&m = get_iomodule(name);
-    return m.add_Ports(ports);
+    return m.addPorts(ports);
 }
 
 PortsSchema {{classname}}Impl::read_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
-  return m.get_Ports(portsName)->toSchema();
+  return m.getPorts(portsName)->toSchema();
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsSchema &ports) {
+void {{classname}}Impl::replace_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsSchema &ports) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_Ports(portsName);
+  auto &&p = m.getPorts(portsName);
   p->update(ports);
 }
 
 void {{classname}}Impl::delete_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
-  m.del_Ports(portsName)
+  m.delPorts(portsName);
 }
 
 std::string {{classname}}Impl::read_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_Ports(portsName);
-  return p->get_Peer();
+  auto &&p = m.getPorts(portsName);
+  return p->getPeer();
 }
 
 PortsStatus {{classname}}Impl::read_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_Ports(portsName);
-  return p->get_Status();
+  auto &&p = m.getPorts(portsName);
+  return p->getStatus();
 }
 
 std::string {{classname}}Impl::read_{{classVarName}}_ports_uuid_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_ports(portsName);
-  return p->get_Uuid();
+  auto &&p = m.getPorts(portsName);
+  return p->getUuid();
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName, const std::string &peer) {
+void {{classname}}Impl::replace_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName, const std::string &peer) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_Ports(portsName);
-  p->set_Peer(peer);
+  auto &&p = m.getPorts(portsName);
+  p->setPeer(peer);
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName, const PortsStatus &status) {
+void {{classname}}Impl::replace_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName, const PortsStatus &status) {
   auto &&m = get_iomodule(name);
-  auto &&p = m.get_Ports(portsName);
-  p->set_Status(status);
+  auto &&p = m.getPorts(portsName);
+  p->setStatus(status);
 }
 
 
@@ -188,7 +184,7 @@ void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::st
 	{{/lastCall}}
 	{{#lastCall}}
 	{{^vendorExtensions.x-is-list}}
-	{{#returnType}}return {{{methodCall}}}{{^returnTypeIsPrimitive}}toSerializer(){{/returnTypeIsPrimitive}};{{/returnType}}
+	{{#returnType}}return {{{methodCall}}}{{^returnTypeIsPrimitive}}toSchema(){{/returnTypeIsPrimitive}};{{/returnType}}
 	{{^returnType}}{{{methodCall}}};{{/returnType}}
 	{{/vendorExtensions.x-is-list}}
 	{{#vendorExtensions.x-is-list}}
@@ -202,7 +198,7 @@ void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::st
 	auto &&{{{varName}}} = {{{methodCall}}};
 	{{{returnType}}} m;
 	for(auto &i : {{{varName}}})
-		m.push_back(i->toSerializer());
+		m.push_back(i->toSchema());
 	return m;
 	{{/returnType}}
 	{{/vendorExtensions.x-is-list}}

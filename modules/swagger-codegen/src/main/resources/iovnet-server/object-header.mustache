@@ -24,15 +24,6 @@ using namespace io::swagger::server::model;
 using iovnet::service::IOModuleType;
 {{/vendorExtensions.x-parent}}
 
-{{#vars}}
-{{#isEnum}}
-enum class {{classname}}{{name}}{
-  {{#_enum}}{{this}} {{/_enum}} 
-};
-
-{{/isEnum}}
-{{/vars}}
-
 class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{/vendorExtensions.x-inherits-from}}public {{classname}}Interface {
 public:
   {{^vendorExtensions.x-parent}}
@@ -50,8 +41,8 @@ public:
 
   {{#vendorExtensions.x-parent}}
   static void create({{{this}}} &parent, const {{classname}}Schema &schema);
-  static std::shared_ptr<{{classname}}> get({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
-  static void remove({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
+  static std::shared_ptr<{{classname}}> getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
+  static void removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
   {{#vendorExtensions.x-is-list}}
   static std::vector<std::shared_ptr<{{classname}}>> get({{vendorExtensions.x-parent}} &parent);
   static void remove({{vendorExtensions.x-parent}} &parent);
@@ -74,10 +65,10 @@ public:
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}
-  {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} {{getter}}() override;
+  {{{datatype}}} {{getter}}() override;
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  void {{setter}}({{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} &value) override;
+  void {{setter}}(const {{{datatype}}} &value) override;
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isPrimitiveType}}
@@ -91,11 +82,6 @@ public:
   {{/vendorExtensions.x-is-key}}
   {{/isPrimitiveType}}
   {{/isNotContainer}}
-  {{#isEnum}}
-  
-  static std::string enum_to_string({{classname}}{{name}} value);
-  static {{classname}}{{name}} string_to_enum(const std::string &str);
-  {{/isEnum}}
   {{/vars}}
      
   {{#vendorExtensions.x-parent}}

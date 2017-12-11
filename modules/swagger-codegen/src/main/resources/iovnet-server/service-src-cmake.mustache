@@ -2,12 +2,14 @@ aux_source_directory(model MODEL_SOURCES)
 aux_source_directory(api API_SOURCES)
 
 include_directories(model)
+include_directories(interface)
 
 add_library(iov-{{serviceNameLowerCase}} SHARED
   ${MODEL_SOURCES}
   ${API_SOURCES}
-  {{serviceNameCamelCase}}.cpp
-  {{serviceNameCamelCase}}Api.cpp
+  {{#models}}{{#model}}
+  {{classname}}.cpp
+  {{/model}}{{/models}}	
   {{serviceNameCamelCase}}-lib.cpp)
 
 target_link_libraries(iov-{{serviceNameLowerCase}}

@@ -16,6 +16,11 @@
 {{#imports}}
 {{{this}}}
 {{/imports}}
+{{^vendorExtensions.x-parent}}
+#include "iovnet/services/iomodule.h"
+
+using iovnet::service::IOModuleType;
+{{/vendorExtensions.x-parent}}
 
 {{#modelNamespaceDeclarations}}
 namespace {{this}} {
@@ -23,10 +28,11 @@ namespace {{this}} {
 
 {{#vars}}
 {{#isEnum}}
-enum class {{classname}}{{name}}{
+{{^vendorExtensions.x-is-iomodule-type}}
+enum class {{{datatype}}}{
   {{#_enum}}{{this}} {{/_enum}} 
 };
-
+{{/vendorExtensions.x-is-iomodule-type}}
 {{/isEnum}}
 {{/vars}}
 
@@ -62,8 +68,8 @@ public:
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}
-  {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} {{getter}}() const;
-  void {{setter}}({{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} value);
+  {{{datatype}}} {{getter}}() const;
+  void {{setter}}({{{datatype}}} value);
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
   {{{datatype}}}Schema {{getter}}() const;
@@ -71,20 +77,20 @@ public:
   {{/isPrimitiveType}}
   {{/isNotContainer}}
   {{^required}}
-  bool {{baseName}}_IsSet() const;
-  void unset_{{nameInCamelCase}}();
+  bool {{baseName}}IsSet() const;
+  void unset{{nameInCamelCase}}();
   {{/required}}
 	{{#isEnum}}
   
-  static std::string enum{{name}}_to_string(const {{classname}}{{name}} &value);
-  static {{classname}}{{name}} string_to_enum{{name}}(const std::string &str);
+  static std::string enum{{nameInCamelCase}}_to_string(const {{{datatype}}} &value);
+  static {{{datatype}}} string_to_enum{{nameInCamelCase}}(const std::string &str);
   {{/isEnum}}
   {{/vars}}
 protected:
   {{#vars}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}
-  {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} m_{{name}};
+  {{{datatype}}} m_{{name}};
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
   {{{datatype}}}Schema m_{{name}};

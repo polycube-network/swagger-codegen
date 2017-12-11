@@ -29,27 +29,27 @@ public:
   /// {{description}}
   /// </summary>
   {{^isNotContainer}}
-  virtual std::shared_ptr<{{complexType}}> get_{{name}}({{#vendorExtensions.x-key-list}}const std::string &{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
-  virtual std::vector<std::shared_ptr<{{complexType}}>> get_All_{{name}}() = 0;
-  virtual void add_{{name}}(const {{complexType}}Schema &schema) = 0;
-  virtual void del_{{name}}({{#vendorExtensions.x-key-list}}const std::string &{{name}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
-  virtual void del_All_{{name}}() = 0;
+  virtual std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
+  virtual std::vector<std::shared_ptr<{{complexType}}>> getAll{{nameInCamelCase}}() = 0;
+  virtual void add{{nameInCamelCase}}(const {{complexType}}Schema &schema) = 0;
+  virtual void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
+  virtual void delAll{{nameInCamelCase}}() = 0;
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}
-  virtual {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} {{getter}}() = 0;
+  virtual {{{datatype}}} {{getter}}() = 0;
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  virtual void {{setter}}(const {{^isEnum}}{{{datatype}}}{{/isEnum}}{{#isEnum}}{{classname}}{{name}}{{/isEnum}} &value) = 0;
+  virtual void {{setter}}(const {{{datatype}}} &value) = 0;
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
-  virtual std::shared_ptr<{{complexType}}> get_{{name}}() = 0;
+  virtual std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}() = 0;
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  virtual void add_{{name}}(const {{complexType}}Schema &value) = 0;
-  virtual void del_{{name}}() = 0;
+  virtual void add{{nameInCamelCase}}(const {{complexType}}Schema &value) = 0;
+  virtual void del{{nameInCamelCase}}() = 0;
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isPrimitiveType}}
