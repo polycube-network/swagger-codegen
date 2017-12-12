@@ -59,6 +59,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         supportingFiles.add(new SupportingFile("modelbase-source.mustache", "src/model", "ModelBase.cpp"));
         //supportingFiles.add(new SupportingFile("cmake.mustache", "control_api", "CMakeLists.txt"));
         supportingFiles.add(new SupportingFile("service-cmake.mustache", "", "CMakeLists.txt"));
+        supportingFiles.add(new SupportingFile("swagger-codegen-ignore.mustache", "", ".swagger-codegen-ignore"));
+
 
         languageSpecificPrimitives = new HashSet<String>(
                 Arrays.asList("int", "char", "bool", "long", "float", "double", "int32_t", "int64_t", "std::string"));
