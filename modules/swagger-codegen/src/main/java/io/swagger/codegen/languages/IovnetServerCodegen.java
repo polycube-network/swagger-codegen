@@ -40,13 +40,14 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         apiPackage = "io.swagger.server.api";
         modelPackage = "io.swagger.server.model";
 
-        modelTemplateFiles.put("model-header.mustache", "Schema.h");
-        modelTemplateFiles.put("model-source.mustache", "Schema.cpp");
+        modelTemplateFiles.put("json-object-header.mustache", "JsonObject.h");
+        modelTemplateFiles.put("json-object-source.mustache", "JsonObject.cpp");
         
         modelTemplateFiles.put("interface.mustache", "Interface.h");
         
         modelTemplateFiles.put("object-header.mustache", ".h");
         modelTemplateFiles.put("object-source.mustache", ".cpp");
+        modelTemplateFiles.put("object-source-defaultimpl.mustache", "DefaultImpl.cpp");
 
         apiTemplateFiles.put("api-header.mustache", ".h");
         apiTemplateFiles.put("api-source.mustache", ".cpp");
@@ -55,13 +56,15 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
         reservedWords = new HashSet<>();
 
-        supportingFiles.add(new SupportingFile("modelbase-header.mustache", "src/model", "ModelBase.h"));
-        supportingFiles.add(new SupportingFile("modelbase-source.mustache", "src/model", "ModelBase.cpp"));
+        supportingFiles.add(new SupportingFile("json-object-base-header.mustache", "src/serializer", "JsonObjectBase.h"));
+        supportingFiles.add(new SupportingFile("json-object-base-source.mustache", "src/serializer", "JsonObjectBase.cpp"));
         //supportingFiles.add(new SupportingFile("cmake.mustache", "control_api", "CMakeLists.txt"));
         supportingFiles.add(new SupportingFile("service-cmake.mustache", "", "CMakeLists.txt"));
+        supportingFiles.add(new SupportingFile("swagger-codegen-ignore.mustache", "", ".swagger-codegen-ignore"));
+
 
         languageSpecificPrimitives = new HashSet<String>(
-                Arrays.asList("int", "char", "bool", "long", "float", "double", "int32_t", "int64_t", "std::string"));
+                Arrays.asList("int", "char", "bool", "long", "float", "double", "int8_t", "int16_t", "uint8_t", "uint16_t", "uint32_t", "int32_t", "int64_t", "std::string"));
 
         typeMapping = new HashMap<String, String>();
         typeMapping.put("date", "std::string");
@@ -132,7 +135,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         if (importMapping.containsKey(name)) {
             return importMapping.get(name);
         } else {
-            return "#include \"" + name + "Schema.h\"";
+            return "#include \"" + name + "JsonObject.h\"";
         }
     }
 
@@ -162,8 +165,11 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 		    		l.get(i).put("varName", toVarName(l.get(i).get("name"))); //used in update method
                     l.get(i).put("getter", toLowerCamelCase("get_" + l.get(i).get("varName")));
                     l.get(i).put("setter", toLowerCamelCase("set_" + l.get(i).get("varName")));
-        			if(l.get(i).get("type").equals("integer"))
-        				l.get(i).put("type", "int32_t");
+        			if(l.get(i).get("type").equals("integer")){
+        			  String format = l.get(i).get("format");
+        				l.get(i).put("type", format + "_t");
+        				
+        			}
         			if(l.get(i).get("type").equals("string"))
         				l.get(i).put("type", "std::string");
         		}
@@ -234,21 +240,21 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
           if(op.httpMethod.equals("PUT") || op.httpMethod.equals("PATCH"))
           	op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
           if(bodyParam != null && !bodyParam.isPrimitiveType){
-      			op.bodyParam.dataType = op.bodyParam.dataType.replace(">", "Schema>");	
-      			op.bodyParam.baseType += "Schema";
+      			op.bodyParam.dataType = op.bodyParam.dataType.replace(">", "JsonObject>");	
+      			op.bodyParam.baseType += "JsonObject";
       		}
           if(op.httpMethod.equals("PUT"))
           	op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
           if(op.returnType != null && !op.returnTypeIsPrimitive)
-          	op.returnType = op.returnType.replace(">", "Schema>");
+          	op.returnType = op.returnType.replace(">", "JsonObject>");
           if(method.equals("del") || method.equals("get")) //in case of list we return the whole object and not only 				one element
           	method += "All";
         }
         else{
         	if(op.returnType != null && !op.returnTypeIsPrimitive)
-          	op.returnType += "Schema";
+          	op.returnType += "JsonObject";
           if(bodyParam != null && !bodyParam.isPrimitiveType)
-        		op.bodyParam.dataType += "Schema";
+        		op.bodyParam.dataType += "JsonObject";
         }
         
         if(bodyParam != null)
@@ -349,7 +355,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 					}
 				}
 				methodCall += ")";
-				//check if is the lastCall method and if the returnType is not primitive in order to call the toSchema() properly
+				//check if is the lastCall method and if the returnType is not primitive in order to call the toJsonObject() properly
 				if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive && !op.operationId.contains("List")){
 					if(i == 0)
 						methodCall += ".";
@@ -484,7 +490,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             if(op.bodyParam != null && op.bodyParam.vendorExtensions.get("x-is-enum") != null){
 				    	op.bodyParam.isEnum = true;
 				    	op.bodyParam.vendorExtensions.remove("x-is-enum");
-				    	op.bodyParam.vendorExtensions.put("x-enum-class", name + "Schema"); //enum  class name
+				    	op.bodyParam.vendorExtensions.put("x-enum-class", name + "JsonObject"); //enum  class name
 				    	op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
 				    	op.bodyParam.dataType = name + op.bodyParam.baseName; //enum dataType
 				    	if(op.bodyParam.dataType.equals(s)){
@@ -500,7 +506,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 					  				op.returnType = "IOModuleType";
 					  			op.returnBaseType = initialCaps(var);
 					  			op.returnSimpleType = false; 
-					  			op.vendorExtensions.put("x-enum-class", name + "Schema");
+					  			op.vendorExtensions.put("x-enum-class", name + "JsonObject");
 						  	}
 				    	}
         		}
@@ -532,34 +538,6 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
           supportingFiles.add(new SupportingFile("service-lib.mustache", "src", service_name_camel_case + "-lib.cpp"));
           supportingFiles.add(new SupportingFile("service-src-cmake.mustache", "src", "CMakeLists.txt"));
         }
-		/*
-		List<Object> modelsList = (List<Object>) objs.get("models");
-		for(int i = 0; i < modelsList.size(); i++){		
-			Map<String, Object> models = (Map<String, Object>) modelsList.get(i);
-			CodegenModel model = (CodegenModel) models.get("model");
-			//supportingFiles.add(new SupportingFile("interface.mustache", "src/interface", model.name + "Interface.h"));
-			List<CodegenProperty> vars = (List<CodegenProperty>) model.vars;
-			for(CodegenProperty var : vars){
-				if(var.isContainer){
-					for(int j = 0; j < modelsList.size(); j++){		
-						Map<String, Object> ml = (Map<String, Object>) modelsList.get(j);
-						CodegenModel m = (CodegenModel) ml.get("model");
-						if(m.name.equals(var.name)){
-							List<String> keysType = new ArrayList<String>();
-							List<CodegenProperty> vs = (List<CodegenProperty>) m.vars;
-							for(CodegenProperty v : vs){
-								if(v.vendorExtensions.get("x-is-key") != null){
-									if((boolean)v.vendorExtensions.get("x-is-key")){
-										keysType.add(v.datatype);	
-									}	
-								}
-							}
-							var.vendorExtensions.put("x-keys-type", keysType);
-						}	
-					}
-				}	
-			}
-		}	*/
 		
         return objs;
     }
@@ -693,6 +671,11 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     public String getSwaggerType(Property p) {
         String swaggerType = super.getSwaggerType(p);
         String type = null;
+        if(swaggerType.equals("integer")){
+          String format = p.getFormat();
+          type = format + "_t";
+          return type; 
+        }
         if (typeMapping.containsKey(swaggerType)) {
             type = typeMapping.get(swaggerType);
             if (languageSpecificPrimitives.contains(type))
@@ -743,15 +726,19 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     	File[] listOfFiles = folder.listFiles();
     	File interfaceFolder = new File(outputFolder + "/src/interface");
     	interfaceFolder.mkdir();
-    	File modelFolder = new File(outputFolder + "/src/model");
+    	File modelFolder = new File(outputFolder + "/src/serializer");
     	modelFolder.mkdir();
+    	File sourceFolder = new File(outputFolder + "/src/src");
+    	sourceFolder.mkdir();
     	for(File f : listOfFiles){
     		if(f.getName().contains("Interface.h")){
     			f.renameTo(new File(outputFolder + "/src/interface/" + f.getName()));
     		}
-    		else if(f.getName().contains("Schema.h") || f.getName().contains("Schema.cpp")){
-    			f.renameTo(new File(outputFolder + "/src/model/" + f.getName()));
+    		else if(f.getName().contains("JsonObject.h") || f.getName().contains("JsonObject.cpp")){
+    			f.renameTo(new File(outputFolder + "/src/serializer/" + f.getName()));
     		}
+    		else if(f.getName().contains("DefaultImpl.cpp") || f.getName().contains(".h"))
+    			f.renameTo(new File(outputFolder + "/src/src/" + f.getName()));
     	}
     }
 
