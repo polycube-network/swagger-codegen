@@ -77,7 +77,7 @@ public:
   {{/isPrimitiveType}}
   {{/isNotContainer}}
   {{^required}}
-  bool {{baseName}}IsSet() const;
+  bool {{name}}IsSet() const;
   void unset{{nameInCamelCase}}();
   {{/required}}
 	{{#isEnum}}
