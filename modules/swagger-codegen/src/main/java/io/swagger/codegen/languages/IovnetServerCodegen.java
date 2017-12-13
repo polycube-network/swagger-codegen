@@ -150,53 +150,53 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             if (!newImp.isEmpty()) {
                 codegenModel.imports.add(newImp); 
                 if (!importMapping.containsKey(imp)){
-                	interfaceImports.add(imp);
-                }		
+                    interfaceImports.add(imp);
+                }       
             }
         }
         codegenModel.vendorExtensions.put("x-interface-imports", interfaceImports); 
         
         List<CodegenProperty> cpl = codegenModel.vars;
         for(CodegenProperty cp : cpl){
-        	List<Map<String, String>> l = (List<Map<String, String>>) cp.vendorExtensions.get("x-key-list");
-        	if(l != null){
-		    	l.get(l.size() - 1).put("lastKey", "true");
-		    	for(int i = 0; i < l.size(); i++){
-		    		l.get(i).put("varName", toVarName(l.get(i).get("name"))); //used in update method
+            List<Map<String, String>> l = (List<Map<String, String>>) cp.vendorExtensions.get("x-key-list");
+            if(l != null){
+                l.get(l.size() - 1).put("lastKey", "true");
+                for(int i = 0; i < l.size(); i++){
+                    l.get(i).put("varName", toVarName(l.get(i).get("name"))); //used in update method
                     l.get(i).put("getter", toLowerCamelCase("get_" + l.get(i).get("varName")));
                     l.get(i).put("setter", toLowerCamelCase("set_" + l.get(i).get("varName")));
-        			if(l.get(i).get("type").equals("integer")){
-        			  String format = l.get(i).get("format");
-        				l.get(i).put("type", format + "_t");
-        				
-        			}
-        			if(l.get(i).get("type").equals("string"))
-        				l.get(i).put("type", "std::string");
-        		}
-        	}
+                    if(l.get(i).get("type").equals("integer")){
+                      String format = l.get(i).get("format");
+                        l.get(i).put("type", format + "_t");
+                        
+                    }
+                    if(l.get(i).get("type").equals("string"))
+                        l.get(i).put("type", "std::string");
+                }
+            }
         }
-		
-		//at this point only ports has this vendorExtensions
-		if(codegenModel.vendorExtensions.get("x-inherits-from") != null)
-			codegenModel.vendorExtensions.put("x-classname-inherited", "Port"); 
-		
-		if(codegenModel.vendorExtensions.get("x-parent") != null){
-			if(codegenModel.vendorExtensions.get("x-parent").equals(codegenModel.name)){
-				codegenModel.vendorExtensions.remove("x-parent");
-				codegenModel.vendorExtensions.put("x-inherits-from", "iovnet::service::IOModule");
-			}
-		}
-		
-		
-		
-		
+        
+        //at this point only ports has this vendorExtensions
+        if(codegenModel.vendorExtensions.get("x-inherits-from") != null)
+            codegenModel.vendorExtensions.put("x-classname-inherited", "Port"); 
+        
+        if(codegenModel.vendorExtensions.get("x-parent") != null){
+            if(codegenModel.vendorExtensions.get("x-parent").equals(codegenModel.name)){
+                codegenModel.vendorExtensions.remove("x-parent");
+                codegenModel.vendorExtensions.put("x-inherits-from", "iovnet::service::IOModule");
+            }
+        }
+        
+        
+        
+        
         
         return codegenModel;
     }
 
     @Override
     public CodegenOperation fromOperation(String path, String httpMethod, Operation operation,
-                                          Map<String, Model> definitions, Swagger swagger) {
+      Map<String, Model> definitions, Swagger swagger) {
         CodegenOperation op = super.fromOperation(path, httpMethod, operation, definitions, swagger);
 
         
@@ -207,21 +207,18 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         CodegenParameter bodyParam = op.bodyParam;
         
         if(op.httpMethod.equals("POST")){
-        	op.returnType = null;
-        	op.returnBaseType = null;
-        	op.vendorExtensions.put("x-response-code", "Created");
-        	method = "add";
+            op.returnType = null;
+            op.returnBaseType = null;
+            op.vendorExtensions.put("x-response-code", "Created");
+            method = "add";
         }
         else if(op.httpMethod.equals("DELETE")){
-        	op.vendorExtensions.put("x-response-code", "Ok");
-        	method = "del";
+            op.vendorExtensions.put("x-response-code", "Ok");
+            method = "del";
         }
         else if(op.httpMethod.equals("PUT")){
-        	op.vendorExtensions.put("x-response-code", "Ok");
-        	if(bodyParam != null && bodyParam.isPrimitiveType)
-        		method = "set";
-        	else if(bodyParam != null)
-        		method = "update";
+            op.vendorExtensions.put("x-response-code", "Ok");
+            method = "update";
         }
         else if(op.httpMethod.equals("PATCH")){
             op.vendorExtensions.put("x-response-code", "Ok");
@@ -229,38 +226,38 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 method = "set";
             else if(bodyParam != null)
                 method = "update";
-        }	
+        }   
         else if(op.httpMethod.equals("GET")){
-        	op.vendorExtensions.put("x-response-code", "Ok");
-        	method = "get";
+            op.vendorExtensions.put("x-response-code", "Ok");
+            method = "get";
         }
         
         if (op.operationId.contains("List")) {
-          op.vendorExtensions.put("x-is-list", true);
-          if(op.httpMethod.equals("PUT") || op.httpMethod.equals("PATCH"))
-          	op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
-          if(bodyParam != null && !bodyParam.isPrimitiveType){
-      			op.bodyParam.dataType = op.bodyParam.dataType.replace(">", "JsonObject>");	
-      			op.bodyParam.baseType += "JsonObject";
-      		}
-          if(op.httpMethod.equals("PUT"))
-          	op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
-          if(op.returnType != null && !op.returnTypeIsPrimitive)
-          	op.returnType = op.returnType.replace(">", "JsonObject>");
-          if(method.equals("del") || method.equals("get")) //in case of list we return the whole object and not only 				one element
-          	method += "All";
+            op.vendorExtensions.put("x-is-list", true);
+            if(op.httpMethod.equals("PATCH"))
+                op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
+            if(bodyParam != null && !bodyParam.isPrimitiveType){
+                op.bodyParam.dataType = op.bodyParam.dataType.replace(">", "JsonObject>");  
+                op.bodyParam.baseType += "JsonObject";
+            }
+            if(op.httpMethod.equals("PUT"))
+                op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
+            if(op.returnType != null && !op.returnTypeIsPrimitive)
+                op.returnType = op.returnType.replace(">", "JsonObject>");
+            if(method.equals("del") || method.equals("get")) //in case of list we return the whole object and not only                one element
+                method += "All";
         }
-        else{
-        	if(op.returnType != null && !op.returnTypeIsPrimitive)
-          	op.returnType += "JsonObject";
-          if(bodyParam != null && !bodyParam.isPrimitiveType)
-        		op.bodyParam.dataType += "JsonObject";
+        else {
+            if(op.returnType != null && !op.returnTypeIsPrimitive)
+                op.returnType += "JsonObject";
+            if(bodyParam != null && !bodyParam.isPrimitiveType)
+                op.bodyParam.dataType += "JsonObject";
         }
-        
+
         if(bodyParam != null)
-					op.bodyParam.paramName = "value";
+            op.bodyParam.paramName = "value";
         op.vendorExtensions.put("x-call-sequence-method", getCallMethodSequence(method, path, op));
-        
+
         String pathForRouter = path.replaceAll("\\{(.*?)}", ":$1");
         op.vendorExtensions.put("x-codegen-iovnet-router-path", pathForRouter);
 
@@ -291,7 +288,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     }
     
     private List<Map<String, String>> getCallMethodSequence(String method, String path, CodegenOperation op){
-    	//this list will contain the sequence of method call
+        //this list will contain the sequence of method call
         List<Map<String,String>> l = new ArrayList<Map<String,String>>();
         
         //this list will contain the path element without name 
@@ -299,8 +296,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         
         //get the path element
         for(String retval : path.split("/")){
-        	if(retval.length() > 0 && retval.charAt(0) != '{')
-        		path_without_keys.add(retval);
+            if(retval.length() > 0 && retval.charAt(0) != '{')
+                path_without_keys.add(retval);
         }
         int len = path_without_keys.size(); 
         String objectName = null;
@@ -308,60 +305,60 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         CodegenParameter bodyParam = op.bodyParam;
         
         if(len > 0){
-        	for(int i = 0; i < len; i++){
-        		if(i == (len - 1) && !method.equals("update"))
-        			lastCall = true;
-        		String methodCall = null;
-        		Map<String, String> m = new HashMap<String, String>();
-        		List<String> method_parameters_name = new ArrayList<String>();
-        		//split the path in two substring, in particular we consider the second to get the params 
-        		//linked to the particular path element
-        		String[] st = path.split("/" + path_without_keys.get(i));	
+            for(int i = 0; i < len; i++){
+                if(i == (len - 1) && !method.equals("update"))
+                    lastCall = true;
+                String methodCall = null;
+                Map<String, String> m = new HashMap<String, String>();
+                List<String> method_parameters_name = new ArrayList<String>();
+                //split the path in two substring, in particular we consider the second to get the params 
+                //linked to the particular path element
+                String[] st = path.split("/" + path_without_keys.get(i));   
                 if(st.length <= 1)
                     break;
-				for(String str : st[1].split("/")){
-					//get each key name in the path until a new path element is reached 
-					if(str.length() > 2 && str.charAt(0) == '{'){
-						str = str.replaceAll("\\{(.*?)}", "$1");
-						method_parameters_name.add(toParamName(str));
-					}
-					else if(str.length() > 0)
-						break;	
-				}
-				int index = method_parameters_name.size();
-				//put the object name
-				m.put("varName", toVarName(path_without_keys.get(i)));
-				//if i == 0 the path element is the service
-				if(i == 0)
-					methodCall = "get_iomodule";
-				else if(lastCall && i != 1) //the last path element has a particular method basing on httpMethod
-					methodCall = path_without_keys.get(i-1) + "->" + method + toUpperCamelCase(path_without_keys.get(i));
-				else if(lastCall && i == 1)
-					methodCall = path_without_keys.get(i-1) + "." + method + toUpperCamelCase(path_without_keys.get(i));
-				else if(i == 1) //the second path element has a get method but called by .
-					methodCall = path_without_keys.get(i-1) + ".get" + toUpperCamelCase(path_without_keys.get(i));
-				else //the remaining methods are all get
-					methodCall = path_without_keys.get(i-1) + "->get" + toUpperCamelCase(path_without_keys.get(i));
-				methodCall += "(";
-				if(lastCall && bodyParam != null && op.operationId.contains("List"))
-					methodCall += "i";
-				else if(lastCall && bodyParam != null) //the last method call take only the body param 
-					methodCall += bodyParam.paramName;
-				else{
-					for(int j = 0; j < index; j++){ //take all the parameter for the method
-						methodCall = methodCall + method_parameters_name.get(j);
-						if(j < index - 1)
-							methodCall += ", ";
-					}
-				}
-				methodCall += ")";
-				//check if is the lastCall method and if the returnType is not primitive in order to call the toJsonObject() properly
-				if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive && !op.operationId.contains("List")){
-					if(i == 0)
-						methodCall += ".";
-					else
-						methodCall += "->";
-				}
+                for(String str : st[1].split("/")){
+                    //get each key name in the path until a new path element is reached 
+                    if(str.length() > 2 && str.charAt(0) == '{'){
+                        str = str.replaceAll("\\{(.*?)}", "$1");
+                        method_parameters_name.add(toParamName(str));
+                    }
+                    else if(str.length() > 0)
+                        break;  
+                }
+                int index = method_parameters_name.size();
+                //put the object name
+                m.put("varName", toVarName(path_without_keys.get(i)));
+                //if i == 0 the path element is the service
+                if(i == 0)
+                    methodCall = "get_iomodule";
+                else if(lastCall && i != 1) //the last path element has a particular method basing on httpMethod
+                    methodCall = path_without_keys.get(i-1) + "->" + method + toUpperCamelCase(path_without_keys.get(i));
+                else if(lastCall && i == 1)
+                    methodCall = path_without_keys.get(i-1) + "." + method + toUpperCamelCase(path_without_keys.get(i));
+                else if(i == 1) //the second path element has a get method but called by .
+                    methodCall = path_without_keys.get(i-1) + ".get" + toUpperCamelCase(path_without_keys.get(i));
+                else //the remaining methods are all get
+                    methodCall = path_without_keys.get(i-1) + "->get" + toUpperCamelCase(path_without_keys.get(i));
+                methodCall += "(";
+                if(lastCall && bodyParam != null && op.operationId.contains("List"))
+                    methodCall += "i";
+                else if(lastCall && bodyParam != null) //the last method call take only the body param 
+                    methodCall += bodyParam.paramName;
+                else{
+                    for(int j = 0; j < index; j++){ //take all the parameter for the method
+                        methodCall = methodCall + method_parameters_name.get(j);
+                        if(j < index - 1)
+                            methodCall += ", ";
+                    }
+                }
+                methodCall += ")";
+                //check if is the lastCall method and if the returnType is not primitive in order to call the toJsonObject() properly
+                if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive && !op.operationId.contains("List")){
+                    if(i == 0)
+                        methodCall += ".";
+                    else
+                        methodCall += "->";
+                }
 
                 if(methodCall.indexOf("get_iomodule") != -1){
                     m.put("methodCall", methodCall);
@@ -371,23 +368,23 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     m.put("methodCall", toLowerCamelCase(methodCall));
                 }
 
-				if(lastCall){
-				//mark the last method call, useful to determine if have to apply the return in template
-					m.put("lastCall", "true");
-					if(methodCall.contains("getAll") || methodCall.contains("delAll"))
-						m.put("noIteration", "true");	
-				}	
-				l.add(m);
-				//if the method is update and this is the last object call the update on the last element
-				if(method.equals("update") && i == (len - 1)){
-					Map<String, String> m2 = new HashMap<String, String>();
-					m2.put("varName", toVarName(path_without_keys.get(i)));
-					if(i == 0)
-						methodCall = toUpperCamelCase(path_without_keys.get(i)) + "." + method + "(" + bodyParam.paramName + ")";
-					else
-						methodCall = toUpperCamelCase(path_without_keys.get(i)) + "->" + method + "(" + bodyParam.paramName + ")";
+                if(lastCall){
+                //mark the last method call, useful to determine if have to apply the return in template
+                    m.put("lastCall", "true");
+                    if(methodCall.contains("getAll") || methodCall.contains("delAll"))
+                        m.put("noIteration", "true");   
+                }   
+                l.add(m);
+                //if the method is update and this is the last object call the update on the last element
+                if(method.equals("update") && i == (len - 1)){
+                    Map<String, String> m2 = new HashMap<String, String>();
+                    m2.put("varName", toVarName(path_without_keys.get(i)));
+                    if(i == 0)
+                        methodCall = toUpperCamelCase(path_without_keys.get(i)) + "." + method + "(" + bodyParam.paramName + ")";
+                    else
+                        methodCall = toUpperCamelCase(path_without_keys.get(i)) + "->" + method + "(" + bodyParam.paramName + ")";
 
-					if(methodCall.indexOf("get_iomodule") != -1){
+                    if(methodCall.indexOf("get_iomodule") != -1){
                         m2.put("methodCall", methodCall);
                     } else if(methodCall.toLowerCase().indexOf("get_ports") != -1){
                         m2.put("methodCall", methodCall.replaceAll("(?i)(get_ports)", "get_ports"));
@@ -395,63 +392,63 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         m2.put("methodCall", toLowerCamelCase(methodCall));
                     }
 
-					m2.put("lastCall", "true");
-					l.add(m2);
-				}
-    		}
+                    m2.put("lastCall", "true");
+                    l.add(m2);
+                }
+            }
         }
-    	return l;
+        return l;
     }
     
     @Override
     public CodegenProperty fromProperty(String name, Property p) {
-    	CodegenProperty property = super.fromProperty(name, p);
-    	property.getter = toLowerCamelCase("get"+ getterAndSetterCapitalize(name));
-    	property.setter = toLowerCamelCase("set"+ getterAndSetterCapitalize(name));
+        CodegenProperty property = super.fromProperty(name, p);
+        property.getter = toLowerCamelCase("get"+ getterAndSetterCapitalize(name));
+        property.setter = toLowerCamelCase("set"+ getterAndSetterCapitalize(name));
         property.nameInCamelCase = toUpperCamelCase(name);
         property.name = toLowerCamelCase(name);
 
-    	return property;
+        return property;
     }
 
-	@SuppressWarnings("unchecked")
-	@Override
+    @SuppressWarnings("unchecked")
+    @Override
     public Map<String, Object> postProcessModels(Map<String, Object> objs) {
-		List<Object> modelsList = (List<Object>) objs.get("models");
-		for(int i = 0; i < modelsList.size(); i++){		
-			Map<String, Object> models = (Map<String, Object>) modelsList.get(i);
-			CodegenModel model = (CodegenModel) models.get("model");
-			List<CodegenProperty> lp = model.vars;
-			for(CodegenProperty p : lp){
-				List<String> lenum = p._enum;//retrieve enum list
-				if(lenum != null){//if it is not empty
-					List<Map<String, String>> l = new ArrayList<Map<String, String>>(); 
-					for(int j = 0; j < lenum.size(); j++){
-						Map<String, String> mv = new HashMap<String, String>();
-						if(model.vendorExtensions.get("x-parent") == null && p.baseName.contains("type")){
-							p.datatype = "IOModuleType";
-							p.vendorExtensions.put("x-is-iomodule-type", "true");
-						}
-						else
-							p.datatype = model.name + p.nameInCamelCase;
-						mv.put("value", lenum.get(j).toUpperCase());//save the enum value
-						mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value 
-						l.add(mv);
-						if(j < lenum.size() - 1)
-							lenum.set(j, lenum.get(j).toUpperCase() + ",");//add comma if the value there are more values 
-						else
-							lenum.set(j, lenum.get(j).toUpperCase()); 
-					}
-					if(p.allowableValues != null)
-						p.allowableValues.put("values", l); //add allowable values to enum
-				}
-			}
-				
-		}
-		
+        List<Object> modelsList = (List<Object>) objs.get("models");
+        for(int i = 0; i < modelsList.size(); i++){     
+            Map<String, Object> models = (Map<String, Object>) modelsList.get(i);
+            CodegenModel model = (CodegenModel) models.get("model");
+            List<CodegenProperty> lp = model.vars;
+            for(CodegenProperty p : lp){
+                List<String> lenum = p._enum;//retrieve enum list
+                if(lenum != null){//if it is not empty
+                    List<Map<String, String>> l = new ArrayList<Map<String, String>>(); 
+                    for(int j = 0; j < lenum.size(); j++){
+                        Map<String, String> mv = new HashMap<String, String>();
+                        if(model.vendorExtensions.get("x-parent") == null && p.baseName.contains("type")){
+                            p.datatype = "IOModuleType";
+                            p.vendorExtensions.put("x-is-iomodule-type", "true");
+                        }
+                        else
+                            p.datatype = model.name + p.nameInCamelCase;
+                        mv.put("value", lenum.get(j).toUpperCase());//save the enum value
+                        mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value 
+                        l.add(mv);
+                        if(j < lenum.size() - 1)
+                            lenum.set(j, lenum.get(j).toUpperCase() + ",");//add comma if the value there are more values 
+                        else
+                            lenum.set(j, lenum.get(j).toUpperCase()); 
+                    }
+                    if(p.allowableValues != null)
+                        p.allowableValues.put("values", l); //add allowable values to enum
+                }
+            }
+                
+        }
+        
         return objs;
     }
-	
+    
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
@@ -468,48 +465,48 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             List<String> names = new ArrayList<String>();
             String var = null;
             //get varname to build enum name
-	    			if(op.vendorExtensions.get("x-call-sequence-method") != null){
-			  			for(Map<String, String> m : (List<Map<String, String>>)op.vendorExtensions.get("x-call-sequence-method")){
-			  				if(m.get("lastCall") == null)
-			  					names.add(m.get("varName"));
-			  				else
-			  					var = m.get("varName");
-			  			}
-			  		}
-			  		String name = null;//this string will store the enum name
-			  		if(names.size() > 1){
-			  				for(int i = 1; i < names.size(); i++){
-			  						if(name != null)
-			  								name += initialCaps(names.get(i));
-			  						else
-			  								name = initialCaps(names.get(i));
-			  				}
-			  		}
-			  		else if(names.size() == 1)
-			  				name = initialCaps(names.get(0));
+                    if(op.vendorExtensions.get("x-call-sequence-method") != null){
+                        for(Map<String, String> m : (List<Map<String, String>>)op.vendorExtensions.get("x-call-sequence-method")){
+                            if(m.get("lastCall") == null)
+                                names.add(m.get("varName"));
+                            else
+                                var = m.get("varName");
+                        }
+                    }
+                    String name = null;//this string will store the enum name
+                    if(names.size() > 1){
+                            for(int i = 1; i < names.size(); i++){
+                                    if(name != null)
+                                            name += initialCaps(names.get(i));
+                                    else
+                                            name = initialCaps(names.get(i));
+                            }
+                    }
+                    else if(names.size() == 1)
+                            name = initialCaps(names.get(0));
             if(op.bodyParam != null && op.bodyParam.vendorExtensions.get("x-is-enum") != null){
-				    	op.bodyParam.isEnum = true;
-				    	op.bodyParam.vendorExtensions.remove("x-is-enum");
-				    	op.bodyParam.vendorExtensions.put("x-enum-class", name + "JsonObject"); //enum  class name
-				    	op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
-				    	op.bodyParam.dataType = name + op.bodyParam.baseName; //enum dataType
-				    	if(op.bodyParam.dataType.equals(s)){
-				    		op.bodyParam.dataType = "IOModuleType";
-				    	}
-				    }
-				    
+                        op.bodyParam.isEnum = true;
+                        op.bodyParam.vendorExtensions.remove("x-is-enum");
+                        op.bodyParam.vendorExtensions.put("x-enum-class", name + "JsonObject"); //enum  class name
+                        op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
+                        op.bodyParam.dataType = name + op.bodyParam.baseName; //enum dataType
+                        if(op.bodyParam.dataType.equals(s)){
+                            op.bodyParam.dataType = "IOModuleType";
+                        }
+                    }
+                    
             if(op.responses != null){ //in case  the return type is enum
-				    	for(CodegenResponse r : op.responses){
-				    		if(r.vendorExtensions.get("x-is-enum") != null){
-					  			op.returnType = name + initialCaps(var);
-					  			if(op.returnType.equals(s))
-					  				op.returnType = "IOModuleType";
-					  			op.returnBaseType = initialCaps(var);
-					  			op.returnSimpleType = false; 
-					  			op.vendorExtensions.put("x-enum-class", name + "JsonObject");
-						  	}
-				    	}
-        		}
+                        for(CodegenResponse r : op.responses){
+                            if(r.vendorExtensions.get("x-is-enum") != null){
+                                op.returnType = name + initialCaps(var);
+                                if(op.returnType.equals(s))
+                                    op.returnType = "IOModuleType";
+                                op.returnBaseType = initialCaps(var);
+                                op.returnSimpleType = false; 
+                                op.vendorExtensions.put("x-enum-class", name + "JsonObject");
+                            }
+                        }
+                }
         }
 
         return objs;
@@ -538,7 +535,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
           supportingFiles.add(new SupportingFile("service-lib.mustache", "src", service_name_camel_case + "-lib.cpp"));
           supportingFiles.add(new SupportingFile("service-src-cmake.mustache", "src", "CMakeLists.txt"));
         }
-		
+        
         return objs;
     }
 
@@ -698,7 +695,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     
     @Override
     public String toModelFilename(String name) {
-    	//name = name.replace("Schema", "");
+        //name = name.replace("Schema", "");
         return initialCaps(name);
     }
 
@@ -720,26 +717,26 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         return toLowerCamelCase(newName);
     }
 
-	@Override
-	public void processSwagger(Swagger swagger) {
-    	File folder = new File(outputFolder + "/src");
-    	File[] listOfFiles = folder.listFiles();
-    	File interfaceFolder = new File(outputFolder + "/src/interface");
-    	interfaceFolder.mkdir();
-    	File modelFolder = new File(outputFolder + "/src/serializer");
-    	modelFolder.mkdir();
-    	File sourceFolder = new File(outputFolder + "/src/src");
-    	sourceFolder.mkdir();
-    	for(File f : listOfFiles){
-    		if(f.getName().contains("Interface.h")){
-    			f.renameTo(new File(outputFolder + "/src/interface/" + f.getName()));
-    		}
-    		else if(f.getName().contains("JsonObject.h") || f.getName().contains("JsonObject.cpp")){
-    			f.renameTo(new File(outputFolder + "/src/serializer/" + f.getName()));
-    		}
-    		else if(f.getName().contains("DefaultImpl.cpp") || f.getName().contains(".h"))
-    			f.renameTo(new File(outputFolder + "/src/src/" + f.getName()));
-    	}
+    @Override
+    public void processSwagger(Swagger swagger) {
+        File folder = new File(outputFolder + "/src");
+        File[] listOfFiles = folder.listFiles();
+        File interfaceFolder = new File(outputFolder + "/src/interface");
+        interfaceFolder.mkdir();
+        File modelFolder = new File(outputFolder + "/src/serializer");
+        modelFolder.mkdir();
+        File sourceFolder = new File(outputFolder + "/src/src");
+        sourceFolder.mkdir();
+        for(File f : listOfFiles){
+            if(f.getName().contains("Interface.h")){
+                f.renameTo(new File(outputFolder + "/src/interface/" + f.getName()));
+            }
+            else if(f.getName().contains("JsonObject.h") || f.getName().contains("JsonObject.cpp")){
+                f.renameTo(new File(outputFolder + "/src/serializer/" + f.getName()));
+            }
+            else if((f.getName().contains("DefaultImpl.cpp") || f.getName().contains(".h")) && !f.getName().contains("_dp.h"))
+                f.renameTo(new File(outputFolder + "/src/src/" + f.getName()));
+        }
     }
 
     @Override

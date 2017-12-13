@@ -5,7 +5,7 @@
 {{#models}}{{#model}}
 #include "{{classname}}.h"
 {{^vendorExtensions.x-parent}}
-#include "{{classname}}_dp.h"
+#include "../{{classname}}_dp.h"
 {{/vendorExtensions.x-parent}}
 
 {{#vars}}
