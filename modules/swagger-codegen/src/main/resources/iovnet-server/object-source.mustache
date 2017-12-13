@@ -40,6 +40,33 @@
 void {{classname}}::update(const {{classname}}JsonObject &conf) { 
 
   {{#vars}}
+  {{^required}}
+  {{^vendorExtensions.x-is-key}}
+  {{^isReadOnly}}
+  if(conf.{{name}}IsSet()){
+    {{^isNotContainer}}
+    for(auto &i : conf.{{getter}}()){ 
+      {{#vendorExtensions.x-key-list}}
+      auto {{varName}} = i.{{getter}}();
+      {{/vendorExtensions.x-key-list}}
+      auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+      m->update(i);
+    }
+    {{/isNotContainer}}
+    {{#isNotContainer}}
+    {{#isPrimitiveType}}
+    {{setter}}(conf.{{getter}}());
+    {{/isPrimitiveType}}
+    {{^isPrimitiveType}}
+    auto m = {{getter}}();
+    m->update(conf.{{getter}}());
+    {{/isPrimitiveType}}
+    {{/isNotContainer}}
+  }
+  {{/isReadOnly}}
+  {{/vendorExtensions.x-is-key}}
+  {{/required}}
+  {{#required}}
   {{^isNotContainer}}
   for(auto &i : conf.{{getter}}()){ 
     {{#vendorExtensions.x-key-list}}
@@ -52,18 +79,17 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
   {{#isNotContainer}}
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  if(conf.{{name}}IsSet()){
   {{#isPrimitiveType}}
-    {{setter}}(conf.{{getter}}());
+  {{setter}}(conf.{{getter}}());
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
-    auto m = {{getter}}();
-    m->update(conf.{{getter}}());
+  auto m = {{getter}}();
+  m->update(conf.{{getter}}());
   {{/isPrimitiveType}}
-  }
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isNotContainer}}
+  {{/required}}
   {{/vars}}
 }
 
