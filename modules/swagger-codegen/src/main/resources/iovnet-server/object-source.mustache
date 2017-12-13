@@ -5,21 +5,21 @@
 {{^vendorExtensions.x-parent}}
 #include "{{classname}}_dp.h"
 
-{{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}Schema &schema, IOModuleType type): IOModule(name, generate_code(), type){
+{{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type): IOModule(name, generate_code(), type){
   {{#vars}}
   {{^isNotContainer}}
-  for(auto &i : schema.{{getter}}())
+  for(auto &i : conf.{{getter}}())
       add{{nameInCamelCase}}(i);
   {{/isNotContainer}}
   {{#isNotContainer}} 
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  if(schema.{{name}}IsSet())
+  if(conf.{{name}}IsSet())
   {{#isPrimitiveType}}
-      {{setter}}(schema.{{getter}}());
+      {{setter}}(conf.{{getter}}());
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
-      add{{nameInCamelCase}}(schema.{{getter}}());
+      add{{nameInCamelCase}}(conf.{{getter}}());
   {{/isPrimitiveType}}
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
@@ -30,16 +30,16 @@
 {{/vendorExtensions.x-parent}}
 
 {{#vendorExtensions.x-parent}}
-{{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}Schema &schema): parent_(parent){{#vendorExtensions.x-classname-inherited}}, {{this}}(p){{/vendorExtensions.x-classname-inherited}} { }
+{{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf): parent_(parent){{#vendorExtensions.x-classname-inherited}}, {{this}}(p){{/vendorExtensions.x-classname-inherited}} { }
 {{/vendorExtensions.x-parent}}
 
 {{classname}}::~{{classname}}() { }
 
-void {{classname}}::update(const {{classname}}Schema &schema) { 
+void {{classname}}::update(const {{classname}}JsonObject &conf) { 
 
   {{#vars}}
   {{^isNotContainer}}
-  for(auto &i : schema.{{getter}}()){ 
+  for(auto &i : conf.{{getter}}()){ 
     {{#vendorExtensions.x-key-list}}
     auto {{varName}} = i.{{getter}}();
     {{/vendorExtensions.x-key-list}}
@@ -50,13 +50,13 @@ void {{classname}}::update(const {{classname}}Schema &schema) {
   {{#isNotContainer}}
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  if(schema.{{name}}IsSet()){
+  if(conf.{{name}}IsSet()){
   {{#isPrimitiveType}}
-    {{setter}}(schema.{{getter}}());
+    {{setter}}(conf.{{getter}}());
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
     auto m = {{getter}}();
-    m->update(schema.{{getter}}());
+    m->update(conf.{{getter}}());
   {{/isPrimitiveType}}
   }
   {{/isReadOnly}}
@@ -65,24 +65,24 @@ void {{classname}}::update(const {{classname}}Schema &schema) {
   {{/vars}}
 }
 
-{{classname}}Schema {{classname}}::toSchema(){
-  {{classname}}Schema schema;
+{{classname}}JsonObject {{classname}}::toJsonObject(){
+  {{classname}}JsonObject conf;
   
   {{#vars}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}
-  schema.{{setter}}({{getter}}());
+  conf.{{setter}}({{getter}}());
   {{/isPrimitiveType}}
   {{/isNotContainer}}
   {{/vars}}
   
   //add method call to complex object
   
-  return schema;
+  return conf;
 }
 
 {{#vendorExtensions.x-parent}}
-void {{classname}}::create({{{this}}} &parent, const {{classname}}Schema &schema){
+void {{classname}}::create({{{this}}} &parent, const {{classname}}JsonObject &conf){
   throw std::runtime_error("Method not implemented");
 }
 
@@ -107,28 +107,6 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
 
 
 {{#vars}}
-{{^isNotContainer}}
-std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
-  return {{complexType}}::getEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
-}
-
-std::vector<std::shared_ptr<{{complexType}}>> {{classname}}::getAll{{nameInCamelCase}}(){
-  return {{complexType}}::get(*this);
-}
-
-void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}Schema &conf){
-  {{complexType}}::create(*this, conf);
-}
-
-void {{classname}}::del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
-  {{complexType}}::removeEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
-}
-
-void {{classname}}::delAll{{nameInCamelCase}}(){
-  {{complexType}}::remove(*this);
-}
-
-{{/isNotContainer}}
 {{#isNotContainer}}
 
 {{#isPrimitiveType}}
@@ -140,25 +118,6 @@ void {{classname}}::delAll{{nameInCamelCase}}(){
 {{^isReadOnly}}
 void {{classname}}::{{setter}}(const {{{datatype}}} &value){
   throw std::runtime_error("Method not implemented");
-}
-
-{{/isReadOnly}}
-{{/vendorExtensions.x-is-key}}
-{{/isPrimitiveType}}
-
-{{^isPrimitiveType}}
-std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}(){
-  return {{complexType}}::getEntry(*this);
-}
-
-{{^vendorExtensions.x-is-key}}
-{{^isReadOnly}}
-void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}Schema &value){
-  {{complexType}}::create(*this, value); 
-}
-
-void {{classname}}::del{{nameInCamelCase}}(){
-  {{complexType}}::removeEntry(*this);
 }
 
 {{/isReadOnly}}

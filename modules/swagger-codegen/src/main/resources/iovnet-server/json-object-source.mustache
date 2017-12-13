@@ -4,13 +4,13 @@
 
 {{#models}}{{#model}}
 
-#include "{{classname}}Schema.h"
+#include "{{classname}}JsonObject.h"
 
 {{#modelNamespaceDeclarations}}
 namespace {{this}} {
 {{/modelNamespaceDeclarations}}
 
-{{classname}}Schema::{{classname}}Schema() {
+{{classname}}JsonObject::{{classname}}JsonObject() {
   {{#vars}}{{#isNotContainer}}{{#isPrimitiveType}}{{^isEnum}}m_{{name}} = {{{defaultValue}}};{{/isEnum}}
   {{/isPrimitiveType}}{{^isPrimitiveType}}{{#isString}}{{^isEnum}}m_{{name}} = {{{defaultValue}}};{{/isEnum}}
   {{/isString}}{{#isDateTime}}{{^isEnum}}m_{{name}} = {{{defaultValue}}};{{/isEnum}}
@@ -18,13 +18,13 @@ namespace {{this}} {
   {{/required}}{{/vars}}
 }
 
-{{classname}}Schema::~{{classname}}Schema() {}
+{{classname}}JsonObject::~{{classname}}JsonObject() {}
 
-void {{classname}}Schema::validate() {
+void {{classname}}JsonObject::validate() {
   // TODO: implement validation
 }
 
-nlohmann::json {{classname}}Schema::toJson() const {
+nlohmann::json {{classname}}JsonObject::toJson() const {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^required}}if(m_{{name}}IsSet) {
@@ -36,7 +36,7 @@ nlohmann::json {{classname}}Schema::toJson() const {
   {
     nlohmann::json jsonArray;
     for (auto& item : m_{{name}}) {
-      jsonArray.push_back(ModelBase::toJson(item));
+      jsonArray.push_back(JsonObjectBase::toJson(item));
     }
     {{#required}}val["{{baseName}}"] = jsonArray;
     {{/required}}{{^required}}
@@ -46,15 +46,15 @@ nlohmann::json {{classname}}Schema::toJson() const {
     {{/required}}
   }
   {{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}{{^required}}if(m_{{name}}IsSet) {
-      val["{{baseName}}"] = ModelBase::toJson(m_{{name}});
+      val["{{baseName}}"] = JsonObjectBase::toJson(m_{{name}});
   }
-  {{/required}}{{#required}}val["{{baseName}}"] = ModelBase::toJson(m_{{name}});
+  {{/required}}{{#required}}val["{{baseName}}"] = JsonObjectBase::toJson(m_{{name}});
   {{/required}}{{/isPrimitiveType}}{{/isListContainer}}{{/vars}}
 
   return val;
 }
 
-void {{classname}}Schema::fromJson(nlohmann::json& val) {
+void {{classname}}JsonObject::fromJson(nlohmann::json& val) {
   {{#vars}}
   {{#isPrimitiveType}}{{^isListContainer}}
   {{^required}}
@@ -73,7 +73,7 @@ void {{classname}}Schema::fromJson(nlohmann::json& val) {
       {{/isPrimitiveType}}{{^isPrimitiveType}}{{#items.isString}}m_{{name}}.push_back(item);
       {{/items.isString}}{{^items.isString}}{{#items.isDateTime}}m_{{name}}.push_back(item);
       {{/items.isDateTime}}{{^items.isDateTime}}
-      {{{items.datatype}}}Schema newItem;
+      {{{items.datatype}}}JsonObject newItem;
       newItem.fromJson(item);
       m_{{name}}.push_back(newItem);
       {{/items.isDateTime}}{{/items.isString}}{{/isPrimitiveType}}
@@ -85,7 +85,7 @@ void {{classname}}Schema::fromJson(nlohmann::json& val) {
       {{/isString}}{{^isString}}{{#isDateTime}}{{setter}}(val.at("{{baseName}}"));
       {{/isDateTime}}{{^isDateTime}}
       if (!val["{{baseName}}"].is_null()) {
-          {{{datatype}}}Schema newItem;
+          {{{datatype}}}JsonObject newItem;
           newItem.fromJson(val["{{baseName}}"]);
           {{setter}}(newItem);
       }
@@ -97,7 +97,7 @@ void {{classname}}Schema::fromJson(nlohmann::json& val) {
   {{/vars}}
 }
 
-nlohmann::json {{classname}}Schema::getKeys() {
+nlohmann::json {{classname}}JsonObject::getKeys() {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}
@@ -121,7 +121,7 @@ nlohmann::json {{classname}}Schema::getKeys() {
   return val;
 }
 
-nlohmann::json {{classname}}Schema::getElements() {
+nlohmann::json {{classname}}JsonObject::getElements() {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}
@@ -149,7 +149,7 @@ nlohmann::json {{classname}}Schema::getElements() {
   return val;
 }
 
-nlohmann::json {{classname}}Schema::getWritableLeafs() {
+nlohmann::json {{classname}}JsonObject::getWritableLeafs() {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}
@@ -177,7 +177,7 @@ nlohmann::json {{classname}}Schema::getWritableLeafs() {
   return val;
 }
 
-nlohmann::json {{classname}}Schema::getComplexElements() {
+nlohmann::json {{classname}}JsonObject::getComplexElements() {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}
@@ -197,31 +197,31 @@ nlohmann::json {{classname}}Schema::getComplexElements() {
   return val;
 }
 
-{{#vars}}{{^isNotContainer}}const std::vector<{{complexType}}Schema>& {{classname}}Schema::{{getter}}() const{
+{{#vars}}{{^isNotContainer}}const std::vector<{{complexType}}JsonObject>& {{classname}}JsonObject::{{getter}}() const{
   return m_{{name}};
 }
 
-{{/isNotContainer}}{{#isNotContainer}}{{{datatype}}}{{^isPrimitiveType}}Schema{{/isPrimitiveType}} {{classname}}Schema::{{getter}}() const {
+{{/isNotContainer}}{{#isNotContainer}}{{{datatype}}}{{^isPrimitiveType}}JsonObject{{/isPrimitiveType}} {{classname}}JsonObject::{{getter}}() const {
   return m_{{name}};
 }
 
-void {{classname}}Schema::{{setter}}({{{datatype}}}{{^isPrimitiveType}}Schema{{/isPrimitiveType}} value) {
+void {{classname}}JsonObject::{{setter}}({{{datatype}}}{{^isPrimitiveType}}JsonObject{{/isPrimitiveType}} value) {
   m_{{name}} = value;
   {{^required}}m_{{name}}IsSet = true;{{/required}}
 }
 {{/isNotContainer}}
 
-{{^required}}bool {{classname}}Schema::{{baseName}}IsSet() const {
+{{^required}}bool {{classname}}JsonObject::{{name}}IsSet() const {
   return m_{{name}}IsSet;
 }
 
-void {{classname}}Schema::unset{{nameInCamelCase}}() {
+void {{classname}}JsonObject::unset{{nameInCamelCase}}() {
   m_{{name}}IsSet = false;
 }
 {{/required}}
 {{#isEnum}}
 
-std::string {{classname}}Schema::enum{{nameInCamelCase}}_to_string(const {{{datatype}}} &value){
+std::string {{classname}}JsonObject::enum{{nameInCamelCase}}_to_string(const {{{datatype}}} &value){
 	switch(value){
 		{{#allowableValues.values}}
 		case {{{datatype}}}::{{value}}:
@@ -232,9 +232,9 @@ std::string {{classname}}Schema::enum{{nameInCamelCase}}_to_string(const {{{data
 	}
 }
 
-{{{datatype}}} {{classname}}Schema::string_to_enum{{nameInCamelCase}}(const std::string &str){
+{{{datatype}}} {{classname}}JsonObject::string_to_enum{{nameInCamelCase}}(const std::string &str){
 	{{#allowableValues.values}}
-	if(str == "{{stringValue}}")
+	if(JsonObjectBase::iequals("{{stringValue}}", str))
 		return {{{datatype}}}::{{value}};
 	{{/allowableValues.values}}
 	throw std::runtime_error("{{classname}} {{name}} is invalid");

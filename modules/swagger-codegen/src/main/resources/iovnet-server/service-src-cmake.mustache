@@ -1,12 +1,15 @@
-aux_source_directory(model MODEL_SOURCES)
+aux_source_directory(serializer SERIALIZER_SOURCES)
 aux_source_directory(api API_SOURCES)
+aux_source_directory(src SRC_SOURCES)
 
-include_directories(model)
+include_directories(serializer)
 include_directories(interface)
+include_directories(src)
 
 add_library(iov-{{serviceNameLowerCase}} SHARED
-  ${MODEL_SOURCES}
+  ${SERIALIZER_SOURCES}
   ${API_SOURCES}
+  ${SRC_SOURCES}
   {{#models}}{{#model}}
   {{classname}}.cpp
   {{/model}}{{/models}}	

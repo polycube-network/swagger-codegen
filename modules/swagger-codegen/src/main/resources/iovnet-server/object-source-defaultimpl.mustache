@@ -1,0 +1,54 @@
+{{>licenseInfo}}
+
+{{#models}}{{#model}}
+#include "{{classname}}.h"
+{{^vendorExtensions.x-parent}}
+#include "{{classname}}_dp.h"
+{{/vendorExtensions.x-parent}}
+
+{{#vars}}
+{{^isNotContainer}}
+std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
+  return {{complexType}}::getEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+}
+
+std::vector<std::shared_ptr<{{complexType}}>> {{classname}}::getAll{{nameInCamelCase}}(){
+  return {{complexType}}::get(*this);
+}
+
+void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}JsonObject &conf){
+  {{complexType}}::create(*this, conf);
+}
+
+void {{classname}}::del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
+  {{complexType}}::removeEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+}
+
+void {{classname}}::delAll{{nameInCamelCase}}(){
+  {{complexType}}::remove(*this);
+}
+
+{{/isNotContainer}}
+{{#isNotContainer}}
+{{^isPrimitiveType}}
+std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}(){
+  return {{complexType}}::getEntry(*this);
+}
+
+{{^vendorExtensions.x-is-key}}
+{{^isReadOnly}}
+void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}JsonObject &value){
+  {{complexType}}::create(*this, value); 
+}
+
+void {{classname}}::del{{nameInCamelCase}}(){
+  {{complexType}}::removeEntry(*this);
+}
+
+{{/isReadOnly}}
+{{/vendorExtensions.x-is-key}}
+{{/isPrimitiveType}}
+{{/isNotContainer}}
+{{/vars}}
+
+{{/model}}{{/models}}

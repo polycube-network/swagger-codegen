@@ -3,7 +3,7 @@
 #pragma once
 
 {{#models}}{{#model}}
-#include "interface/{{classname}}Interface.h"
+#include "../interface/{{classname}}Interface.h"
 
 {{#vendorExtensions.x-inherits-from}}
 #include "iovnet/services/iomodule.h"
@@ -27,10 +27,10 @@ using iovnet::service::IOModuleType;
 class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{/vendorExtensions.x-inherits-from}}public {{classname}}Interface {
 public:
   {{^vendorExtensions.x-parent}}
-  {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}Schema &schema, IOModuleType type = IOModuleType::TYPE_CLS);
+  {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type = IOModuleType::TYPE_CLS);
   {{/vendorExtensions.x-parent}}
   {{#vendorExtensions.x-parent}}
-  {{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}Schema &schema);
+  {{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf);
   {{/vendorExtensions.x-parent}}
   virtual ~{{classname}}();
   {{^vendorExtensions.x-parent}}
@@ -40,7 +40,7 @@ public:
   {{/vendorExtensions.x-parent}}
 
   {{#vendorExtensions.x-parent}}
-  static void create({{{this}}} &parent, const {{classname}}Schema &schema);
+  static void create({{{this}}} &parent, const {{classname}}JsonObject &conf);
   static std::shared_ptr<{{classname}}> getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
   static void removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
   {{#vendorExtensions.x-is-list}}
@@ -49,8 +49,8 @@ public:
   {{/vendorExtensions.x-is-list}}
   {{/vendorExtensions.x-parent}}
   
-  void update(const {{classname}}Schema &schema) override;
-  {{classname}}Schema toSchema() override;
+  void update(const {{classname}}JsonObject &conf) override;
+  {{classname}}JsonObject toJsonObject() override;
   {{#vars}}
   
   /// <summary>
@@ -59,7 +59,7 @@ public:
   {{^isNotContainer}}
   std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
   std::vector<std::shared_ptr<{{complexType}}>> getAll{{nameInCamelCase}}() override;
-  void add{{nameInCamelCase}}(const {{complexType}}Schema &conf) override;
+  void add{{nameInCamelCase}}(const {{complexType}}JsonObject &conf) override;
   void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
   void delAll{{nameInCamelCase}}() override;
   {{/isNotContainer}}
@@ -76,7 +76,7 @@ public:
   std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}() override;
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  void add{{nameInCamelCase}}(const {{complexType}}Schema &value) override;
+  void add{{nameInCamelCase}}(const {{complexType}}JsonObject &value) override;
   void del{{nameInCamelCase}}() override;
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}

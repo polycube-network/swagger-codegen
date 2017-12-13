@@ -64,16 +64,16 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
       switch (request.help_type()) {
         case HelpType::SHOW:
           #ifdef NODE_IS_LIST_CONTAINER
-          val["params"] = {{baseType}}Schema::getKeys();
+          val["params"] = {{baseType}}JsonObject::getKeys();
           val["elements"] = {{operationIdSnakeCase}}_get_list();
           #else // element is complex
-          val["params"] = {{baseType}}Schema::getElements();
+          val["params"] = {{baseType}}JsonObject::getElements();
           #endif
         break;
 
         case HelpType::ADD:
           #ifdef NODE_IS_LIST_CONTAINER
-          val["params"] = {{baseType}}Schema::getKeys();
+          val["params"] = {{baseType}}JsonObject::getKeys();
           #else
           response.send(iovnet::service::Http::Code::Bad_Request);
           return;
@@ -82,7 +82,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
 
         case HelpType::SET:
           #ifndef NODE_IS_LIST_CONTAINER
-          val["params"] = {{baseType}}Schema::getWritableLeafs();
+          val["params"] = {{baseType}}JsonObject::getWritableLeafs();
           # else
           response.send(iovnet::service::Http::Code::Bad_Request);
           return;
@@ -91,7 +91,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
 
         case HelpType::DEL:
           #ifdef NODE_IS_LIST_CONTAINER
-          val["params"] = {{baseType}}Schema::getKeys();
+          val["params"] = {{baseType}}JsonObject::getKeys();
           val["elements"] = {{operationIdSnakeCase}}_get_list();
           #else
           response.send(iovnet::service::Http::Code::Bad_Request);
@@ -103,12 +103,12 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
           #ifdef NODE_IS_LIST_CONTAINER
           auto cmds = {"add", "del", "show"};
           val["commands"] = cmds;
-          val["params"] = {{baseType}}Schema::getKeys();
+          val["params"] = {{baseType}}JsonObject::getKeys();
           val["elements"] = {{operationIdSnakeCase}}_get_list();
           #else // complex type
           auto cmds = {"set", "show"};
           val["commands"] = cmds;
-          val["params"] = {{baseType}}Schema::getComplexElements();
+          val["params"] = {{baseType}}JsonObject::getComplexElements();
           #endif
         break;
       }
