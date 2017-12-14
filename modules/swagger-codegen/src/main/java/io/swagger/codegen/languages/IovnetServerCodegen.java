@@ -64,7 +64,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
 
         languageSpecificPrimitives = new HashSet<String>(
-                Arrays.asList("int", "char", "bool", "long", "float", "double", "int32_t", "int64_t", "std::string"));
+                Arrays.asList("int", "char", "bool", "long", "float", "double", "int8_t", "int16_t", "uint8_t", "uint16_t", "uint32_t", "int32_t", "int64_t", "std::string"));
 
         typeMapping = new HashMap<String, String>();
         typeMapping.put("date", "std::string");
@@ -165,8 +165,11 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 		    		l.get(i).put("varName", toVarName(l.get(i).get("name"))); //used in update method
                     l.get(i).put("getter", toLowerCamelCase("get_" + l.get(i).get("varName")));
                     l.get(i).put("setter", toLowerCamelCase("set_" + l.get(i).get("varName")));
-        			if(l.get(i).get("type").equals("integer"))
-        				l.get(i).put("type", "int32_t");
+        			if(l.get(i).get("type").equals("integer")){
+        			  String format = l.get(i).get("format");
+        				l.get(i).put("type", format + "_t");
+        				
+        			}
         			if(l.get(i).get("type").equals("string"))
         				l.get(i).put("type", "std::string");
         		}
@@ -535,34 +538,6 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
           supportingFiles.add(new SupportingFile("service-lib.mustache", "src", service_name_camel_case + "-lib.cpp"));
           supportingFiles.add(new SupportingFile("service-src-cmake.mustache", "src", "CMakeLists.txt"));
         }
-		/*
-		List<Object> modelsList = (List<Object>) objs.get("models");
-		for(int i = 0; i < modelsList.size(); i++){		
-			Map<String, Object> models = (Map<String, Object>) modelsList.get(i);
-			CodegenModel model = (CodegenModel) models.get("model");
-			//supportingFiles.add(new SupportingFile("interface.mustache", "src/interface", model.name + "Interface.h"));
-			List<CodegenProperty> vars = (List<CodegenProperty>) model.vars;
-			for(CodegenProperty var : vars){
-				if(var.isContainer){
-					for(int j = 0; j < modelsList.size(); j++){		
-						Map<String, Object> ml = (Map<String, Object>) modelsList.get(j);
-						CodegenModel m = (CodegenModel) ml.get("model");
-						if(m.name.equals(var.name)){
-							List<String> keysType = new ArrayList<String>();
-							List<CodegenProperty> vs = (List<CodegenProperty>) m.vars;
-							for(CodegenProperty v : vs){
-								if(v.vendorExtensions.get("x-is-key") != null){
-									if((boolean)v.vendorExtensions.get("x-is-key")){
-										keysType.add(v.datatype);	
-									}	
-								}
-							}
-							var.vendorExtensions.put("x-keys-type", keysType);
-						}	
-					}
-				}	
-			}
-		}	*/
 		
         return objs;
     }
@@ -696,6 +671,11 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     public String getSwaggerType(Property p) {
         String swaggerType = super.getSwaggerType(p);
         String type = null;
+        if(swaggerType.equals("integer")){
+          String format = p.getFormat();
+          type = format + "_t";
+          return type; 
+        }
         if (typeMapping.containsKey(swaggerType)) {
             type = typeMapping.get(swaggerType);
             if (languageSpecificPrimitives.contains(type))
