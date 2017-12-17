@@ -104,10 +104,6 @@ void {{classname}}Impl::replace_{{classVarName}}_ports_list_by_id(const std::str
   throw std::runtime_error("Method not supported");
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
-  throw std::runtime_error("Method not supported");
-}
-
 void {{classname}}Impl::delete_{{classVarName}}_ports_list_by_id(const std::string &name) {
   throw std::runtime_error("Method not supported");
 }
@@ -125,14 +121,10 @@ PortsJsonObject {{classname}}Impl::read_{{classVarName}}_ports_by_id(const std::
   return m.getPorts(portsName)->toJsonObject();
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
+void {{classname}}Impl::replace_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
   auto &&m = get_iomodule(name);
   auto &&p = m.getPorts(portsName);
   p->update(ports);
-}
-
-void {{classname}}Impl::replace_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
-  throw std::runtime_error("Method not supported");
 }
 
 void {{classname}}Impl::delete_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
@@ -158,13 +150,13 @@ std::string {{classname}}Impl::read_{{classVarName}}_ports_uuid_by_id(const std:
   return p->getUuid();
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName, const std::string &peer) {
+void {{classname}}Impl::replace_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName, const std::string &peer) {
   auto &&m = get_iomodule(name);
   auto &&p = m.getPorts(portsName);
   p->setPeer(peer);
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName, const PortsStatus &status) {
+void {{classname}}Impl::replace_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName, const PortsStatus &status) {
   auto &&m = get_iomodule(name);
   auto &&p = m.getPorts(portsName);
   p->setStatus(status);

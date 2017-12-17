@@ -218,7 +218,10 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         }
         else if(op.httpMethod.equals("PUT")){
             op.vendorExtensions.put("x-response-code", "Ok");
-            method = "update";
+            if(bodyParam != null && bodyParam.isPrimitiveType)
+                method = "set";
+            else if(bodyParam != null)
+                method = "update";
         }
         else if(op.httpMethod.equals("PATCH")){
             op.vendorExtensions.put("x-response-code", "Ok");
@@ -426,13 +429,18 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     for(int j = 0; j < lenum.size(); j++){
                         Map<String, String> mv = new HashMap<String, String>();
                         if(model.vendorExtensions.get("x-parent") == null && p.baseName.contains("type")){
+                            mv.put("stringValue", lenum.get(j).toLowerCase());//here because if it is TYPE_TC the string value must be type_tc and no type_cls 
+                            if(lenum.get(j).equals("TYPE_TC")){
+                              lenum.set(j, "TYPE_CLS");
+                            }  
                             p.datatype = "IOModuleType";
                             p.vendorExtensions.put("x-is-iomodule-type", "true");
                         }
-                        else
+                        else{
                             p.datatype = model.name + p.nameInCamelCase;
+                            mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value 
+                        }
                         mv.put("value", lenum.get(j).toUpperCase());//save the enum value
-                        mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value 
                         l.add(mv);
                         if(j < lenum.size() - 1)
                             lenum.set(j, lenum.get(j).toUpperCase() + ",");//add comma if the value there are more values 

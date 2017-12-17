@@ -3,7 +3,7 @@
 //Modify these methods with your own implementation
 
 {{#models}}{{#model}}
-#include "src/{{classname}}.h"
+#include "{{classname}}.h"
 {{^vendorExtensions.x-parent}}
 #include "{{classname}}_dp.h"
 
@@ -38,6 +38,9 @@
 {{classname}}::~{{classname}}() { }
 
 void {{classname}}::update(const {{classname}}JsonObject &conf) { 
+
+  //This method updates all the object/parameter in {{classname}} object.
+  //You can modify this implementation.
 
   {{#vars}}
   {{^required}}
@@ -112,23 +115,41 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
 
 {{#vendorExtensions.x-parent}}
 void {{classname}}::create({{{this}}} &parent, const {{classname}}JsonObject &conf){
+  
+  //This method creates the actual {{classname}} object. 
+  //Please remember to call here the create static method for all sub-objects of {{classname}}.
+  
   throw std::runtime_error("Method not implemented");
 }
 
 std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
+  
+  //This method retrieves the pointer to {{classname}} object specified by its keys.
+  
   throw std::runtime_error("Method not implemented");
 }
 
 void {{classname}}::removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
+  
+  //This method removes the single {{classname}} object specified by its keys.
+  //Remember to call here the remove static method for all-sub-objects of {{classname}}.
+  
   throw std::runtime_error("Method not implemented");
 }
 
 {{#vendorExtensions.x-is-list}}
 std::vector<std::shared_ptr<{{classname}}>> {{classname}}::get({{vendorExtensions.x-parent}} &parent){
+  
+  //This methods get the pointers to all the {{classname}} objects in {{vendorExtensions.x-parent}}.
+  
   throw std::runtime_error("Method not implemented");
 }
 
 void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
+
+  //This method removes all {{classname}} objects in {{vendorExtensions.x-parent}}.
+  //Remember to call here the remove static method for all-sub-objects of {{classname}}.
+
   throw std::runtime_error("Method not implemented");
 }
 {{/vendorExtensions.x-is-list}}
@@ -140,12 +161,18 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
 
 {{#isPrimitiveType}}
 {{{datatype}}} {{classname}}::{{getter}}(){
+  
+  //This method retrieves the {{name}} value.  
+  
   throw std::runtime_error("Method not implemented");
 }
 
 {{^vendorExtensions.x-is-key}}
 {{^isReadOnly}}
 void {{classname}}::{{setter}}(const {{{datatype}}} &value){
+  
+  //This method set the {{name}} value.
+
   throw std::runtime_error("Method not implemented");
 }
 
