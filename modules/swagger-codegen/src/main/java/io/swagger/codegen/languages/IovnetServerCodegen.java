@@ -221,7 +221,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             if(bodyParam != null && bodyParam.isPrimitiveType)
                 method = "set";
             else if(bodyParam != null)
-                method = "update";
+                method = "replace";
         }
         else if(op.httpMethod.equals("PATCH")){
             op.vendorExtensions.put("x-response-code", "Ok");
@@ -345,7 +345,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 methodCall += "(";
                 if(lastCall && bodyParam != null && op.operationId.contains("List"))
                     methodCall += "i";
-                else if(lastCall && bodyParam != null) //the last method call take only the body param 
+                else if(lastCall && bodyParam != null && !method.equals("replace")) //the last method call take only the body param, but if the method is replace need also the keys
                     methodCall += bodyParam.paramName;
                 else{
                     for(int j = 0; j < index; j++){ //take all the parameter for the method
@@ -354,6 +354,11 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                             methodCall += ", ";
                     }
                 }
+                if(method.equals("replace") && lastCall){
+                  if(index != 0) //if there are keys index is != 0
+                    methodCall += ", ";
+                  methodCall += bodyParam.paramName;
+                }  
                 methodCall += ")";
                 //check if is the lastCall method and if the returnType is not primitive in order to call the toJsonObject() properly
                 if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive && !op.operationId.contains("List")){
