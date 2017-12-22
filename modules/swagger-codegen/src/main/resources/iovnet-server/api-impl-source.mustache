@@ -58,7 +58,7 @@ void {{classname}}Impl::create_{{classVarName}}_by_id(const std::string &name, c
   }
 }
 
-void {{classname}}Impl::replace_{{classVarName}}_by_id(const std::string &name, const BridgeJsonObject &bridge){
+void {{classname}}Impl::replace_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &bridge){
   throw std::runtime_error("Method not supported!");
 }
 
