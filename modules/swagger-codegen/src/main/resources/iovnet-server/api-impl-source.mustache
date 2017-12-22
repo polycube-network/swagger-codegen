@@ -112,6 +112,10 @@ void {{classname}}Impl::delete_{{classVarName}}_ports_list_by_id(const std::stri
   throw std::runtime_error("Method not supported");
 }
 
+std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id_get_list() {
+    return std::vector<std::string>();
+}
+
 /*
 * Ports related functions
 */
@@ -213,6 +217,17 @@ void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::st
 	{{/vendorExtensions.x-is-list-update}}
 }
 
+{{#vendorExtensions.x-is-list}}
+{{^bodyParams}}
+{{#responses}}
+{{^primitiveType}}
+std::vector<std::string> {{classname}}Impl::{{operationIdSnakeCase}}_get_list() {
+    return std::vector<std::string>();
+}
+{{/primitiveType}}
+{{/responses}}
+{{/bodyParams}}
+{{/vendorExtensions.x-is-list}}
 {{/vendorExtensions.x-has-default-impl}}
 {{/operation}}
 
