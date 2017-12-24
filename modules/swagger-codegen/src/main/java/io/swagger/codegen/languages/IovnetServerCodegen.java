@@ -170,8 +170,14 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         l.get(i).put("type", format + "_t");
                         
                     }
-                    if(l.get(i).get("type").equals("string"))
-                        l.get(i).put("type", "std::string");
+                    if(l.get(i).get("type").equals("string")){
+                        if(l.get(i).get("isEnum") != null){
+                            String enumType = cp.nameInCamelCase + toUpperCamelCase(l.get(i).get("name"));
+                            l.get(i).put("type", enumType);
+                        } 
+                        else   
+                          l.get(i).put("type", "std::string");
+                    }
                 }
             }
         }
@@ -259,6 +265,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
         if(bodyParam != null)
             op.bodyParam.paramName = "value";
+            
         op.vendorExtensions.put("x-call-sequence-method", getCallMethodSequence(method, path, op));
 
         String pathForRouter = path.replaceAll("\\{(.*?)}", ":$1");
@@ -480,6 +487,19 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             //get varname to build enum name
                     if(op.vendorExtensions.get("x-call-sequence-method") != null){
                         for(Map<String, String> m : (List<Map<String, String>>)op.vendorExtensions.get("x-call-sequence-method")){
+                            for(CodegenParameter cp : op.allParams){
+                                if(cp.isEnum && m.get("methodCall").contains(cp.baseName)){
+                                    cp.baseName = initialCaps(cp.baseName);
+                                    cp.dataType = initialCaps(m.get("varName")) + cp.baseName; //enum dataType 
+                                }
+                            }
+                            for(CodegenParameter cp : op.pathParams){
+                                if(cp.isEnum && m.get("methodCall").contains(cp.baseName)){
+                                    cp.baseName = initialCaps(cp.baseName);
+                                    cp.datatypeWithEnum = initialCaps(m.get("varName")) + "JsonObject"; //enum dataType 
+                                }
+                            }
+                            
                             if(m.get("lastCall") == null)
                                 names.add(m.get("varName"));
                             else

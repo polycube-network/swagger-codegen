@@ -40,14 +40,17 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
   {{#hasPathParams}}
   // Getting the path params
   {{#pathParams}}
-  auto {{paramName}} = request.param(":{{baseName}}").as<{{dataType}}>();
+  auto {{paramName}} = request.param(":{{paramName}}").as<{{dataType}}>();
+  {{#isEnum}}
+  auto {{paramName}}_ = {{datatypeWithEnum}}::string_to_enum{{baseName}}({{paramName}}); 
+  {{/isEnum}}
   {{/pathParams}}
   {{/hasPathParams}}
 
   {{#hasBodyParam}}
   // Getting the body param
   {{#bodyParam}}
-  {{{dataType}}} {{paramName}};
+  {{{dataType}}} {{paramName}}{{#isEnum}}_{{/isEnum}};
   {{/bodyParam}}
   {{/hasBodyParam}}
 
@@ -130,11 +133,11 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     for (auto &j : request_body) {
       {{baseType}} a;
       a.fromJson(j);
-      {{paramName}}.push_back(a);
+      {{paramName}}{{#isEnum}}_{{/isEnum}}.push_back(a);
     }
     {{/isListContainer}}
     {{^isListContainer}}
-    {{paramName}}.fromJson(request_body);
+    {{paramName}}{{#isEnum}}_{{/isEnum}}.fromJson(request_body);
     {{/isListContainer}}
     {{/isPrimitiveType}}
     {{#isPrimitiveType}}
@@ -143,14 +146,14 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{paramName}} = request_body;
     {{/isEnum}}
     {{#isEnum}}
-    {{paramName}} = {{vendorExtensions.x-enum-class}}::string_to_enum{{baseName}}(request_body);
+    {{paramName}}_ = {{vendorExtensions.x-enum-class}}::string_to_enum{{baseName}}(request_body);
     {{/isEnum}}
     {{/isPrimitiveType}}
     {{/bodyParam}}
     {{/hasBodyParam}}
     {{#returnType}}
 
-    auto x = {{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
+    auto x = {{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
     nlohmann::json response_body;
     {{#returnTypeIsPrimitive}}
     {{#returnSimpleType}}
@@ -175,7 +178,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{/returnType}}
     {{^returnType}}
 
-    {{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
+    {{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
     response.send(iovnet::service::Http::Code::{{vendorExtensions.x-response-code}});
     {{/returnType}}
   }
