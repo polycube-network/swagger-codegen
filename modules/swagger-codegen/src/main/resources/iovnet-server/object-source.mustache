@@ -113,6 +113,20 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
   return conf;
 }
 
+{{^vendorExtensions.x-parent}}
+std::string {{classname}}::generate_code(){
+  throw std::runtime_error("Method not implemented");
+}
+
+std::vector<std::string> {{classname}}::generate_code_vector(){
+  throw std::runtime_error("Method not implemented");
+}
+
+void {{classname}}::packet_in(iovnet::service::Port &port, iovnet::service::PacketInMetadata &md, const std::vector<uint8_t> &packet){
+  throw std::runtime_error("Method not implemented");
+}
+
+{{/vendorExtensions.x-parent}}
 {{#vendorExtensions.x-parent}}
 void {{classname}}::create({{{this}}} &parent, const {{classname}}JsonObject &conf){
   
