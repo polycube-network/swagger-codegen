@@ -82,8 +82,8 @@ public:
   {{/required}}
 	{{#isEnum}}
   
-  static std::string enum{{nameInCamelCase}}_to_string(const {{{datatype}}} &value);
-  static {{{datatype}}} string_to_enum{{nameInCamelCase}}(const std::string &str);
+  static std::string {{{datatype}}}_to_string(const {{{datatype}}} &value);
+  static {{{datatype}}} string_to_{{{datatype}}}(const std::string &str);
   {{/isEnum}}
   {{/vars}}
 protected:
