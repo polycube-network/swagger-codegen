@@ -172,7 +172,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     }
                     if(l.get(i).get("type").equals("string")){
                         if(l.get(i).get("isEnum") != null){
-                            String enumType = cp.nameInCamelCase + toUpperCamelCase(l.get(i).get("name"));
+                            String enumType = cp.nameInCamelCase + toUpperCamelCase(l.get(i).get("name")) + "Enum";
                             l.get(i).put("type", enumType);
                         } 
                         else   
@@ -449,7 +449,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                             p.vendorExtensions.put("x-is-iomodule-type", "true");
                         }
                         else{
-                            p.datatype = model.name + p.nameInCamelCase;
+                            p.datatype = model.name + p.nameInCamelCase + "Enum";
                             mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value 
                         }
                         mv.put("value", lenum.get(j).toUpperCase());//save the enum value
@@ -488,15 +488,20 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     if(op.vendorExtensions.get("x-call-sequence-method") != null){
                         for(Map<String, String> m : (List<Map<String, String>>)op.vendorExtensions.get("x-call-sequence-method")){
                             for(CodegenParameter cp : op.allParams){
-                                if(cp.isEnum && m.get("methodCall").contains(cp.baseName)){
+                                if(cp.isEnum && m.get("methodCall").contains(cp.paramName)){
                                     cp.baseName = initialCaps(cp.baseName);
-                                    cp.dataType = initialCaps(m.get("varName")) + cp.baseName; //enum dataType 
+                                    if(cp.paramName.contains(m.get("varName")))
+                                        cp.dataType = cp.enumName;
+                                    else
+                                        cp.dataType = initialCaps(m.get("varName")) + cp.baseName + "Enum"; //enum dataType 
                                 }
                             }
                             for(CodegenParameter cp : op.pathParams){
-                                if(cp.isEnum && m.get("methodCall").contains(cp.baseName)){
+                                if(cp.isEnum && m.get("methodCall").contains(cp.paramName)){
                                     cp.baseName = initialCaps(cp.baseName);
-                                    cp.datatypeWithEnum = initialCaps(m.get("varName")) + "JsonObject"; //enum dataType 
+                                    cp.datatypeWithEnum = initialCaps(m.get("varName")) + "JsonObject"; //enum class object
+                                    if(!cp.enumName.contains(initialCaps(m.get("varName"))))
+                                        cp.enumName = initialCaps(m.get("varName")) + cp.enumName; 
                                 }
                             }
                             
@@ -522,7 +527,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         op.bodyParam.vendorExtensions.remove("x-is-enum");
                         op.bodyParam.vendorExtensions.put("x-enum-class", name + "JsonObject"); //enum  class name
                         op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
-                        op.bodyParam.dataType = name + op.bodyParam.baseName; //enum dataType
+                        op.bodyParam.dataType = name + op.bodyParam.baseName + "Enum"; //enum dataType
                         if(op.bodyParam.dataType.equals(s)){
                             op.bodyParam.dataType = "IOModuleType";
                         }
@@ -531,8 +536,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             if(op.responses != null){ //in case  the return type is enum
                         for(CodegenResponse r : op.responses){
                             if(r.vendorExtensions.get("x-is-enum") != null){
-                                op.returnType = name + initialCaps(var);
-                                if(op.returnType.equals(s))
+                                op.returnType = name + initialCaps(var) + "Enum";
+                                if(op.returnType.equals(s + "Enum"))
                                     op.returnType = "IOModuleType";
                                 op.returnBaseType = initialCaps(var);
                                 op.returnSimpleType = false; 

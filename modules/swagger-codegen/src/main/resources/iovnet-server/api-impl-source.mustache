@@ -145,7 +145,7 @@ std::string {{classname}}Impl::read_{{classVarName}}_ports_peer_by_id(const std:
   return p->getPeer();
 }
 
-PortsStatus {{classname}}Impl::read_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName) {
+PortsStatusEnum {{classname}}Impl::read_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName) {
   auto &&m = get_iomodule(name);
   auto &&p = m.getPorts(portsName);
   return p->getStatus();
@@ -163,7 +163,7 @@ void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::stri
   p->setPeer(peer);
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName, const PortsStatus &status) {
+void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName, const PortsStatusEnum &status) {
   auto &&m = get_iomodule(name);
   auto &&p = m.getPorts(portsName);
   p->setStatus(status);

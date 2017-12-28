@@ -28,10 +28,10 @@ nlohmann::json {{classname}}JsonObject::toJson() const {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^required}}if(m_{{name}}IsSet) {
-      val["{{baseName}}"] = {{#isEnum}}enum{{nameInCamelCase}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
+      val["{{baseName}}"] = {{#isEnum}}{{{datatype}}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
   }
 
-  {{/required}}{{#required}}val["{{baseName}}"] = {{#isEnum}}enum{{nameInCamelCase}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
+  {{/required}}{{#required}}val["{{baseName}}"] = {{#isEnum}}{{{datatype}}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
   {{/required}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
   {
     nlohmann::json jsonArray;
@@ -59,11 +59,11 @@ void {{classname}}JsonObject::fromJson(nlohmann::json& val) {
   {{#isPrimitiveType}}{{^isListContainer}}
   {{^required}}
   if (val.find("{{baseName}}") != val.end()) {
-      {{setter}}({{#isEnum}}string_to_enum{{nameInCamelCase}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
+      {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
   }
   {{/required}}
   {{#required}}
-  {{setter}}({{#isEnum}}string_to_enum{{nameInCamelCase}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
+  {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
   {{/required}}{{/isListContainer}}
   {{/isPrimitiveType}}
   {{#isListContainer}}
@@ -221,7 +221,7 @@ void {{classname}}JsonObject::unset{{nameInCamelCase}}() {
 {{/required}}
 {{#isEnum}}
 
-std::string {{classname}}JsonObject::enum{{nameInCamelCase}}_to_string(const {{{datatype}}} &value){
+std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}}} &value){
 	switch(value){
 		{{#allowableValues.values}}
 		case {{{datatype}}}::{{value}}:
@@ -232,7 +232,7 @@ std::string {{classname}}JsonObject::enum{{nameInCamelCase}}_to_string(const {{{
 	}
 }
 
-{{{datatype}}} {{classname}}JsonObject::string_to_enum{{nameInCamelCase}}(const std::string &str){
+{{{datatype}}} {{classname}}JsonObject::string_to_{{{datatype}}}(const std::string &str){
 	{{#allowableValues.values}}
 	if(JsonObjectBase::iequals("{{stringValue}}", str))
 		return {{{datatype}}}::{{value}};
