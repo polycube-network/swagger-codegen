@@ -11,6 +11,10 @@
 #include "iovnet/services/utils.h"
 {{/vendorExtensions.x-inherits-from}}
 
+{{^vendorExtensions.x-parent}}
+#include <spdlog/spdlog.h>
+{{/vendorExtensions.x-parent}}
+
 {{#vendorExtensions.x-interface-imports}}
 #include "{{{this}}}.h"
 {{/vendorExtensions.x-interface-imports}}
@@ -60,7 +64,7 @@ public:
   std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
   std::vector<std::shared_ptr<{{complexType}}>> getAll{{nameInCamelCase}}() override;
   void add{{nameInCamelCase}}(const {{complexType}}JsonObject &conf) override;
-  void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
+  void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
   void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
   void delAll{{nameInCamelCase}}() override;
   {{/isNotContainer}}
@@ -86,10 +90,13 @@ public:
   {{/isNotContainer}}
   {{/vars}}
      
-  {{#vendorExtensions.x-parent}}
 private:    
+  {{#vendorExtensions.x-parent}}
   {{this}} &parent_;
-  {{/vendorExtensions.x-parent}}  
+  {{/vendorExtensions.x-parent}}
+  {{^vendorExtensions.x-parent}}
+  std::shared_ptr<spdlog::logger> logger;
+  {{/vendorExtensions.x-parent}}
   
 };
 

@@ -7,10 +7,13 @@
 const std::string {{serviceNameLowerCase}}_code = R"(
 /*
  * This function is called each time a packet arrives to the iomodule.
- * skb contains the packet and md some additional metadata for the packet.
+ * ctx contains the packet and md some additional metadata for the packet.
+ * If the service is of type TYPE_XDP_SKB/DRV CTXTYPE is equivalent to the struct xdp_md
+ * otherwise, if the service is of type TYPE_TC, CTXTYPE is equivalent to the __sk_buff struct
  * Please look at the libiovnet documentation for more details.
  */
-static int handle_rx(struct __sk_buff *skb, struct pkt_metadata *md) {
+static __always_inline 
+int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
   // Put your eBPF datapth code here
   bpf_trace_printk("Hello\n");
   return RX_DROP;

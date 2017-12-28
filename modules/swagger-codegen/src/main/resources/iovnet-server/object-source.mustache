@@ -7,7 +7,13 @@
 {{^vendorExtensions.x-parent}}
 #include "{{classname}}_dp.h"
 
-{{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type): IOModule(name, generate_code(), type){
+{{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type)
+                             : IOModule(name, generate_code(), type),
+                             logger(spdlog::get("iov-{{classVarName}}")== nullptr
+                                    ? spdlog::stdout_logger_mt("iov-{{classVarName}}")
+                                    : spdlog::get("iov-{{classVarName}}")) {
+  logger->info("Creating {{classname}} instance {0}", name);
+
   {{#vars}}
   {{^isNotContainer}}
   for(auto &i : conf.{{getter}}())
@@ -115,7 +121,7 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
 
 {{^vendorExtensions.x-parent}}
 std::string {{classname}}::generate_code(){
-  throw std::runtime_error("Method not implemented");
+  return {{classVarName}}_code;
 }
 
 std::vector<std::string> {{classname}}::generate_code_vector(){
@@ -123,7 +129,7 @@ std::vector<std::string> {{classname}}::generate_code_vector(){
 }
 
 void {{classname}}::packet_in(iovnet::service::Port &port, iovnet::service::PacketInMetadata &md, const std::vector<uint8_t> &packet){
-  throw std::runtime_error("Method not implemented");
+  logger->info("{{classname}} {0}: Packet received from port {1}", IOModule::get_name(), port.name());
 }
 
 {{/vendorExtensions.x-parent}}

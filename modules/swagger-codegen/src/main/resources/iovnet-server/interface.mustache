@@ -29,11 +29,11 @@ public:
   /// {{description}}
   /// </summary>
   {{^isNotContainer}}
-  virtual std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
+  virtual std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
   virtual std::vector<std::shared_ptr<{{complexType}}>> getAll{{nameInCamelCase}}() = 0;
   virtual void add{{nameInCamelCase}}(const {{complexType}}JsonObject &conf) = 0;
-  virtual void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) = 0;
-  virtual void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
+  virtual void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) = 0;
+  virtual void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
   virtual void delAll{{nameInCamelCase}}() = 0;
   {{/isNotContainer}}
   {{#isNotContainer}}
@@ -50,7 +50,7 @@ public:
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
   virtual void add{{nameInCamelCase}}(const {{complexType}}JsonObject &value) = 0;
-  virtual void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) = 0;
+  virtual void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) = 0;
   virtual void del{{nameInCamelCase}}() = 0;
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}

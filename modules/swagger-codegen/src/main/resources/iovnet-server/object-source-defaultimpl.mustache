@@ -22,8 +22,8 @@ void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}JsonObject &conf
   {{complexType}}::create(*this, conf);
 }
 
-void {{classname}}::replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf){
-  {{complexType}}::removeEntry(*this, {{#vendorExtensions.x-key-list}}{{name}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+void {{classname}}::replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf){
+  {{complexType}}::removeEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
   {{complexType}}::create(*this, conf);
   
 }
