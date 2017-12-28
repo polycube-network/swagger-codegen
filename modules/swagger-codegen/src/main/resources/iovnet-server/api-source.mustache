@@ -40,7 +40,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
   {{#hasPathParams}}
   // Getting the path params
   {{#pathParams}}
-  auto {{paramName}} = request.param(":{{paramName}}").as<{{dataType}}>();
+  auto {{paramName}} = request.param(":{{baseName}}").as<{{dataType}}>();
   {{#isEnum}}
   auto {{paramName}}_ = {{datatypeWithEnum}}::string_to_{{enumName}}({{paramName}}); 
   {{/isEnum}}
