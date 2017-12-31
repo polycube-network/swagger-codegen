@@ -222,22 +222,22 @@ void {{classname}}JsonObject::unset{{nameInCamelCase}}() {
 {{#isEnum}}
 
 std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}}} &value){
-	switch(value){
-		{{#allowableValues.values}}
-		case {{{datatype}}}::{{value}}:
-			return "{{stringValue}}";
-		{{/allowableValues.values}}
-		default:
-			throw std::runtime_error("Bad {{classname}} {{name}}");
-	}
+  switch(value){
+    {{#allowableValues.values}}
+    case {{{datatype}}}::{{value}}:
+      return "{{value}}";
+    {{/allowableValues.values}}
+    default:
+      throw std::runtime_error("Bad {{classname}} {{name}}");
+  }
 }
 
 {{{datatype}}} {{classname}}JsonObject::string_to_{{{datatype}}}(const std::string &str){
-	{{#allowableValues.values}}
-	if(JsonObjectBase::iequals("{{stringValue}}", str))
-		return {{{datatype}}}::{{value}};
-	{{/allowableValues.values}}
-	throw std::runtime_error("{{classname}} {{name}} is invalid");
+  {{#allowableValues.values}}
+  if(JsonObjectBase::iequals("{{stringValue}}", str))
+    return {{{datatype}}}::{{value}};
+  {{/allowableValues.values}}
+  throw std::runtime_error("{{classname}} {{name}} is invalid");
 }
 {{/isEnum}}
 {{/vars}}

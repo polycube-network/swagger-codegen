@@ -235,8 +235,17 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
 {{{datatype}}} {{classname}}::{{getter}}(){
   //This method retrieves the {{name}} value.
   {{#vendorExtensions.x-has-default-impl}}
+  {{#vendorExtensions.x-is-iomodule-name}}
+  return IOModule::get_name();
+  {{/vendorExtensions.x-is-iomodule-name}}
+  {{#vendorExtensions.x-is-iomodule-uuid}}
+  return IOModule::get_uuid().str();
+  {{/vendorExtensions.x-is-iomodule-uuid}}
+  {{#vendorExtensions.x-is-iomodule-type}}
+  return IOModule::get_type();
+  {{/vendorExtensions.x-is-iomodule-type}}
   {{#vendorExtensions.x-is-port-status}}
-  throw std::runtime_error("[{{classname}}]: Method {{getter}} not implemented");
+  return {{{datatype}}}::UP;
   {{/vendorExtensions.x-is-port-status}}
   {{#vendorExtensions.x-is-port-peer}}
   return Port::peer();

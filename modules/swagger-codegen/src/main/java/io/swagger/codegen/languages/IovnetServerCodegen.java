@@ -497,6 +497,26 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
             if(model.vendorExtensions.containsKey("x-inherits-from") && ((String)model.vendorExtensions.get("x-inherits-from")).equals("iovnet::service::IOModule")){
             	model.vendorExtensions.put("x-child-ports-classname", portsClassName);
+
+            	for(CodegenProperty cp : lp) {
+            		switch(cp.baseName.toLowerCase()){
+            			case "name":
+            				cp.vendorExtensions.put("x-is-iomodule-name", true);
+            				cp.vendorExtensions.put("x-has-default-impl", true);
+            				break;
+            			case "uuid":
+            				cp.vendorExtensions.put("x-is-iomodule-uuid", true);
+            				cp.vendorExtensions.put("x-has-default-impl", true);
+            				break;
+            			case "type":
+            				cp.vendorExtensions.put("x-is-iomodule-type", true);
+            				cp.vendorExtensions.put("x-has-default-impl", true);
+            				break;
+            			default:
+            				cp.vendorExtensions.put("x-has-default-impl", false);
+            				break;
+            		}
+            	}
             }
         }
         
