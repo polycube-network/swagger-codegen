@@ -94,10 +94,8 @@ std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_list_by_id_get
 * Ports list related functions
 */
 void {{classname}}Impl::create_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
-   auto &&m = get_iomodule(name);
-   for (auto &port : ports) {
-        m.addPorts(port); 
-   }
+  auto &&m = get_iomodule(name);
+  m.addPortsList(ports);
 }
 
 std::vector<PortsJsonObject> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id(const std::string &name) {
@@ -119,9 +117,9 @@ std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_ports_list_by_
 /*
 * Ports related functions
 */
-void {{classname}}Impl::create_{{classVarName}}_ports_by_id(const std::string &name, const PortsJsonObject &ports) {
+void {{classname}}Impl::create_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
   auto &&m = get_iomodule(name);
-  return m.addPorts(ports);
+  return m.addPorts(portsName, ports);
 }
 
 PortsJsonObject {{classname}}Impl::read_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
@@ -196,10 +194,7 @@ void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::st
 	{{/vendorExtensions.x-is-list}}
 	{{#vendorExtensions.x-is-list}}
 	{{^returnType}}
-	{{^noIteration}}for(auto &i : value)
-		{{{methodCall}}};
-	{{/noIteration}}
-	{{#noIteration}}{{{methodCall}}};{{/noIteration}}
+	{{{methodCall}}};
 	{{/returnType}}
 	{{#returnType}}
 	auto &&{{{varName}}} = {{{methodCall}}};

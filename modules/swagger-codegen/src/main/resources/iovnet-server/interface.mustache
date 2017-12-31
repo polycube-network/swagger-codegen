@@ -30,11 +30,12 @@ public:
   /// </summary>
   {{^isNotContainer}}
   virtual std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
-  virtual std::vector<std::shared_ptr<{{complexType}}>> getAll{{nameInCamelCase}}() = 0;
-  virtual void add{{nameInCamelCase}}(const {{complexType}}JsonObject &conf) = 0;
+  virtual std::vector<std::shared_ptr<{{complexType}}>> get{{nameInCamelCase}}List() = 0;
+  virtual void add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) = 0;
+  virtual void add{{nameInCamelCase}}List(const std::vector<{{complexType}}JsonObject> &conf) = 0;
   virtual void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) = 0;
   virtual void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;
-  virtual void delAll{{nameInCamelCase}}() = 0;
+  virtual void del{{nameInCamelCase}}List() = 0;
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}

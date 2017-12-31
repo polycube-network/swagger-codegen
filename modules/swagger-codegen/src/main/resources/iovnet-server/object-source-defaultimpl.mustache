@@ -14,17 +14,29 @@ std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}({{#vendor
   return {{complexType}}::getEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
 }
 
-std::vector<std::shared_ptr<{{complexType}}>> {{classname}}::getAll{{nameInCamelCase}}(){
+std::vector<std::shared_ptr<{{complexType}}>> {{classname}}::get{{nameInCamelCase}}List(){
   return {{complexType}}::get(*this);
 }
 
-void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}JsonObject &conf){
-  {{complexType}}::create(*this, conf);
+void {{classname}}::add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf){
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf);
+}
+
+void {{classname}}::add{{nameInCamelCase}}List(const std::vector<{{complexType}}JsonObject> &conf){
+  for(auto &i : conf){
+    {{#vendorExtensions.x-key-list}}
+    {{type}} {{varName}}_ = i.{{getter}}();
+    {{/vendorExtensions.x-key-list}}
+    {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}} i);
+  }
 }
 
 void {{classname}}::replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf){
   {{complexType}}::removeEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
-  {{complexType}}::create(*this, conf);
+  {{#vendorExtensions.x-key-list}}
+  {{type}} {{varName}}_ = conf.{{getter}}();
+  {{/vendorExtensions.x-key-list}}
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}}conf);
   
 }
 
@@ -32,7 +44,7 @@ void {{classname}}::del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const
   {{complexType}}::removeEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
 }
 
-void {{classname}}::delAll{{nameInCamelCase}}(){
+void {{classname}}::del{{nameInCamelCase}}List(){
   {{complexType}}::remove(*this);
 }
 
@@ -45,13 +57,16 @@ std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}(){
 
 {{^vendorExtensions.x-is-key}}
 {{^isReadOnly}}
-void {{classname}}::add{{nameInCamelCase}}(const {{complexType}}JsonObject &value){
-  {{complexType}}::create(*this, value); 
+void {{classname}}::add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &value){
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}value); 
 }
 
 void {{classname}}::replace{{nameInCamelCase}}(const {{complexType}}JsonObject &conf){
   {{complexType}}::removeEntry(*this);
-  {{complexType}}::create(*this, conf);  
+  {{#vendorExtensions.x-key-list}}
+  {{type}} {{varName}}_ = conf.{{getter}}();
+  {{/vendorExtensions.x-key-list}}
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}}conf);  
 }
 
 void {{classname}}::del{{nameInCamelCase}}(){

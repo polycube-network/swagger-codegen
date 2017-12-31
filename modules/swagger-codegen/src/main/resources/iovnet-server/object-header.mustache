@@ -44,7 +44,7 @@ public:
   {{/vendorExtensions.x-parent}}
 
   {{#vendorExtensions.x-parent}}
-  static void create({{{this}}} &parent, const {{classname}}JsonObject &conf);
+  static void create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} &{{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf);
   static std::shared_ptr<{{classname}}> getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
   static void removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
   {{#vendorExtensions.x-is-list}}
@@ -62,11 +62,12 @@ public:
   /// </summary>
   {{^isNotContainer}}
   std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
-  std::vector<std::shared_ptr<{{complexType}}>> getAll{{nameInCamelCase}}() override;
-  void add{{nameInCamelCase}}(const {{complexType}}JsonObject &conf) override;
+  std::vector<std::shared_ptr<{{complexType}}>> get{{nameInCamelCase}}List() override;
+  void add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
+  void add{{nameInCamelCase}}List(const std::vector<{{complexType}}JsonObject> &conf) override;
   void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
   void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
-  void delAll{{nameInCamelCase}}() override;
+  void del{{nameInCamelCase}}List() override;
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}

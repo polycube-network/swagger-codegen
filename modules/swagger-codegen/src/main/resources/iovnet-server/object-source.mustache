@@ -16,19 +16,23 @@
 
   {{#vars}}
   {{^isNotContainer}}
-  for(auto &i : conf.{{getter}}())
-      add{{nameInCamelCase}}(i);
+  add{{nameInCamelCase}}List(conf.{{getter}}());
   {{/isNotContainer}}
   {{#isNotContainer}} 
   {{^vendorExtensions.x-is-key}}
   {{^isReadOnly}}
-  if(conf.{{name}}IsSet())
+  if(conf.{{name}}IsSet()){
   {{#isPrimitiveType}}
       {{setter}}(conf.{{getter}}());
   {{/isPrimitiveType}}
   {{^isPrimitiveType}}
-      add{{nameInCamelCase}}(conf.{{getter}}());
+      auto value = conf.{{getter}}();
+      {{#vendorExtensions.x-key-list}}
+      {{type}} {{varName}}_ = value.{{getter}}();
+      {{/vendorExtensions.x-key-list}}
+      add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());
   {{/isPrimitiveType}}
+  }
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isNotContainer}}
@@ -134,9 +138,9 @@ void {{classname}}::packet_in(iovnet::service::Port &port, iovnet::service::Pack
 
 {{/vendorExtensions.x-parent}}
 {{#vendorExtensions.x-parent}}
-void {{classname}}::create({{{this}}} &parent, const {{classname}}JsonObject &conf){
-  
-  //This method creates the actual {{classname}} object. 
+void {{classname}}::create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} &{{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf){
+
+  //This method creates the actual {{classname}} object given thee key param. 
   //Please remember to call here the create static method for all sub-objects of {{classname}}.
   
   throw std::runtime_error("Method not implemented");

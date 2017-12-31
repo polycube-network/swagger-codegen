@@ -253,8 +253,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
             if(op.returnType != null && !op.returnTypeIsPrimitive)
                 op.returnType = op.returnType.replace(">", "JsonObject>");
-            if(method.equals("del") || method.equals("get")) //in case of list we return the whole object and not only                one element
-                method += "All";
+            //if(method.equals("del") || method.equals("get") || method.equals("add")) //in case of list we return the whole object and not only                one element
+              //  method += "All";
         }
         else {
             if(op.returnType != null && !op.returnTypeIsPrimitive)
@@ -349,19 +349,21 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     methodCall = path_without_keys.get(i-1) + ".get" + toUpperCamelCase(path_without_keys.get(i));
                 else //the remaining methods are all get
                     methodCall = path_without_keys.get(i-1) + "->get" + toUpperCamelCase(path_without_keys.get(i));
-                methodCall += "(";
-                if(lastCall && bodyParam != null && op.operationId.contains("List"))
-                    methodCall += "i";
-                else if(lastCall && bodyParam != null && !method.equals("replace")) //the last method call take only the body param, but if the method is replace need also the keys
-                    methodCall += bodyParam.paramName;
+                if(lastCall && op.operationId.contains("List")){
+                    methodCall += "List(";
+                    //methodCall += "i";
+                }
+                //else if(lastCall && bodyParam != null && !method.equals("replace")) //the last method call take only the body param, but if the method is replace need also the keys
+                    //methodCall += bodyParam.paramName;
                 else{
+                    methodCall += "(";
                     for(int j = 0; j < index; j++){ //take all the parameter for the method
                         methodCall = methodCall + method_parameters_name.get(j);
                         if(j < index - 1)
                             methodCall += ", ";
                     }
                 }
-                if(method.equals("replace") && lastCall){
+                if(bodyParam != null && lastCall){
                   if(index != 0) //if there are keys index is != 0
                     methodCall += ", ";
                   methodCall += bodyParam.paramName;
@@ -385,9 +387,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
                 if(lastCall){
                 //mark the last method call, useful to determine if have to apply the return in template
-                    m.put("lastCall", "true");
-                    if(methodCall.contains("getAll") || methodCall.contains("delAll"))
-                        m.put("noIteration", "true");   
+                  m.put("lastCall", "true");   
                 }   
                 l.add(m);
                 //if the method is update and this is the last object call the update on the last element
