@@ -489,16 +489,16 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         for(Map<String, String> m : (List<Map<String, String>>)op.vendorExtensions.get("x-call-sequence-method")){
                             for(CodegenParameter cp : op.allParams){
                                 if(cp.isEnum && m.get("methodCall").contains(cp.paramName)){
-                                    cp.baseName = initialCaps(cp.baseName);
+                                    //cp.baseName = initialCaps(cp.baseName);
                                     if(cp.paramName.contains(m.get("varName")))
                                         cp.dataType = cp.enumName;
                                     else
-                                        cp.dataType = initialCaps(m.get("varName")) + cp.baseName + "Enum"; //enum dataType 
+                                        cp.dataType = initialCaps(m.get("varName")) + initialCaps(cp.baseName) + "Enum"; //enum dataType 
                                 }
                             }
                             for(CodegenParameter cp : op.pathParams){
                                 if(cp.isEnum && m.get("methodCall").contains(cp.paramName)){
-                                    cp.baseName = initialCaps(cp.baseName);
+                                    //cp.baseName = initialCaps(cp.baseName);
                                     cp.datatypeWithEnum = initialCaps(m.get("varName")) + "JsonObject"; //enum class object
                                     if(!cp.enumName.contains(initialCaps(m.get("varName"))))
                                         cp.enumName = initialCaps(m.get("varName")) + cp.enumName; 
@@ -526,8 +526,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         op.bodyParam.isEnum = true;
                         op.bodyParam.vendorExtensions.remove("x-is-enum");
                         op.bodyParam.vendorExtensions.put("x-enum-class", name + "JsonObject"); //enum  class name
-                        op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
-                        op.bodyParam.dataType = name + op.bodyParam.baseName + "Enum"; //enum dataType
+                        //op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
+                        op.bodyParam.dataType = name + initialCaps(op.bodyParam.baseName) + "Enum"; //enum dataType
                         if(op.bodyParam.dataType.equals(s)){
                             op.bodyParam.dataType = "IOModuleType";
                         }
