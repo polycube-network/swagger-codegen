@@ -434,6 +434,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             Map<String, Object> models = (Map<String, Object>) modelsList.get(i);
             CodegenModel model = (CodegenModel) models.get("model");
             List<CodegenProperty> lp = model.vars;
+            String portsClassName = "Ports";
             for(CodegenProperty p : lp){
                 List<String> lenum = p._enum;//retrieve enum list
                 if(lenum != null){//if it is not empty
@@ -463,7 +464,40 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         p.allowableValues.put("values", l); //add allowable values to enum
                 }
             }
-                
+
+            //Add vendor extension to recognize the class Ports
+            if(model.vendorExtensions.containsKey("x-inherits-from") && ((String)model.vendorExtensions.get("x-inherits-from")).equals("iovnet::service::Port")){
+            	model.vendorExtensions.put("x-is-port-class", true);
+            	portsClassName = model.classname;
+
+            	for(CodegenProperty cp : lp) {
+            		switch(cp.baseName.toLowerCase()){
+            			case "status":
+            				cp.vendorExtensions.put("x-is-port-status", true);
+            				cp.vendorExtensions.put("x-has-default-impl", true);
+            				break;
+            			case "peer":
+            				cp.vendorExtensions.put("x-is-port-peer", true);
+            				cp.vendorExtensions.put("x-has-default-impl", true);
+            				break;
+            			case "name":
+            				cp.vendorExtensions.put("x-is-port-name", true);
+            				cp.vendorExtensions.put("x-has-default-impl", true);
+            				break;
+            			case "uuid":
+            				cp.vendorExtensions.put("x-is-port-uuid", true);
+            				cp.vendorExtensions.put("x-has-default-impl", true);
+            				break;
+            			default:
+            				cp.vendorExtensions.put("x-has-default-impl", false);
+            				break;
+            		}
+            	}
+            }
+
+            if(model.vendorExtensions.containsKey("x-inherits-from") && ((String)model.vendorExtensions.get("x-inherits-from")).equals("iovnet::service::IOModule")){
+            	model.vendorExtensions.put("x-child-ports-classname", portsClassName);
+            }
         }
         
         return objs;

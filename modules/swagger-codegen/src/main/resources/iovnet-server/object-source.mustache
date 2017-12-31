@@ -4,6 +4,9 @@
 
 {{#models}}{{#model}}
 #include "src/{{classname}}.h"
+{{#vendorExtensions.x-is-port-class}}
+#include "src/{{vendorExtensions.x-parent}}.h"
+{{/vendorExtensions.x-is-port-class}}
 {{^vendorExtensions.x-parent}}
 #include "{{classname}}_dp.h"
 
@@ -42,7 +45,11 @@
 {{/vendorExtensions.x-parent}}
 
 {{#vendorExtensions.x-parent}}
-{{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf): parent_(parent){{#vendorExtensions.x-classname-inherited}}, {{this}}(p){{/vendorExtensions.x-classname-inherited}} { }
+{{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf): parent_(parent){{#vendorExtensions.x-classname-inherited}}, {{this}}(p){{/vendorExtensions.x-classname-inherited}} { 
+  logger = spdlog::get("iov-simpleforwarder") == nullptr ? spdlog::stdout_logger_mt("iov-simpleforwarder") : spdlog::get("iov-simpleforwarder");
+  //Remove the comment below if you want to enable the debug for this class
+  //logger->set_level(spdlog::level::debug)
+}
 {{/vendorExtensions.x-parent}}
 
 {{classname}}::~{{classname}}() { }
@@ -143,38 +150,79 @@ void {{classname}}::create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is
   //This method creates the actual {{classname}} object given thee key param. 
   //Please remember to call here the create static method for all sub-objects of {{classname}}.
   
+  {{#vendorExtensions.x-is-port-class}}
+  if (parent.ports_.count(name) != 0) {
+    throw std::runtime_error("port already exists");
+  }
+
+  auto p = parent.IOModule::add_port(name);
+  std::unordered_map<std::string, {{classname}}>::iterator iter;
+  bool inserted;
+
+  std::tie(iter, inserted) = parent.ports_.emplace(std::piecewise_construct,
+                                                   std::forward_as_tuple(name),
+                                                   std::forward_as_tuple(parent, p, conf));
+  //spdlog::get("iov-simpleforwarder")->info("New port create with name {0}", name);
+  {{/vendorExtensions.x-is-port-class}}
+  {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method create not implemented");
+  {{/vendorExtensions.x-is-port-class}}
 }
 
 std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
   
   //This method retrieves the pointer to {{classname}} object specified by its keys.
-  
+  {{#vendorExtensions.x-is-port-class}}
+  //spdlog::get("iov-simpleforwarder")->info("Called getEntry with name: {0}", name);
+  return std::shared_ptr<{{classname}}>(&parent.ports_.at(name), []({{classname}}*){});
+  {{/vendorExtensions.x-is-port-class}}
+  {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method getEntry not implemented");
+  {{/vendorExtensions.x-is-port-class}}
 }
 
 void {{classname}}::removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
   
   //This method removes the single {{classname}} object specified by its keys.
   //Remember to call here the remove static method for all-sub-objects of {{classname}}.
-  
+  {{#vendorExtensions.x-is-port-class}}
+  parent.IOModule::remove_port(name);
+  parent.ports_.erase(name);
+  {{/vendorExtensions.x-is-port-class}}
+  {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method removeEntry not implemented");
+  {{/vendorExtensions.x-is-port-class}}
 }
 
 {{#vendorExtensions.x-is-list}}
 std::vector<std::shared_ptr<{{classname}}>> {{classname}}::get({{vendorExtensions.x-parent}} &parent){
   
   //This methods get the pointers to all the {{classname}} objects in {{vendorExtensions.x-parent}}.
-  
+  {{#vendorExtensions.x-is-port-class}}
+  std::vector<std::shared_ptr<{{classname}}>> ports_vect;
+  for(auto &it : parent.ports_)
+    ports_vect.push_back({{classname}}::getEntry(parent, it.first));
+
+  return ports_vect;
+  {{/vendorExtensions.x-is-port-class}}
+  {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method get not implemented");
+  {{/vendorExtensions.x-is-port-class}}
 }
 
 void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
 
   //This method removes all {{classname}} objects in {{vendorExtensions.x-parent}}.
   //Remember to call here the remove static method for all-sub-objects of {{classname}}.
-
+  {{#vendorExtensions.x-is-port-class}}
+  for(auto &it : parent.ports_) {
+    int port_id = it.second.index();
+    {{classname}}::removeEntry(parent, it.second.name());
+  }
+  {{/vendorExtensions.x-is-port-class}}
+  {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method remove not implemented");
+  {{/vendorExtensions.x-is-port-class}}
 }
 {{/vendorExtensions.x-is-list}}
 {{/vendorExtensions.x-parent}}
@@ -185,19 +233,43 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
 
 {{#isPrimitiveType}}
 {{{datatype}}} {{classname}}::{{getter}}(){
-  
-  //This method retrieves the {{name}} value.  
-  
+  //This method retrieves the {{name}} value.
+  {{#vendorExtensions.x-has-default-impl}}
+  {{#vendorExtensions.x-is-port-status}}
   throw std::runtime_error("[{{classname}}]: Method {{getter}} not implemented");
+  {{/vendorExtensions.x-is-port-status}}
+  {{#vendorExtensions.x-is-port-peer}}
+  return Port::peer();
+  {{/vendorExtensions.x-is-port-peer}}
+  {{#vendorExtensions.x-is-port-uuid}}
+  return Port::uuid().str();
+  {{/vendorExtensions.x-is-port-uuid}}
+  {{#vendorExtensions.x-is-port-name}}
+  return Port::name();
+  {{/vendorExtensions.x-is-port-name}}
+  {{/vendorExtensions.x-has-default-impl}}
+  {{^vendorExtensions.x-has-default-impl}}
+  throw std::runtime_error("[{{classname}}]: Method {{getter}} not implemented");
+  {{/vendorExtensions.x-has-default-impl}}
 }
 
 {{^vendorExtensions.x-is-key}}
 {{^isReadOnly}}
 void {{classname}}::{{setter}}(const {{{datatype}}} &value){
-  
   //This method set the {{name}} value.
 
+  {{#vendorExtensions.x-has-default-impl}}
+  {{#vendorExtensions.x-is-port-status}}
   throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
+  {{/vendorExtensions.x-is-port-status}}
+  {{#vendorExtensions.x-is-port-peer}}
+  //logger->info("Received request to set peer {0}", value);
+  Port::set_peer(value);
+  {{/vendorExtensions.x-is-port-peer}}
+  {{/vendorExtensions.x-has-default-impl}}
+  {{^vendorExtensions.x-has-default-impl}}
+  throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
+  {{/vendorExtensions.x-has-default-impl}}
 }
 
 {{/isReadOnly}}

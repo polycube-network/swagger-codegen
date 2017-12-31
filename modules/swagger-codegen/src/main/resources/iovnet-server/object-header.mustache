@@ -11,9 +11,7 @@
 #include "iovnet/services/utils.h"
 {{/vendorExtensions.x-inherits-from}}
 
-{{^vendorExtensions.x-parent}}
 #include <spdlog/spdlog.h>
-{{/vendorExtensions.x-parent}}
 
 {{#vendorExtensions.x-interface-imports}}
 #include "{{{this}}}.h"
@@ -29,6 +27,9 @@ using iovnet::service::IOModuleType;
 {{/vendorExtensions.x-parent}}
 
 class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{/vendorExtensions.x-inherits-from}}public {{classname}}Interface {
+  {{^vendorExtensions.x-parent}}
+  friend class {{vendorExtensions.x-child-ports-classname}};
+  {{/vendorExtensions.x-parent}}
 public:
   {{^vendorExtensions.x-parent}}
   {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type = IOModuleType::TYPE_CLS);
@@ -95,8 +96,9 @@ private:
   {{#vendorExtensions.x-parent}}
   {{this}} &parent_;
   {{/vendorExtensions.x-parent}}
-  {{^vendorExtensions.x-parent}}
   std::shared_ptr<spdlog::logger> logger;
+  {{^vendorExtensions.x-parent}}
+  std::unordered_map<std::string, {{vendorExtensions.x-child-ports-classname}}> ports_;
   {{/vendorExtensions.x-parent}}
   
 };
