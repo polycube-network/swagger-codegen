@@ -37,13 +37,11 @@ void {{classname}}::setupRoutes() {
 
 {{#operation}}
 void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest::Request &request, iovnet::service::HttpHandleResponse &response) {
+  {{#vendorExtensions.x-is-list}}
   {{#hasPathParams}}
   // Getting the path params
   {{#pathParams}}
   auto {{paramName}} = request.param(":{{baseName}}").as<{{dataType}}>();
-  {{#isEnum}}
-  auto {{paramName}}_ = {{datatypeWithEnum}}::string_to_{{enumName}}({{paramName}}); 
-  {{/isEnum}}
   {{/pathParams}}
   {{/hasPathParams}}
 
@@ -53,6 +51,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
   {{{dataType}}} {{paramName}}{{#isEnum}}_{{/isEnum}};
   {{/bodyParam}}
   {{/hasBodyParam}}
+  {{/vendorExtensions.x-is-list}}
 
   try{
     {{#vendorExtensions.x-is-list}}
@@ -124,6 +123,31 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{#vendorExtensions.x-is-list}}
     #undef NODE_IS_LIST_CONTAINER
     {{/vendorExtensions.x-is-list}}
+
+    {{^vendorExtensions.x-is-list}}
+    {{#hasPathParams}}
+    // Getting the path params
+    {{#pathParams}}
+    auto {{paramName}} = request.param(":{{baseName}}").as<{{dataType}}>();
+    {{/pathParams}}
+    {{/hasPathParams}}
+
+    {{#hasBodyParam}}
+    // Getting the body param
+    {{#bodyParam}}
+    {{{dataType}}} {{paramName}}{{#isEnum}}_{{/isEnum}};
+    {{/bodyParam}}
+    {{/hasBodyParam}}
+    {{/vendorExtensions.x-is-list}}
+
+    {{#hasPathParams}}
+    // Getting the path params
+    {{#pathParams}}
+    {{#isEnum}}
+    auto {{paramName}}_ = {{datatypeWithEnum}}::string_to_{{enumName}}({{paramName}}); 
+    {{/isEnum}}
+    {{/pathParams}}
+    {{/hasPathParams}}
 
     {{#hasBodyParam}}
     {{#bodyParam}}
