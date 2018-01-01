@@ -57,7 +57,7 @@ protected:
   {{^bodyParams}}
   {{#responses}}
   {{^primitiveType}}
-  virtual std::vector<std::string> {{operationIdSnakeCase}}_get_list() = 0;
+  virtual std::vector<std::string> {{operationIdSnakeCase}}_get_list({{#pathParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}}) = 0;
   {{/primitiveType}}
   {{/responses}}
   {{/bodyParams}}

@@ -201,6 +201,10 @@ nlohmann::json {{classname}}JsonObject::getComplexElements() {
   return m_{{name}};
 }
 
+void {{classname}}JsonObject::add{{complexType}}({{complexType}}JsonObject value) {
+  m_{{name}}.push_back(value);
+}
+
 {{/isNotContainer}}{{#isNotContainer}}{{{datatype}}}{{^isPrimitiveType}}JsonObject{{/isPrimitiveType}} {{classname}}JsonObject::{{getter}}() const {
   return m_{{name}};
 }

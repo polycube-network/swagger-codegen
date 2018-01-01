@@ -65,6 +65,7 @@ public:
   /// </summary>
   {{^isNotContainer}}
   const std::vector<{{complexType}}JsonObject>& {{getter}}() const;
+  void add{{complexType}}({{complexType}}JsonObject value);
   {{/isNotContainer}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}

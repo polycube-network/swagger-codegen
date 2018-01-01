@@ -42,9 +42,9 @@ void {{classname}}Impl::create_{{classVarName}}_by_id(const std::string &name, c
                                    std::forward_as_tuple(name, jsonObject, IOModuleType::TYPE_XDP_SKB));
         break;
       case IOModuleType::TYPE_XDP_DRV:
-				iomodules.emplace(std::piecewise_construct,
-		                               std::forward_as_tuple(name),
-		                               std::forward_as_tuple(name, jsonObject, IOModuleType::TYPE_XDP_DRV));
+        iomodules.emplace(std::piecewise_construct,
+                                   std::forward_as_tuple(name),
+                                   std::forward_as_tuple(name, jsonObject, IOModuleType::TYPE_XDP_DRV));
         break;
       default:
         iomodules.emplace(std::piecewise_construct,
@@ -99,7 +99,12 @@ void {{classname}}Impl::create_{{classVarName}}_ports_list_by_id(const std::stri
 }
 
 std::vector<PortsJsonObject> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id(const std::string &name) {
-  throw std::runtime_error("Method not supported");
+  std::vector<PortsJsonObject> vect;
+  auto &&m = get_iomodule(name);
+  for(auto &i : m.getPortsList()){
+    vect.push_back(i->toJsonObject());
+  }
+  return vect;
 }
 
 void {{classname}}Impl::replace_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
@@ -110,8 +115,13 @@ void {{classname}}Impl::delete_{{classVarName}}_ports_list_by_id(const std::stri
   throw std::runtime_error("Method not supported");
 }
 
-std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id_get_list() {
-    return std::vector<std::string>();
+std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id_get_list(const std::string &name) {
+  std::vector<std::string> vect;
+  auto &&m = get_iomodule(name);
+  for(auto &i : m.getPortsList()){
+    vect.push_back(i->getName());
+  }
+  return vect;
 }
 
 /*
@@ -183,40 +193,40 @@ void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::st
 {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
 {{classname}}Impl::{{operationIdSnakeCase}}({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
   {{^vendorExtensions.x-is-list-update}}
-	{{#vendorExtensions.x-call-sequence-method}}
-	{{^lastCall}}
-	auto &&{{{varName}}} = {{{methodCall}}};
-	{{/lastCall}}
-	{{#lastCall}}
-	{{^vendorExtensions.x-is-list}}
-	{{#returnType}}return {{{methodCall}}}{{^returnTypeIsPrimitive}}toJsonObject(){{/returnTypeIsPrimitive}};{{/returnType}}
-	{{^returnType}}{{{methodCall}}};{{/returnType}}
-	{{/vendorExtensions.x-is-list}}
-	{{#vendorExtensions.x-is-list}}
-	{{^returnType}}
-	{{{methodCall}}};
-	{{/returnType}}
-	{{#returnType}}
-	auto &&{{{varName}}} = {{{methodCall}}};
-	{{{returnType}}} m;
-	for(auto &i : {{{varName}}})
-		m.push_back(i->toJsonObject());
-	return m;
-	{{/returnType}}
-	{{/vendorExtensions.x-is-list}}
-	{{/lastCall}}
-	{{/vendorExtensions.x-call-sequence-method}}
-	{{/vendorExtensions.x-is-list-update}}
-	{{#vendorExtensions.x-is-list-update}}
-	throw std::runtime_error("Method not supported");
-	{{/vendorExtensions.x-is-list-update}}
+  {{#vendorExtensions.x-call-sequence-method}}
+  {{^lastCall}}
+  auto &&{{{varName}}} = {{{methodCall}}};
+  {{/lastCall}}
+  {{#lastCall}}
+  {{^vendorExtensions.x-is-list}}
+  {{#returnType}}return {{{methodCall}}}{{^returnTypeIsPrimitive}}toJsonObject(){{/returnTypeIsPrimitive}};{{/returnType}}
+  {{^returnType}}{{{methodCall}}};{{/returnType}}
+  {{/vendorExtensions.x-is-list}}
+  {{#vendorExtensions.x-is-list}}
+  {{^returnType}}
+  {{{methodCall}}};
+  {{/returnType}}
+  {{#returnType}}
+  auto &&{{{varName}}} = {{{methodCall}}};
+  {{{returnType}}} m;
+  for(auto &i : {{{varName}}})
+    m.push_back(i->toJsonObject());
+  return m;
+  {{/returnType}}
+  {{/vendorExtensions.x-is-list}}
+  {{/lastCall}}
+  {{/vendorExtensions.x-call-sequence-method}}
+  {{/vendorExtensions.x-is-list-update}}
+  {{#vendorExtensions.x-is-list-update}}
+  throw std::runtime_error("Method not supported");
+  {{/vendorExtensions.x-is-list-update}}
 }
 
 {{#vendorExtensions.x-is-list}}
 {{^bodyParams}}
 {{#responses}}
 {{^primitiveType}}
-std::vector<std::string> {{classname}}Impl::{{operationIdSnakeCase}}_get_list() {
+std::vector<std::string> {{classname}}Impl::{{operationIdSnakeCase}}_get_list({{#pathParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}}) {
     return std::vector<std::string>();
 }
 {{/primitiveType}}

@@ -68,7 +68,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
         case HelpType::SHOW:
           #ifdef NODE_IS_LIST_CONTAINER
           val["params"] = {{baseType}}JsonObject::getKeys();
-          val["elements"] = {{operationIdSnakeCase}}_get_list();
+          val["elements"] = {{operationIdSnakeCase}}_get_list({{#pathParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}});
           #else // element is complex
           val["params"] = {{baseType}}JsonObject::getElements();
           #endif
@@ -95,7 +95,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
         case HelpType::DEL:
           #ifdef NODE_IS_LIST_CONTAINER
           val["params"] = {{baseType}}JsonObject::getKeys();
-          val["elements"] = {{operationIdSnakeCase}}_get_list();
+          val["elements"] = {{operationIdSnakeCase}}_get_list({{#pathParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}});
           #else
           response.send(iovnet::service::Http::Code::Bad_Request);
           return;
@@ -107,7 +107,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
           auto cmds = {"add", "del", "show"};
           val["commands"] = cmds;
           val["params"] = {{baseType}}JsonObject::getKeys();
-          val["elements"] = {{operationIdSnakeCase}}_get_list();
+          val["elements"] = {{operationIdSnakeCase}}_get_list({{#pathParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}});
           #else // complex type
           auto cmds = {"set", "show"};
           val["commands"] = cmds;

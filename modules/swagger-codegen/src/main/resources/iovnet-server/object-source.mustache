@@ -125,6 +125,19 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
   conf.{{setter}}({{getter}}()->toJsonObject());
   {{/isPrimitiveType}}
   {{/isNotContainer}}
+  {{^isNotContainer}}
+  {{#vendorExtensions.x-is-port-class}}
+  for(auto &i : {{getter}}List()){
+    conf.add{{complexType}}(i->toJsonObject());
+  }
+  {{/vendorExtensions.x-is-port-class}}
+  {{^vendorExtensions.x-is-port-class}}
+  //Remove comments when you implement all sub-methods
+  //for(auto &i : {{getter}}List()){
+  //  conf.add{{complexType}}(i->toJsonObject());
+  //}
+  {{/vendorExtensions.x-is-port-class}}
+  {{/isNotContainer}}
   {{/vars}}
   
   return conf;

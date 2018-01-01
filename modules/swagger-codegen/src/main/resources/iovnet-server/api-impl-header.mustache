@@ -37,7 +37,7 @@ public:
   {{^bodyParams}}
   {{#responses}}
   {{^primitiveType}}
-  std::vector<std::string> {{operationIdSnakeCase}}_get_list();
+  std::vector<std::string> {{operationIdSnakeCase}}_get_list({{#pathParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}});
   {{/primitiveType}}
   {{/responses}}
   {{/bodyParams}}
