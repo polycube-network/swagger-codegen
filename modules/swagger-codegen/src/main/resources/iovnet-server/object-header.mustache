@@ -91,12 +91,15 @@ public:
   {{/isPrimitiveType}}
   {{/isNotContainer}}
   {{/vars}}
+
+  {{^vendorExtensions.x-parent}}
+  static std::shared_ptr<spdlog::logger> logger;
+  {{/vendorExtensions.x-parent}}
      
 private:    
   {{#vendorExtensions.x-parent}}
   {{this}} &parent_;
   {{/vendorExtensions.x-parent}}
-  std::shared_ptr<spdlog::logger> logger;
   {{^vendorExtensions.x-parent}}
   std::unordered_map<std::string, {{vendorExtensions.x-child-ports-classname}}> ports_;
   {{/vendorExtensions.x-parent}}

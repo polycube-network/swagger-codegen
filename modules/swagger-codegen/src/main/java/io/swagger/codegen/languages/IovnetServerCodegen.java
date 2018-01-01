@@ -14,7 +14,7 @@ import java.io.File;
 
 public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig {
     protected String implFolder = "/src/api";
-    
+
 
     public static final String IOVNET_SERVER_UPDATE = "update";
     protected Boolean iovnetServerUpdate = Boolean.FALSE;
@@ -184,7 +184,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         
         //at this point only ports has this vendorExtensions
         if(codegenModel.vendorExtensions.get("x-inherits-from") != null)
-            codegenModel.vendorExtensions.put("x-classname-inherited", "Port"); 
+            codegenModel.vendorExtensions.put("x-classname-inherited", "Port");
         
         if(codegenModel.vendorExtensions.get("x-parent") != null){
             if(codegenModel.vendorExtensions.get("x-parent").equals(codegenModel.name)){
@@ -192,10 +192,6 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 codegenModel.vendorExtensions.put("x-inherits-from", "iovnet::service::IOModule");
             }
         }
-        
-        
-        
-        
         
         return codegenModel;
     }
@@ -428,101 +424,121 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> postProcessModels(Map<String, Object> objs) {
-        List<Object> modelsList = (List<Object>) objs.get("models");
-        for(int i = 0; i < modelsList.size(); i++){     
-            Map<String, Object> models = (Map<String, Object>) modelsList.get(i);
-            CodegenModel model = (CodegenModel) models.get("model");
-            List<CodegenProperty> lp = model.vars;
-            String portsClassName = "Ports";
-            for(CodegenProperty p : lp){
-                List<String> lenum = p._enum;//retrieve enum list
-                if(lenum != null){//if it is not empty
-                    List<Map<String, String>> l = new ArrayList<Map<String, String>>(); 
-                    for(int j = 0; j < lenum.size(); j++){
-                        Map<String, String> mv = new HashMap<String, String>();
-                        if(model.vendorExtensions.get("x-parent") == null && p.baseName.contains("type")){
-                            mv.put("stringValue", lenum.get(j).toLowerCase());//here because if it is TYPE_TC the string value must be type_tc and no type_cls 
-                            if(lenum.get(j).equals("TYPE_TC")){
-                              lenum.set(j, "TYPE_CLS");
-                            }  
-                            p.datatype = "IOModuleType";
-                            p.vendorExtensions.put("x-is-iomodule-type", "true");
+    public Map<String, Object> postProcessAllModels(Map<String, Object> objs) {
+        super.postProcessAllModels(objs);
+        CodegenModel rootObjectModel = null;
+        String portsClassName = "Ports";
+        for (Map.Entry<String, Object> entry : objs.entrySet()) {
+            Map<String, Object> inner = (Map<String, Object>) entry.getValue();
+            List<Map<String, Object>> models = (List<Map<String, Object>>) inner.get("models");
+            for (Map<String, Object> mo : models) {
+                CodegenModel model = (CodegenModel) mo.get("model");
+                List<CodegenProperty> lp = model.vars;
+
+                for (CodegenProperty p : lp) {
+                    List<String> lenum = p._enum;//retrieve enum list
+                    if (lenum != null) {//if it is not empty
+                        List<Map<String, String>> l = new ArrayList<Map<String, String>>();
+                        for (int j = 0; j < lenum.size(); j++) {
+                            Map<String, String> mv = new HashMap<String, String>();
+                            if (model.vendorExtensions.get("x-parent") == null && p.baseName.contains("type")) {
+                                mv.put("stringValue", lenum.get(j).toLowerCase());//here because if it is TYPE_TC the string value must be type_tc and no type_cls
+                                if (lenum.get(j).equals("TYPE_TC")) {
+                                    lenum.set(j, "TYPE_CLS");
+                                }
+                                p.datatype = "IOModuleType";
+                                p.vendorExtensions.put("x-is-iomodule-type", "true");
+                            } else {
+                                p.datatype = model.name + p.nameInCamelCase + "Enum";
+                                mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value
+                            }
+                            mv.put("value", lenum.get(j).toUpperCase());//save the enum value
+                            l.add(mv);
+                            if (j < lenum.size() - 1)
+                                lenum.set(j, lenum.get(j).toUpperCase() + ",");//add comma if the value there are more values
+                            else
+                                lenum.set(j, lenum.get(j).toUpperCase());
                         }
-                        else{
-                            p.datatype = model.name + p.nameInCamelCase + "Enum";
-                            mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value 
-                        }
-                        mv.put("value", lenum.get(j).toUpperCase());//save the enum value
-                        l.add(mv);
-                        if(j < lenum.size() - 1)
-                            lenum.set(j, lenum.get(j).toUpperCase() + ",");//add comma if the value there are more values 
-                        else
-                            lenum.set(j, lenum.get(j).toUpperCase()); 
+                        if (p.allowableValues != null)
+                            p.allowableValues.put("values", l); //add allowable values to enum
                     }
-                    if(p.allowableValues != null)
-                        p.allowableValues.put("values", l); //add allowable values to enum
+                }
+
+                //Add vendor extension to recognize the class Ports
+                if (model.vendorExtensions.containsKey("x-inherits-from") && ((String) model.vendorExtensions.get("x-inherits-from")).equals("iovnet::service::Port")) {
+                    model.vendorExtensions.put("x-is-port-class", true);
+                    portsClassName = model.classname;
+
+                    for (CodegenProperty cp : lp) {
+                        switch (cp.baseName.toLowerCase()) {
+                            case "status":
+                                cp.vendorExtensions.put("x-is-port-status", true);
+                                cp.vendorExtensions.put("x-has-default-impl", true);
+                                break;
+                            case "peer":
+                                cp.vendorExtensions.put("x-is-port-peer", true);
+                                cp.vendorExtensions.put("x-has-default-impl", true);
+                                break;
+                            case "name":
+                                cp.vendorExtensions.put("x-is-port-name", true);
+                                cp.vendorExtensions.put("x-has-default-impl", true);
+                                break;
+                            case "uuid":
+                                cp.vendorExtensions.put("x-is-port-uuid", true);
+                                cp.vendorExtensions.put("x-has-default-impl", true);
+                                break;
+                            default:
+                                cp.vendorExtensions.put("x-has-default-impl", false);
+                                break;
+                        }
+                    }
+                }
+
+                if (model.vendorExtensions.containsKey("x-inherits-from") && ((String) model.vendorExtensions.get("x-inherits-from")).equals("iovnet::service::IOModule")) {
+                    model.vendorExtensions.put("x-is-root-object", true);
+                    rootObjectModel = model;
+
+                    for (CodegenProperty cp : lp) {
+                        switch (cp.baseName.toLowerCase()) {
+                            case "name":
+                                cp.vendorExtensions.put("x-is-iomodule-name", true);
+                                cp.vendorExtensions.put("x-has-default-impl", true);
+                                break;
+                            case "uuid":
+                                cp.vendorExtensions.put("x-is-iomodule-uuid", true);
+                                cp.vendorExtensions.put("x-has-default-impl", true);
+                                break;
+                            case "type":
+                                cp.vendorExtensions.put("x-is-iomodule-type", true);
+                                cp.vendorExtensions.put("x-has-default-impl", true);
+                                break;
+                            case "ports":
+                                cp.vendorExtensions.put("x-is-port-class", true);
+                                break;
+                            default:
+                                cp.vendorExtensions.put("x-has-default-impl", false);
+                                break;
+                        }
+                    }
                 }
             }
+        }
 
-            //Add vendor extension to recognize the class Ports
-            if(model.vendorExtensions.containsKey("x-inherits-from") && ((String)model.vendorExtensions.get("x-inherits-from")).equals("iovnet::service::Port")){
-            	model.vendorExtensions.put("x-is-port-class", true);
-            	portsClassName = model.classname;
-
-            	for(CodegenProperty cp : lp) {
-            		switch(cp.baseName.toLowerCase()){
-            			case "status":
-            				cp.vendorExtensions.put("x-is-port-status", true);
-            				cp.vendorExtensions.put("x-has-default-impl", true);
-            				break;
-            			case "peer":
-            				cp.vendorExtensions.put("x-is-port-peer", true);
-            				cp.vendorExtensions.put("x-has-default-impl", true);
-            				break;
-            			case "name":
-            				cp.vendorExtensions.put("x-is-port-name", true);
-            				cp.vendorExtensions.put("x-has-default-impl", true);
-            				break;
-            			case "uuid":
-            				cp.vendorExtensions.put("x-is-port-uuid", true);
-            				cp.vendorExtensions.put("x-has-default-impl", true);
-            				break;
-            			default:
-            				cp.vendorExtensions.put("x-has-default-impl", false);
-            				break;
-            		}
-            	}
-            }
-
-            if(model.vendorExtensions.containsKey("x-inherits-from") && ((String)model.vendorExtensions.get("x-inherits-from")).equals("iovnet::service::IOModule")){
-            	model.vendorExtensions.put("x-child-ports-classname", portsClassName);
-
-            	for(CodegenProperty cp : lp) {
-            		switch(cp.baseName.toLowerCase()){
-            			case "name":
-            				cp.vendorExtensions.put("x-is-iomodule-name", true);
-            				cp.vendorExtensions.put("x-has-default-impl", true);
-            				break;
-            			case "uuid":
-            				cp.vendorExtensions.put("x-is-iomodule-uuid", true);
-            				cp.vendorExtensions.put("x-has-default-impl", true);
-            				break;
-            			case "type":
-            				cp.vendorExtensions.put("x-is-iomodule-type", true);
-            				cp.vendorExtensions.put("x-has-default-impl", true);
-            				break;
-            			case "ports":
-            				cp.vendorExtensions.put("x-is-port-class", true);
-            				break;
-            			default:
-            				cp.vendorExtensions.put("x-has-default-impl", false);
-            				break;
-            		}
-            	}
+        if(rootObjectModel != null) {
+            rootObjectModel.vendorExtensions.put("x-child-ports-classname", portsClassName);
+            for (Map.Entry<String, Object> entry : objs.entrySet()) {
+                Map<String, Object> inner = (Map<String, Object>) entry.getValue();
+                List<Map<String, Object>> models = (List<Map<String, Object>>) inner.get("models");
+                for (Map<String, Object> mo : models) {
+                    CodegenModel model = (CodegenModel) mo.get("model");
+                    if (!model.vendorExtensions.containsKey("x-is-root-object") || !((boolean) model.vendorExtensions.get("x-is-root-object"))) {
+                        //We have a subclass
+                        model.vendorExtensions.put("x-root-object", rootObjectModel.classname);
+                    }
+                }
             }
         }
-        
+
         return objs;
     }
     

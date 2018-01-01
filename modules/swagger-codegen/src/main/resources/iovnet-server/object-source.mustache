@@ -4,17 +4,19 @@
 
 {{#models}}{{#model}}
 #include "src/{{classname}}.h"
-{{#vendorExtensions.x-is-port-class}}
-#include "src/{{vendorExtensions.x-parent}}.h"
-{{/vendorExtensions.x-is-port-class}}
+{{#vendorExtensions.x-root-object}}
+#include "src/{{vendorExtensions.x-root-object}}.h"
+{{/vendorExtensions.x-root-object}}
 {{^vendorExtensions.x-parent}}
 #include "{{classname}}_dp.h"
 
+static auto file = std::make_shared<spdlog::sinks::rotating_file_sink_mt> ("/var/log/iovnet/iovnetd", "log", 1048576 * 5, 3, true);
+static auto console = std::make_shared<spdlog::sinks::stdout_sink_mt> ();
+static spdlog::sinks_init_list sinks = {file, console};
+std::shared_ptr<spdlog::logger> {{classname}}::logger(std::make_shared<spdlog::logger>("iov-{{classVarName}}", sinks));
+
 {{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type)
-                             : IOModule(name, generate_code(), type),
-                             logger(spdlog::get("iov-{{classVarName}}")== nullptr
-                                    ? spdlog::stdout_logger_mt("iov-{{classVarName}}")
-                                    : spdlog::get("iov-{{classVarName}}")) {
+                             : IOModule(name, generate_code(), type) {
   logger->info("Creating {{classname}} instance {0}", name);
 
   {{#vars}}
@@ -46,9 +48,7 @@
 
 {{#vendorExtensions.x-parent}}
 {{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf): parent_(parent){{#vendorExtensions.x-classname-inherited}}, {{this}}(p){{/vendorExtensions.x-classname-inherited}} { 
-  logger = spdlog::get("iov-simpleforwarder") == nullptr ? spdlog::stdout_logger_mt("iov-simpleforwarder") : spdlog::get("iov-simpleforwarder");
-  //Remove the comment below if you want to enable the debug for this class
-  //logger->set_level(spdlog::level::debug)
+  {{vendorExtensions.x-root-object}}::logger->info("Creating {{classname}} instance");
 }
 {{/vendorExtensions.x-parent}}
 
@@ -175,7 +175,7 @@ void {{classname}}::create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is
   std::tie(iter, inserted) = parent.ports_.emplace(std::piecewise_construct,
                                                    std::forward_as_tuple(name),
                                                    std::forward_as_tuple(parent, p, conf));
-  //spdlog::get("iov-simpleforwarder")->info("New port create with name {0}", name);
+  //{{vendorExtensions.x-root-object}}::logger->info("New port create with name {0}", name);
   {{/vendorExtensions.x-is-port-class}}
   {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method create not implemented");
@@ -186,7 +186,7 @@ std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vars
   
   //This method retrieves the pointer to {{classname}} object specified by its keys.
   {{#vendorExtensions.x-is-port-class}}
-  //spdlog::get("iov-simpleforwarder")->info("Called getEntry with name: {0}", name);
+  //{{vendorExtensions.x-root-object}}::logger->info("Called getEntry with name: {0}", name);
   return std::shared_ptr<{{classname}}>(&parent.ports_.at(name), []({{classname}}*){});
   {{/vendorExtensions.x-is-port-class}}
   {{^vendorExtensions.x-is-port-class}}
