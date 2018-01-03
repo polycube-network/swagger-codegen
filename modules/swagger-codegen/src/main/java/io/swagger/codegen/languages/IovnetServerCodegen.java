@@ -172,8 +172,14 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     }
                     if(l.get(i).get("type").equals("string")){
                         if(l.get(i).get("isEnum") != null){
-                            String enumType = cp.nameInCamelCase + toUpperCamelCase(l.get(i).get("name")) + "Enum";
-                            l.get(i).put("type", enumType);
+                            if(l.get(i).get("x-typedef") != null){
+                                 String enumType = initialCaps((String)l.get(i).get("x-typedef")) + "Enum";        
+                                 l.get(i).put("type", enumType); 
+                            }
+                            else{
+                                String enumType = cp.nameInCamelCase + toUpperCamelCase(l.get(i).get("name")) + "Enum";
+                                l.get(i).put("type", enumType);
+                            }
                         } 
                         else   
                           l.get(i).put("type", "std::string");
@@ -450,7 +456,12 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                             p.vendorExtensions.put("x-is-iomodule-type", "true");
                         }
                         else{
-                            p.datatype = model.name + p.nameInCamelCase + "Enum";
+                            if(p.vendorExtensions.get("x-typedef") != null){
+                              p.datatype = initialCaps((String)p.vendorExtensions.get("x-typedef")) + "Enum";
+                              p.datatypeWithEnum = p.datatype.toUpperCase();//used in ifndef clause
+                            }
+                            else
+                              p.datatype = model.name + p.nameInCamelCase + "Enum";
                             mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value 
                         }
                         mv.put("value", lenum.get(j).toUpperCase());//save the enum value
@@ -547,18 +558,29 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                             for(CodegenParameter cp : op.allParams){
                                 if(cp.isEnum && m.get("methodCall").contains(cp.paramName)){
                                     //cp.baseName = initialCaps(cp.baseName);
-                                    if(cp.paramName.contains(m.get("varName")))
-                                        cp.dataType = cp.enumName;
-                                    else
-                                        cp.dataType = initialCaps(m.get("varName")) + initialCaps(cp.baseName) + "Enum"; //enum dataType 
+                                    if(cp.vendorExtensions.get("x-typedef") != null){
+                                        cp.dataType = initialCaps((String)cp.vendorExtensions.get("x-typedef")) + "Enum";
+                                        cp.enumName = cp.dataType;
+                                    }
+                                    else{
+                                      if(cp.paramName.contains(m.get("varName")))
+                                          cp.dataType = cp.enumName;
+                                      else
+                                          cp.dataType = initialCaps(m.get("varName")) + initialCaps(cp.baseName) + "Enum"; //enum dataType 
+                                    }
                                 }
                             }
                             for(CodegenParameter cp : op.pathParams){
                                 if(cp.isEnum && m.get("methodCall").contains(cp.paramName)){
                                     //cp.baseName = initialCaps(cp.baseName);
                                     cp.datatypeWithEnum = initialCaps(m.get("varName")) + "JsonObject"; //enum class object
-                                    if(!cp.enumName.contains(initialCaps(m.get("varName"))))
-                                        cp.enumName = initialCaps(m.get("varName")) + cp.enumName; 
+                                    if(cp.vendorExtensions.get("x-typedef") != null){
+                                        cp.enumName = initialCaps((String)cp.vendorExtensions.get("x-typedef")) + "Enum";
+                                    }
+                                    else{
+                                      if(!cp.enumName.contains(initialCaps(m.get("varName"))))
+                                          cp.enumName = initialCaps(m.get("varName")) + cp.enumName; 
+                                    }
                                 }
                             }
                             
@@ -584,7 +606,10 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         op.bodyParam.vendorExtensions.remove("x-is-enum");
                         op.bodyParam.vendorExtensions.put("x-enum-class", name + "JsonObject"); //enum  class name
                         //op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
-                        op.bodyParam.dataType = name + initialCaps(op.bodyParam.baseName) + "Enum"; //enum dataType
+                        if(op.bodyParam.vendorExtensions.get("x-typedef") != null)
+                            op.bodyParam.dataType = initialCaps((String)op.bodyParam.vendorExtensions.get("x-typedef")) + "Enum";
+                        else
+                            op.bodyParam.dataType = name + initialCaps(op.bodyParam.baseName) + "Enum"; //enum dataType
                         if(op.bodyParam.dataType.equals(s)){
                             op.bodyParam.dataType = "IOModuleType";
                         }
@@ -593,7 +618,10 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             if(op.responses != null){ //in case  the return type is enum
                         for(CodegenResponse r : op.responses){
                             if(r.vendorExtensions.get("x-is-enum") != null){
-                                op.returnType = name + initialCaps(var) + "Enum";
+                                if(r.vendorExtensions.get("x-typedef") != null)
+                                  op.returnType = initialCaps((String)r.vendorExtensions.get("x-typedef")) + "Enum";                                  
+                                else
+                                  op.returnType = name + initialCaps(var) + "Enum";
                                 if(op.returnType.equals(s + "Enum"))
                                     op.returnType = "IOModuleType";
                                 op.returnBaseType = initialCaps(var);

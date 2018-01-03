@@ -29,9 +29,16 @@ namespace {{this}} {
 {{#vars}}
 {{#isEnum}}
 {{^vendorExtensions.x-is-iomodule-type}}
+{{#vendorExtensions.x-typedef}}
+#ifndef {{{datatypeWithEnum}}}
+#define {{{datatypeWithEnum}}}
+{{/vendorExtensions.x-typedef}}
 enum class {{{datatype}}}{
   {{#_enum}}{{this}} {{/_enum}} 
 };
+{{#vendorExtensions.x-typedef}}
+#endif
+{{/vendorExtensions.x-typedef}}
 {{/vendorExtensions.x-is-iomodule-type}}
 {{/isEnum}}
 {{/vars}}
