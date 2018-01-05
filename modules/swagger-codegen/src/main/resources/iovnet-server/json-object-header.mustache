@@ -84,10 +84,10 @@ public:
   void {{setter}}({{{datatype}}}JsonObject value);
   {{/isPrimitiveType}}
   {{/isNotContainer}}
-  {{^required}}
+  {{^vendorExtensions.x-is-required}}
   bool {{name}}IsSet() const;
   void unset{{nameInCamelCase}}();
-  {{/required}}
+  {{/vendorExtensions.x-is-required}}
 	{{#isEnum}}
   
   static std::string {{{datatype}}}_to_string(const {{{datatype}}} &value);
@@ -107,8 +107,7 @@ protected:
   {{^isNotContainer}}
   std::vector<{{complexType}}JsonObject> m_{{name}};
   {{/isNotContainer}}
-  {{^required}}
-  bool m_{{name}}IsSet;{{/required}}
+  bool m_{{name}}IsSet;
   {{/vars}}
 };
 

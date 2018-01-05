@@ -11,45 +11,58 @@ namespace {{this}} {
 {{/modelNamespaceDeclarations}}
 
 {{classname}}JsonObject::{{classname}}JsonObject() {
-  {{#vars}}{{#isNotContainer}}{{#isPrimitiveType}}{{^isEnum}}m_{{name}} = {{{defaultValue}}};{{/isEnum}}
-  {{/isPrimitiveType}}{{^isPrimitiveType}}{{#isString}}{{^isEnum}}m_{{name}} = {{{defaultValue}}};{{/isEnum}}
-  {{/isString}}{{#isDateTime}}{{^isEnum}}m_{{name}} = {{{defaultValue}}};{{/isEnum}}
-  {{/isDateTime}}{{/isPrimitiveType}}{{/isNotContainer}}{{^required}}m_{{name}}IsSet = false;
-  {{/required}}{{/vars}}
+  {{#vars}}{{#vendorExtensions.x-has-default-value}}{{#isNotContainer}}{{#isPrimitiveType}}m_{{name}} = {{{defaultValue}}};
+  {{/isPrimitiveType}}{{^isPrimitiveType}}{{#isString}}m_{{name}} = {{{defaultValue}}};
+  {{/isString}}{{#isDateTime}}m_{{name}} = {{{defaultValue}}};
+  {{/isDateTime}}{{#isEnum}}m_{{name}} = {{{defaultValue}}};
+  {{/isEnum}}{{/isPrimitiveType}}{{/isNotContainer}}
+  m_{{name}}IsSet = true;{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}
+  m_{{name}}IsSet = false;{{/vendorExtensions.x-has-default-value}}
+  {{/vars}}
 }
 
 {{classname}}JsonObject::~{{classname}}JsonObject() {}
 
 void {{classname}}JsonObject::validate() {
-  // TODO: implement validation
+  {{#vars}}{{#vendorExtensions.x-is-required}}{{#isPrimitiveType}}
+  if(!m_{{name}}IsSet) {
+    throw std::runtime_error("Variable {{baseName}} is required");
+  }
+  {{/isPrimitiveType}}{{/vendorExtensions.x-is-required}}
+  {{^vendorExtensions.x-is-required}}{{#vendorExtensions.x-is-key}}{{#isPrimitiveType}}
+    if(!m_{{name}}IsSet) {
+      throw std::runtime_error("Variable {{baseName}} is required");
+    }
+  {{/isPrimitiveType}}{{/vendorExtensions.x-is-key}}{{/vendorExtensions.x-is-required}}
+  {{/vars}}
 }
 
 nlohmann::json {{classname}}JsonObject::toJson() const {
   nlohmann::json val = nlohmann::json::object();
 
-  {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^required}}if(m_{{name}}IsSet) {
+  {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^vendorExtensions.x-is-required}}if(m_{{name}}IsSet) {
       val["{{baseName}}"] = {{#isEnum}}{{{datatype}}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
   }
 
-  {{/required}}{{#required}}val["{{baseName}}"] = {{#isEnum}}{{{datatype}}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
-  {{/required}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
+  {{/vendorExtensions.x-is-required}}{{#vendorExtensions.x-is-required}}val["{{baseName}}"] = {{#isEnum}}{{{datatype}}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
+  {{/vendorExtensions.x-is-required}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
   {
     nlohmann::json jsonArray;
     for (auto& item : m_{{name}}) {
       jsonArray.push_back(JsonObjectBase::toJson(item));
     }
-    {{#required}}val["{{baseName}}"] = jsonArray;
-    {{/required}}{{^required}}
+    {{#vendorExtensions.x-is-required}}val["{{baseName}}"] = jsonArray;
+    {{/vendorExtensions.x-is-required}}{{^vendorExtensions.x-is-required}}
     if (jsonArray.size() > 0) {
       val["{{baseName}}"] = jsonArray;
     }
-    {{/required}}
+    {{/vendorExtensions.x-is-required}}
   }
-  {{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}{{^required}}if(m_{{name}}IsSet) {
+  {{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}{{^vendorExtensions.x-is-required}}if(m_{{name}}IsSet) {
       val["{{baseName}}"] = JsonObjectBase::toJson(m_{{name}});
   }
-  {{/required}}{{#required}}val["{{baseName}}"] = JsonObjectBase::toJson(m_{{name}});
-  {{/required}}{{/isPrimitiveType}}{{/isListContainer}}{{/vars}}
+  {{/vendorExtensions.x-is-required}}{{#vendorExtensions.x-is-required}}val["{{baseName}}"] = JsonObjectBase::toJson(m_{{name}});
+  {{/vendorExtensions.x-is-required}}{{/isPrimitiveType}}{{/isListContainer}}{{/vars}}
 
   return val;
 }
@@ -57,14 +70,14 @@ nlohmann::json {{classname}}JsonObject::toJson() const {
 void {{classname}}JsonObject::fromJson(nlohmann::json& val) {
   {{#vars}}
   {{#isPrimitiveType}}{{^isListContainer}}
-  {{^required}}
+  {{^vendorExtensions.x-is-required}}
   if (val.find("{{baseName}}") != val.end()) {
       {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
   }
-  {{/required}}
-  {{#required}}
+  {{/vendorExtensions.x-is-required}}
+  {{#vendorExtensions.x-is-required}}
   {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
-  {{/required}}{{/isListContainer}}
+  {{/vendorExtensions.x-is-required}}{{/isListContainer}}
   {{/isPrimitiveType}}
   {{#isListContainer}}
   m_{{name}}.clear();
@@ -79,7 +92,7 @@ void {{classname}}JsonObject::fromJson(nlohmann::json& val) {
       {{/items.isDateTime}}{{/items.isString}}{{/isPrimitiveType}}
   }
   {{/isListContainer}}
-  {{^isListContainer}}{{^isPrimitiveType}}{{^required}}
+  {{^isListContainer}}{{^isPrimitiveType}}{{^vendorExtensions.x-is-required}}
   if (val.find("{{baseName}}") != val.end()) {
       {{#isString}}{{setter}}(val.at("{{baseName}}"));
       {{/isString}}{{^isString}}{{#isDateTime}}{{setter}}(val.at("{{baseName}}"));
@@ -91,9 +104,9 @@ void {{classname}}JsonObject::fromJson(nlohmann::json& val) {
       }
       {{/isDateTime}}{{/isString}}
   }
-  {{/required}}{{#required}}{{#isString}}{{setter}}(val.at("{{baseName}}"));
+  {{/vendorExtensions.x-is-required}}{{#vendorExtensions.x-is-required}}{{#isString}}{{setter}}(val.at("{{baseName}}"));
   {{/isString}}{{^isString}}{{#isDateTime}}{{setter}}(val.at("{{baseName}}"));
-  {{/isDateTime}}{{/isString}}{{/required}}{{/isPrimitiveType}}{{/isListContainer}}
+  {{/isDateTime}}{{/isString}}{{/vendorExtensions.x-is-required}}{{/isPrimitiveType}}{{/isListContainer}}
   {{/vars}}
 }
 
@@ -211,18 +224,18 @@ void {{classname}}JsonObject::add{{complexType}}({{complexType}}JsonObject value
 
 void {{classname}}JsonObject::{{setter}}({{{datatype}}}{{^isPrimitiveType}}JsonObject{{/isPrimitiveType}} value) {
   m_{{name}} = value;
-  {{^required}}m_{{name}}IsSet = true;{{/required}}
+  {{^vendorExtensions.x-is-required}}m_{{name}}IsSet = true;{{/vendorExtensions.x-is-required}}
 }
 {{/isNotContainer}}
 
-{{^required}}bool {{classname}}JsonObject::{{name}}IsSet() const {
+{{^vendorExtensions.x-is-required}}bool {{classname}}JsonObject::{{name}}IsSet() const {
   return m_{{name}}IsSet;
 }
 
 void {{classname}}JsonObject::unset{{nameInCamelCase}}() {
   m_{{name}}IsSet = false;
 }
-{{/required}}
+{{/vendorExtensions.x-is-required}}
 {{#isEnum}}
 
 std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}}} &value){

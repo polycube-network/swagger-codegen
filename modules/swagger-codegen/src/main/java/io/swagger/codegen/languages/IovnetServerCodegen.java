@@ -7,12 +7,16 @@ import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.*;
 import io.swagger.codegen.utils.ModelUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.*;
 import java.io.File;
 
 public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(IovnetServerCodegen.class);
     protected String implFolder = "/src/api";
 
 
@@ -443,10 +447,16 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
                 for(CodegenProperty p : lp){
                     List<String> lenum = p._enum;//retrieve enum list
+
+                    //If we have a key, it should also be required
+                    if(p.vendorExtensions.containsKey("x-is-key") && Boolean.TRUE.equals(p.vendorExtensions.get("x-is-key"))) {
+                        p.vendorExtensions.put("x-is-required", false);
+                    }
+
                     if(lenum != null) {//if it is not empty
-                        List<Map<String, String>> l = new ArrayList<Map<String, String>>();
+                        List<Map<String, String>> l = new ArrayList<>();
                         for(int j = 0; j < lenum.size(); j++){
-                            Map<String, String> mv = new HashMap<String, String>();
+                            Map<String, String> mv = new HashMap<>();
                             if(model.vendorExtensions.get("x-parent") == null && p.baseName.contains("type")) {
                                 mv.put("stringValue", lenum.get(j).toLowerCase());//here because if it is TYPE_TC the string value must be type_tc and no type_cls
                                 if(lenum.get(j).equals("TYPE_TC")) {
@@ -460,6 +470,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                                     p.datatypeWithEnum = p.datatype.toUpperCase();//used in ifndef clause
                                 } else {
                                     p.datatype = model.name + p.nameInCamelCase + "Enum";
+                                    p.datatypeWithEnum = p.datatype;
                                 }
                                 mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value
                             }
@@ -471,7 +482,14 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                                 lenum.set(j, lenum.get(j).toUpperCase());
                         }
                         if(p.allowableValues != null)
-                        p.allowableValues.put("values", l); //add allowable values to enum
+                            p.allowableValues.put("values", l); //add allowable values to enum
+
+                        if(p.isEnum && p.defaultValue != null && !p.defaultValue.isEmpty() && !p.defaultValue.contains("\"\"")){
+                            if(p.defaultValue.trim().equals("TYPE_TC")){
+                                p.defaultValue = "TYPE_CLS";
+                            }
+                            p.defaultValue = String.format("%s::%s", p.datatype, p.defaultValue);
+                        }
                     }
                 }
 
@@ -742,33 +760,60 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     @Override
     public String toDefaultValue(Property p) {
         if (p instanceof StringProperty) {
-            return "\"\"";
+            if(((StringProperty) p).getDefault() != null && !((StringProperty) p).getDefault().isEmpty()) {
+                ((StringProperty) p).setVendorExtension("x-has-default-value", true);
+                return ((StringProperty) p).getDefault();
+            } else {
+                ((StringProperty) p).setVendorExtension("x-has-default-value", false);
+                return "\"\"";
+            }
         } else if (p instanceof BooleanProperty) {
-            return "false";
+            if(((BooleanProperty) p).getDefault() != null) {
+                ((BooleanProperty) p).setVendorExtension("x-has-default-value", true);
+                return String.valueOf(((BooleanProperty) p).getDefault().toString());
+            } else {
+                ((BooleanProperty) p).setVendorExtension("x-has-default-value", false);
+                return "false";
+            }
         } else if (p instanceof DateProperty) {
+            ((DateProperty) p).setVendorExtension("x-has-default-value", false);
             return "\"\"";
         } else if (p instanceof DateTimeProperty) {
+            ((DateTimeProperty) p).setVendorExtension("x-has-default-value", false);
             return "\"\"";
         } else if (p instanceof DoubleProperty) {
+            ((DoubleProperty) p).setVendorExtension("x-has-default-value", false);
             return "0.0";
         } else if (p instanceof FloatProperty) {
+            ((FloatProperty) p).setVendorExtension("x-has-default-value", false);
             return "0.0f";
-        } else if (p instanceof IntegerProperty || p instanceof BaseIntegerProperty) {
+        } else if (p instanceof IntegerProperty) {
+            if(((IntegerProperty) p).getDefault() != null) {
+                ((IntegerProperty) p).setVendorExtension("x-has-default-value", true);
+                return String.valueOf(((IntegerProperty) p).getDefault());
+            } else {
+                ((IntegerProperty) p).setVendorExtension("x-has-default-value", false);
+                return "0";
+            }
+        } else if (p instanceof BaseIntegerProperty) {
+            ((BaseIntegerProperty) p).setVendorExtension("x-has-default-value", false);
             return "0";
-        } else if (p instanceof LongProperty) {
-            return "0L";
         } else if (p instanceof DecimalProperty) {
+            ((DecimalProperty) p).setVendorExtension("x-has-default-value", false);
             return "0.0";
         } else if (p instanceof MapProperty) {
             MapProperty ap = (MapProperty) p;
             String inner = getSwaggerType(ap.getAdditionalProperties());
+            ((MapProperty) p).setVendorExtension("x-has-default-value", true);
             return "std::map<std::string, " + inner + ">()";
         } else if (p instanceof ArrayProperty) {
             ArrayProperty ap = (ArrayProperty) p;
+            ((ArrayProperty) p).setVendorExtension("x-has-default-value", true);
             String inner = getSwaggerType(ap.getItems());
             return "std::vector<" + inner + ">()";
         } else if (p instanceof RefProperty) {
             RefProperty rp = (RefProperty) p;
+            ((RefProperty) p).setVendorExtension("x-has-default-value", true);
             return toModelName(rp.getSimpleRef());
         }
         return "nullptr";
@@ -776,7 +821,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
     /**
      * Location to write model files. You can use the modelPackage() as defined
-     * when the class is instantiatedolder
+     * when the class is instantiated older
      */
     public String modelFileFolder() {
         return outputFolder + "/src";
