@@ -4,4 +4,8 @@
 
 #include "api/{{apiClassnameCamelCase}}Impl.h"
 #define MANAGER_TYPE io::swagger::server::api::{{apiClassnameCamelCase}}Impl
+{{#swagger}}
+#define SERVICE_DESCRIPTION "{{info.description}}"
+#define SERVICE_VERSION "{{info.version}}"
+{{/swagger}}
 #include <iovnet/services/shared_library.h>
