@@ -7,5 +7,7 @@
 {{#swagger}}
 #define SERVICE_DESCRIPTION "{{info.description}}"
 #define SERVICE_VERSION "{{info.version}}"
+#define SERVICE_PYANG_GIT "{{pyangGitRepoId}}"
+#define SERVICE_SWAGGER_CODEGEN_GIT "{{gitRepoId}}"
 {{/swagger}}
 #include <iovnet/services/shared_library.h>

@@ -674,6 +674,10 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     public Map<String, Object> postProcessSupportingFileData(Map<String, Object> objs){
         Map<String, Object> apiInfo = (Map<String, Object>) objs.get("apiInfo");
         List<Map<String, Object>> apis = (List<Map<String, Object>>)apiInfo.get("apis");
+        Swagger swagger = (Swagger) objs.get("swagger");
+        if(swagger.getInfo().getVendorExtensions().containsKey("x-pyang-git-info")) {
+            objs.put("pyangGitRepoId", swagger.getInfo().getVendorExtensions().get("x-pyang-git-info"));
+        }
 
         String api_classname = (String) apis.get(0).get("classname");
         objs.put("apiClassnameCamelCase", api_classname);
