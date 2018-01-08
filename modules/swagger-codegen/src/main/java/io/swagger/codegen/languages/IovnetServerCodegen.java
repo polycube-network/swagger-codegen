@@ -10,10 +10,10 @@ import io.swagger.codegen.utils.ModelUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.*;
-import java.io.File;
 
 public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig {
     protected static final Logger LOGGER = LoggerFactory.getLogger(IovnetServerCodegen.class);
@@ -670,6 +670,25 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         return objs;
     }
 
+    private String read_yang_file(String yang_path) {
+        try(BufferedReader br = new BufferedReader(new FileReader(yang_path))) {
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+
+            while(line != null){
+                sb.append(line);
+                sb.append("\\");
+                sb.append(System.lineSeparator());
+                line = br.readLine();
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            LOGGER.info("Unable to read file " + yang_path);
+        }
+
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> postProcessSupportingFileData(Map<String, Object> objs){
@@ -678,6 +697,13 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         Swagger swagger = (Swagger) objs.get("swagger");
         if(swagger.getInfo().getVendorExtensions().containsKey("x-pyang-git-info")) {
             objs.put("pyangGitRepoId", swagger.getInfo().getVendorExtensions().get("x-pyang-git-info"));
+        }
+
+        if(swagger.getInfo().getVendorExtensions().containsKey("x-yang-path")) {
+            //Let's read the data model and put it into a variable
+            String yang = read_yang_file((String)swagger.getInfo().getVendorExtensions().get("x-yang-path"));
+            if(yang != null)
+                objs.put("yangDataModel", yang);
         }
 
         String api_classname = (String) apis.get(0).get("classname");

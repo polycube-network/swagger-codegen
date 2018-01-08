@@ -32,7 +32,7 @@ public:
   {{classname}}();
   virtual ~{{classname}}() {};
 
-  const std::string base = "{{basePathWithoutHost}}" + SERVICE_NAME + "/";
+  const std::string base = "{{basePathWithoutHost}}" + std::string(SERVICE_NAME) + "/";
 
 protected:
   void setupRoutes();
