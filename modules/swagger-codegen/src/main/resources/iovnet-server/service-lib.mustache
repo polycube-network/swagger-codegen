@@ -9,6 +9,8 @@
 #define SERVICE_VERSION "{{info.version}}"
 #define SERVICE_PYANG_GIT "{{pyangGitRepoId}}"
 #define SERVICE_SWAGGER_CODEGEN_GIT "{{gitRepoId}}"
-#define SERVICE_DATA_MODEL ""
+const std::string SERVICE_DATA_MODEL = R"IOVNET_DM(
+{{{yangDataModel}}}
+)IOVNET_DM";
 {{/swagger}}
 #include <iovnet/services/shared_library.h>

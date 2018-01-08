@@ -677,7 +677,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
             while(line != null){
                 sb.append(line);
-                sb.append("\\");
+                //sb.append("\\");
                 sb.append(System.lineSeparator());
                 line = br.readLine();
             }
@@ -688,6 +688,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
         return null;
     }
+
+
 
     @SuppressWarnings("unchecked")
     @Override
