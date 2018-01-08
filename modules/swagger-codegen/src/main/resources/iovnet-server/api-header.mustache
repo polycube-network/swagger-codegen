@@ -10,6 +10,8 @@
 
 #pragma once
 
+#define SERVICE_NAME "{{classVarName}}"
+
 {{{defaultInclude}}}
 #include <iovnet/services/http_router.h>
 #include <iovnet/services/management_interface.h>
@@ -30,7 +32,7 @@ public:
   {{classname}}();
   virtual ~{{classname}}() {};
 
-  const std::string base = "{{basePathWithoutHost}}";
+  const std::string base = "{{basePathWithoutHost}}" + SERVICE_NAME + "/";
 
 protected:
   void setupRoutes();

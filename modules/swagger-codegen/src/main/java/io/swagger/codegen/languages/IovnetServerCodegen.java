@@ -273,8 +273,9 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             op.bodyParam.paramName = "value";
             
         op.vendorExtensions.put("x-call-sequence-method", getCallMethodSequence(method, path, op));
-
-        String pathForRouter = path.replaceAll("\\{(.*?)}", ":$1");
+        //Remove initial service name
+        String pathForRouter = path.replaceAll("\\/[^\\/]*\\/(.*)", "$1");
+        pathForRouter = pathForRouter.replaceAll("\\{(.*?)}", ":$1");
         op.vendorExtensions.put("x-codegen-iovnet-router-path", pathForRouter);
 
         return op;
