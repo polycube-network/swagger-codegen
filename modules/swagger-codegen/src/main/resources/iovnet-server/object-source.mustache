@@ -257,6 +257,9 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
   {{#vendorExtensions.x-is-iomodule-type}}
   return IOModule::get_type();
   {{/vendorExtensions.x-is-iomodule-type}}
+  {{#vendorExtensions.x-is-iomodule-debug}}
+    return false;
+  {{/vendorExtensions.x-is-iomodule-debug}}
   {{#vendorExtensions.x-is-port-status}}
   return {{{datatype}}}::UP;
   {{/vendorExtensions.x-is-port-status}}
@@ -284,6 +287,9 @@ void {{classname}}::{{setter}}(const {{{datatype}}} &value){
   {{#vendorExtensions.x-is-port-status}}
   throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
   {{/vendorExtensions.x-is-port-status}}
+  {{#vendorExtensions.x-is-iomodule-debug}}
+    return;
+  {{/vendorExtensions.x-is-iomodule-debug}}
   {{#vendorExtensions.x-is-port-peer}}
   //logger->info("Received request to set peer {0}", value);
   Port::set_peer(value);

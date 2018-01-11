@@ -545,6 +545,10 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                             case "ports":
                                 cp.vendorExtensions.put("x-is-port-class", true);
                                 break;
+                            case "debug":
+                                cp.vendorExtensions.put("x-is-iomodule-debug", true);
+                                cp.vendorExtensions.put("x-has-default-impl", true);
+                                break;
                             default:
                                 cp.vendorExtensions.put("x-has-default-impl", false);
                                 break;

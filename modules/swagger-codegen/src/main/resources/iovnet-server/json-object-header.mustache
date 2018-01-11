@@ -109,6 +109,8 @@ protected:
   {{/isNotContainer}}
   bool m_{{name}}IsSet;
   {{/vars}}
+
+  std::vector<std::string> allowedParameters_{ {{#vars}}"{{baseName}}"{{#hasMore}}, {{/hasMore}}{{/vars}} };
 };
 
 {{#modelNamespaceDeclarations}}
