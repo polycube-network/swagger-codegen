@@ -708,6 +708,10 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 objs.put("yangDataModel", yang);
         }
 
+        if(swagger.getInfo().getVendorExtensions().containsKey("x-service-min-kernel-version")) {
+            objs.put("service-min-kernel-version", swagger.getInfo().getVendorExtensions().get("x-service-min-kernel-version"));
+        }
+
         String api_classname = (String) apis.get(0).get("classname");
         objs.put("apiClassnameCamelCase", api_classname);
         objs.put("firstClassnameSnakeLowerCase", DefaultCodegen.underscore(api_classname).toLowerCase());
