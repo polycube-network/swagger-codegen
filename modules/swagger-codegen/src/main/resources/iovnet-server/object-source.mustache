@@ -22,22 +22,20 @@ std::shared_ptr<spdlog::logger> {{classname}}::logger(std::make_shared<spdlog::l
   {{#vars}}
   {{^isNotContainer}}
   add{{nameInCamelCase}}List(conf.{{getter}}());
-  {{/isNotContainer}}
-  {{#isNotContainer}} 
+  {{/isNotContainer}}{{#isNotContainer}}
   {{^vendorExtensions.x-is-key}}
-  {{^isReadOnly}}
-  if(conf.{{name}}IsSet()){
+  {{^isReadOnly}}{{^vendorExtensions.x-is-required}}
+  if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-is-required}}
   {{#isPrimitiveType}}
-      {{setter}}(conf.{{getter}}());
-  {{/isPrimitiveType}}
-  {{^isPrimitiveType}}
-      auto value = conf.{{getter}}();
-      {{#vendorExtensions.x-key-list}}
-      {{type}} {{varName}}_ = value.{{getter}}();
-      {{/vendorExtensions.x-key-list}}
-      add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());
-  {{/isPrimitiveType}}
-  }
+    {{setter}}(conf.{{getter}}());
+  {{/isPrimitiveType}}{{^isPrimitiveType}}
+    auto value = conf.{{getter}}();
+    {{#vendorExtensions.x-key-list}}
+    {{type}} {{varName}}_ = value.{{getter}}();
+    {{/vendorExtensions.x-key-list}}
+    add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());
+  {{/isPrimitiveType}}{{^vendorExtensions.x-is-required}}
+  } {{/vendorExtensions.x-is-required}}
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
   {{/isNotContainer}}
@@ -61,55 +59,28 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
 
   {{#vars}}
   {{^required}}
-  {{^vendorExtensions.x-is-key}}
-  {{^isReadOnly}}
-  if(conf.{{name}}IsSet()){
-    {{^isNotContainer}}
+  {{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}
+  if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-is-required}}{{^isNotContainer}}
     for(auto &i : conf.{{getter}}()){ 
       {{#vendorExtensions.x-key-list}}
       auto {{varName}} = i.{{getter}}();
       {{/vendorExtensions.x-key-list}}
       auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
       m->update(i);
-    }
-    {{/isNotContainer}}
-    {{#isNotContainer}}
-    {{#isPrimitiveType}}
-    {{setter}}(conf.{{getter}}());
-    {{/isPrimitiveType}}
-    {{^isPrimitiveType}}
+    }{{/isNotContainer}}{{#isNotContainer}}{{#isPrimitiveType}}
+    {{setter}}(conf.{{getter}}());{{/isPrimitiveType}}{{^isPrimitiveType}}
     auto m = {{getter}}();
-    m->update(conf.{{getter}}());
-    {{/isPrimitiveType}}
-    {{/isNotContainer}}
-  }
-  {{/isReadOnly}}
-  {{/vendorExtensions.x-is-key}}
-  {{/required}}
-  {{#required}}
-  {{^isNotContainer}}
-  for(auto &i : conf.{{getter}}()){ 
-    {{#vendorExtensions.x-key-list}}
-    auto {{varName}} = i.{{getter}}();
-    {{/vendorExtensions.x-key-list}}
+    m->update(conf.{{getter}}());{{/isPrimitiveType}}{{/isNotContainer}}{{^vendorExtensions.x-is-required}}
+  } {{/vendorExtensions.x-is-required}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}{{/required}}{{#required}}{{^isNotContainer}}
+  for(auto &i : conf.{{getter}}()){ {{#vendorExtensions.x-key-list}}
+    auto {{varName}} = i.{{getter}}();{{/vendorExtensions.x-key-list}}
     auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
     m->update(i);
   }
-  {{/isNotContainer}}
-  {{#isNotContainer}}
-  {{^vendorExtensions.x-is-key}}
-  {{^isReadOnly}}
-  {{#isPrimitiveType}}
-  {{setter}}(conf.{{getter}}());
-  {{/isPrimitiveType}}
-  {{^isPrimitiveType}}
+  {{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{#isPrimitiveType}}
+  {{setter}}(conf.{{getter}}());{{/isPrimitiveType}}{{^isPrimitiveType}}
   auto m = {{getter}}();
-  m->update(conf.{{getter}}());
-  {{/isPrimitiveType}}
-  {{/isReadOnly}}
-  {{/vendorExtensions.x-is-key}}
-  {{/isNotContainer}}
-  {{/required}}
+  m->update(conf.{{getter}}());{{/isPrimitiveType}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}{{/isNotContainer}}{{/required}}
   {{/vars}}
 }
 
@@ -305,5 +276,13 @@ void {{classname}}::{{setter}}(const {{{datatype}}} &value){
 {{/isPrimitiveType}}
 {{/isNotContainer}}
 {{/vars}}
+
+{{#vendorExtensions.x-has-yang-actions}}
+{{#vendorExtensions.x-yang-actions}}
+{{#x-yang-action-has-output}}{{x-yang-action-output-object}}JsonObject{{/x-yang-action-has-output}}{{^x-yang-action-has-output}}void{{/x-yang-action-has-output}} {{classname}}::{{x-yang-action-name-lower-camelcase}}({{#x-yang-action-has-input}}{{x-yang-action-input-object}}JsonObject input{{/x-yang-action-has-input}}) {
+  throw std::runtime_error("[{{classname}}]: Method {{x-yang-action-name-lower-camelcase}} not implemented");
+}
+{{/vendorExtensions.x-yang-actions}}
+{{/vendorExtensions.x-has-yang-actions}}
 
 {{/model}}{{/models}}

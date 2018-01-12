@@ -3,6 +3,7 @@ package io.swagger.codegen.languages;
 
 import io.swagger.codegen.*;
 import io.swagger.models.Model;
+import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.*;
@@ -219,8 +220,6 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         CodegenParameter bodyParam = op.bodyParam;
         
         if(op.httpMethod.equals("POST")){
-            op.returnType = null;
-            op.returnBaseType = null;
             op.vendorExtensions.put("x-response-code", "Created");
             method = "add";
         }
@@ -271,6 +270,20 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
         if(bodyParam != null)
             op.bodyParam.paramName = "value";
+
+        if(bodyParam != null && definitions.containsKey(bodyParam.baseType)){
+            //TODO: Perform the same check for output param
+            ModelImpl def = (ModelImpl)definitions.get(bodyParam.baseType);
+            if(def.getVendorExtensions().containsKey("x-is-yang-action-object")){
+                op.vendorExtensions.put("x-is-yang-action", true);
+                op.vendorExtensions.put("x-action-name", bodyParam.paramName);
+            }
+        } else {
+            if(op.httpMethod.equals("POST")) {
+                op.returnType = null;
+                op.returnBaseType = null;
+            }
+        }
             
         op.vendorExtensions.put("x-call-sequence-method", getCallMethodSequence(method, path, op));
         //Remove initial service name
@@ -305,6 +318,12 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     }
     
     private List<Map<String, String>> getCallMethodSequence(String method, String path, CodegenOperation op){
+        boolean isYangAction = false;
+        if(op.vendorExtensions.containsKey("x-is-yang-action") && op.vendorExtensions.get("x-is-yang-action").equals(Boolean.TRUE)){
+            method = "";
+            isYangAction = true;
+        }
+
         //this list will contain the sequence of method call
         List<Map<String,String>> l = new ArrayList<Map<String,String>>();
         
@@ -348,10 +367,20 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 //if i == 0 the path element is the service
                 if(i == 0)
                     methodCall = "get_iomodule";
-                else if(lastCall && i != 1) //the last path element has a particular method basing on httpMethod
-                    methodCall = path_without_keys.get(i-1) + "->" + method + toUpperCamelCase(path_without_keys.get(i));
-                else if(lastCall && i == 1)
-                    methodCall = path_without_keys.get(i-1) + "." + method + toUpperCamelCase(path_without_keys.get(i));
+                else if(lastCall && i != 1) { //the last path element has a particular method basing on httpMethod
+                    methodCall = path_without_keys.get(i - 1) + "->" + method + toUpperCamelCase(path_without_keys.get(i));
+                    int c_index = methodCall.indexOf('>');
+                    char[] methodCallChar = methodCall.toCharArray();
+                    methodCallChar[++c_index] = Character.toLowerCase(methodCall.charAt(c_index));
+                    methodCall = String.valueOf(methodCallChar);
+                }
+                else if(lastCall && i == 1) {
+                    methodCall = path_without_keys.get(i - 1) + "." + method + toUpperCamelCase(path_without_keys.get(i));
+                    int c_index = methodCall.indexOf('>');
+                    char[] methodCallChar = methodCall.toCharArray();
+                    methodCallChar[++c_index] = Character.toLowerCase(methodCall.charAt(c_index));
+                    methodCall = String.valueOf(methodCallChar);
+                }
                 else if(i == 1) //the second path element has a get method but called by .
                     methodCall = path_without_keys.get(i-1) + ".get" + toUpperCamelCase(path_without_keys.get(i));
                 else //the remaining methods are all get
@@ -377,16 +406,16 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 }  
                 methodCall += ")";
                 //check if is the lastCall method and if the returnType is not primitive in order to call the toJsonObject() properly
-                if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive && !op.operationId.contains("List")){
+                if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive && !op.operationId.contains("List") && !isYangAction){
                     if(i == 0)
                         methodCall += ".";
                     else
                         methodCall += "->";
                 }
 
-                if(methodCall.indexOf("get_iomodule") != -1){
+                if(methodCall.contains("get_iomodule")){
                     m.put("methodCall", methodCall);
-                } else if(methodCall.toLowerCase().indexOf("get_ports") != -1){
+                } else if(methodCall.toLowerCase().contains("get_ports")){
                     m.put("methodCall", methodCall.replaceAll("(?i)(get_ports)", "get_ports"));
                 } else {
                     m.put("methodCall", toLowerCamelCase(methodCall));
@@ -406,9 +435,9 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     else
                         methodCall = toUpperCamelCase(path_without_keys.get(i)) + "->" + method + "(" + bodyParam.paramName + ")";
 
-                    if(methodCall.indexOf("get_iomodule") != -1){
+                    if(methodCall.contains("get_iomodule")){
                         m2.put("methodCall", methodCall);
-                    } else if(methodCall.toLowerCase().indexOf("get_ports") != -1){
+                    } else if(methodCall.toLowerCase().contains("get_ports")){
                         m2.put("methodCall", methodCall.replaceAll("(?i)(get_ports)", "get_ports"));
                     } else {
                         m2.put("methodCall", toLowerCamelCase(methodCall));
@@ -917,7 +946,27 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             return Character.toUpperCase(type.charAt(0)) + type.substring(1);
         }
     }
-    
+
+    @Override
+    public boolean shouldSkipModelProcess(String filename, String templateName, Map<String, Object> models) {
+        boolean shouldSkipModelProcess;
+        CodegenModel model = (CodegenModel) models.get("model");
+        if (model.vendorExtensions.containsKey("x-is-yang-action-object") &&
+               (templateName.equals("object-header.mustache") ||
+                templateName.equals("object-source.mustache") ||
+                templateName.equals("interface.mustache") ||
+                templateName.equals("object-source-defaultimpl.mustache"))){
+            shouldSkipModelProcess = true;
+        } else if(model.vendorExtensions.containsKey("x-is-yang-grouping")){
+            shouldSkipModelProcess = (Boolean)model.vendorExtensions.get("x-is-yang-grouping");
+        } else {
+            shouldSkipModelProcess = false;
+        }
+
+        model.vendorExtensions.put("x-should-skip-model-process", shouldSkipModelProcess);
+        return shouldSkipModelProcess;
+    }
+
     @Override
     public String toModelFilename(String name) {
         //name = name.replace("Schema", "");

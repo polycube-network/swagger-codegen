@@ -43,6 +43,8 @@ public interface CodegenConfig {
 
     String modelFileFolder();
 
+    String toModelFileFolder(String moduleName);
+
     String modelTestFileFolder();
 
     String modelDocFileFolder();
@@ -166,6 +168,8 @@ public interface CodegenConfig {
     String apiDocFilename(String templateName, String tag);
 
     boolean shouldOverwrite(String filename);
+
+    boolean shouldSkipModelProcess(String filename, String templateName, Map<String, Object> objs);
 
     boolean isSkipOverwrite();
 

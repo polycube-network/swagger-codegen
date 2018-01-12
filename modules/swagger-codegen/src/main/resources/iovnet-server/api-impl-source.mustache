@@ -199,7 +199,12 @@ void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::st
   {{/lastCall}}
   {{#lastCall}}
   {{^vendorExtensions.x-is-list}}
+  {{#vendorExtensions.x-is-yang-action}}
+  {{#returnType}}return {{{methodCall}}};{{/returnType}}
+  {{/vendorExtensions.x-is-yang-action}}
+  {{^vendorExtensions.x-is-yang-action}}
   {{#returnType}}return {{{methodCall}}}{{^returnTypeIsPrimitive}}toJsonObject(){{/returnTypeIsPrimitive}};{{/returnType}}
+  {{/vendorExtensions.x-is-yang-action}}
   {{^returnType}}{{{methodCall}}};{{/returnType}}
   {{/vendorExtensions.x-is-list}}
   {{#vendorExtensions.x-is-list}}

@@ -9,10 +9,8 @@ include_directories(src)
 add_library(iov-{{serviceNameLowerCase}} SHARED
   ${SERIALIZER_SOURCES}
   ${API_SOURCES}
-  ${SRC_SOURCES}
-  {{#models}}{{#model}}
-  {{classname}}.cpp
-  {{/model}}{{/models}}	
+  ${SRC_SOURCES}{{#models}}{{#model}}{{^vendorExtensions.x-should-skip-model-process}}
+  {{classname}}.cpp{{/vendorExtensions.x-should-skip-model-process}}{{/model}}{{/models}}
   {{serviceNameCamelCase}}-lib.cpp)
 
 target_link_libraries(iov-{{serviceNameLowerCase}}

@@ -203,7 +203,6 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     
     {{/returnType}}
     {{^returnType}}
-
     {{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
     response.send(iovnet::service::Http::Code::{{vendorExtensions.x-response-code}});
     {{/returnType}}

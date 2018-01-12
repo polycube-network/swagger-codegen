@@ -520,6 +520,8 @@ public class DefaultCodegen {
         return outputFolder + "/" + modelPackage().replace('.', '/');
     }
 
+    public String toModelFileFolder(String modelName) {return modelFileFolder(); }
+
     public String apiTestFileFolder() {
         return outputFolder + "/" + testPackage().replace('.', '/');
     }
@@ -3201,6 +3203,8 @@ public class DefaultCodegen {
     public boolean shouldOverwrite(String filename) {
         return !(skipOverwrite && new File(filename).exists());
     }
+
+    public boolean shouldSkipModelProcess(String filename, String templateName, Map<String, Object> objs) { return (skipOverwrite && new File(filename).exists()); }
 
     public boolean isSkipOverwrite() {
         return skipOverwrite;

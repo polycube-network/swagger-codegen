@@ -11,6 +11,12 @@
 #pragma once
 
 #include "../serializer/{{classname}}JsonObject.h"
+{{#vendorExtensions.x-has-yang-actions}}
+{{#vendorExtensions.x-yang-actions}}
+{{#x-yang-action-has-output}}#include "../serializer/{{x-yang-action-output-object}}JsonObject.h"{{/x-yang-action-has-output}}
+{{#x-yang-action-has-input}}#include "../serializer/{{x-yang-action-input-object}}JsonObject.h"{{/x-yang-action-has-input}}
+{{/vendorExtensions.x-yang-actions}}
+{{/vendorExtensions.x-has-yang-actions}}
 
 {{#vendorExtensions.x-interface-imports}}
 #include "../src/{{{this}}}.h"
@@ -58,7 +64,11 @@ public:
   {{/isPrimitiveType}}
   {{/isNotContainer}}
   {{/vars}}
-
+  {{#vendorExtensions.x-has-yang-actions}}
+  {{#vendorExtensions.x-yang-actions}}
+  virtual {{#x-yang-action-has-output}}{{x-yang-action-output-object}}JsonObject{{/x-yang-action-has-output}}{{^x-yang-action-has-output}}void{{/x-yang-action-has-output}} {{x-yang-action-name-lower-camelcase}}({{#x-yang-action-has-input}}{{x-yang-action-input-object}}JsonObject input{{/x-yang-action-has-input}}) = 0;
+  {{/vendorExtensions.x-yang-actions}}
+  {{/vendorExtensions.x-has-yang-actions}}
 };
 
 {{/model}}
