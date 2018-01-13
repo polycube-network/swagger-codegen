@@ -16,28 +16,18 @@ static spdlog::sinks_init_list sinks = {file, console};
 std::shared_ptr<spdlog::logger> {{classname}}::logger(std::make_shared<spdlog::logger>("iov-{{classVarName}}", sinks));
 
 {{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type)
-                             : IOModule(name, generate_code(), type) {
+                             : IOModule(name, generate_code(), type, iovnet::LogLevel::OFF) {
   logger->info("Creating {{classname}} instance {0}", name);
 
   {{#vars}}
   {{^isNotContainer}}
-  add{{nameInCamelCase}}List(conf.{{getter}}());
-  {{/isNotContainer}}{{#isNotContainer}}
-  {{^vendorExtensions.x-is-key}}
-  {{^isReadOnly}}{{^vendorExtensions.x-is-required}}
-  if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-is-required}}
-  {{#isPrimitiveType}}
-    {{setter}}(conf.{{getter}}());
-  {{/isPrimitiveType}}{{^isPrimitiveType}}
-    auto value = conf.{{getter}}();
-    {{#vendorExtensions.x-key-list}}
-    {{type}} {{varName}}_ = value.{{getter}}();
-    {{/vendorExtensions.x-key-list}}
-    add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());
-  {{/isPrimitiveType}}{{^vendorExtensions.x-is-required}}
-  } {{/vendorExtensions.x-is-required}}
-  {{/isReadOnly}}
-  {{/vendorExtensions.x-is-key}}
+  add{{nameInCamelCase}}List(conf.{{getter}}());{{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}
+  if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-is-required}}{{#isPrimitiveType}}
+    {{setter}}(conf.{{getter}}());{{/isPrimitiveType}}{{^isPrimitiveType}}
+    auto value = conf.{{getter}}();{{#vendorExtensions.x-key-list}}
+    {{type}} {{varName}}_ = value.{{getter}}();{{/vendorExtensions.x-key-list}}
+    add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());{{/isPrimitiveType}}{{^vendorExtensions.x-is-required}}
+  } {{/vendorExtensions.x-is-required}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}
   {{/isNotContainer}}
   {{/vars}}   
 
@@ -52,19 +42,14 @@ std::shared_ptr<spdlog::logger> {{classname}}::logger(std::make_shared<spdlog::l
 
 {{classname}}::~{{classname}}() { }
 
-void {{classname}}::update(const {{classname}}JsonObject &conf) { 
-
+void {{classname}}::update(const {{classname}}JsonObject &conf) {
   //This method updates all the object/parameter in {{classname}} object specified in the conf JsonObject.
   //You can modify this implementation.
-
   {{#vars}}
-  {{^required}}
-  {{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}
+  {{^required}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}
   if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-is-required}}{{^isNotContainer}}
-    for(auto &i : conf.{{getter}}()){ 
-      {{#vendorExtensions.x-key-list}}
-      auto {{varName}} = i.{{getter}}();
-      {{/vendorExtensions.x-key-list}}
+    for(auto &i : conf.{{getter}}()){ {{#vendorExtensions.x-key-list}}
+      auto {{varName}} = i.{{getter}}();{{/vendorExtensions.x-key-list}}
       auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
       m->update(i);
     }{{/isNotContainer}}{{#isNotContainer}}{{#isPrimitiveType}}
@@ -76,8 +61,7 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
     auto {{varName}} = i.{{getter}}();{{/vendorExtensions.x-key-list}}
     auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
     m->update(i);
-  }
-  {{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{#isPrimitiveType}}
+  }{{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{#isPrimitiveType}}
   {{setter}}(conf.{{getter}}());{{/isPrimitiveType}}{{^isPrimitiveType}}
   auto m = {{getter}}();
   m->update(conf.{{getter}}());{{/isPrimitiveType}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}{{/isNotContainer}}{{/required}}
@@ -88,26 +72,18 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
   {{classname}}JsonObject conf;
   
   {{#vars}}
-  {{#isNotContainer}}
-  {{#isPrimitiveType}}
-  conf.{{setter}}({{getter}}());
-  {{/isPrimitiveType}}
-  {{^isPrimitiveType}}
-  conf.{{setter}}({{getter}}()->toJsonObject());
-  {{/isPrimitiveType}}
-  {{/isNotContainer}}
-  {{^isNotContainer}}
+  {{#isNotContainer}}{{#isPrimitiveType}}
+  conf.{{setter}}({{getter}}());{{/isPrimitiveType}}{{^isPrimitiveType}}
+  conf.{{setter}}({{getter}}()->toJsonObject());{{/isPrimitiveType}}
+  {{/isNotContainer}}{{^isNotContainer}}
   {{#vendorExtensions.x-is-port-class}}
   for(auto &i : {{getter}}List()){
     conf.add{{complexType}}(i->toJsonObject());
-  }
-  {{/vendorExtensions.x-is-port-class}}
-  {{^vendorExtensions.x-is-port-class}}
+  }{{/vendorExtensions.x-is-port-class}}{{^vendorExtensions.x-is-port-class}}
   //Remove comments when you implement all sub-methods
   //for(auto &i : {{getter}}List()){
   //  conf.add{{complexType}}(i->toJsonObject());
-  //}
-  {{/vendorExtensions.x-is-port-class}}
+  //}{{/vendorExtensions.x-is-port-class}}
   {{/isNotContainer}}
   {{/vars}}
   
@@ -127,8 +103,7 @@ void {{classname}}::packet_in(iovnet::service::Port &port, iovnet::service::Pack
   logger->info("{{classname}} {0}: Packet received from port {1}", IOModule::get_name(), port.name());
 }
 
-{{/vendorExtensions.x-parent}}
-{{#vendorExtensions.x-parent}}
+{{/vendorExtensions.x-parent}}{{#vendorExtensions.x-parent}}
 void {{classname}}::create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} &{{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf){
 
   //This method creates the actual {{classname}} object given thee key param. 
@@ -154,7 +129,6 @@ void {{classname}}::create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is
 }
 
 std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
-  
   //This method retrieves the pointer to {{classname}} object specified by its keys.
   {{#vendorExtensions.x-is-port-class}}
   //{{vendorExtensions.x-root-object}}::logger->info("Called getEntry with name: {0}", name);
@@ -166,7 +140,6 @@ std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vars
 }
 
 void {{classname}}::removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
-  
   //This method removes the single {{classname}} object specified by its keys.
   //Remember to call here the remove static method for all-sub-objects of {{classname}}.
   {{#vendorExtensions.x-is-port-class}}
@@ -180,7 +153,6 @@ void {{classname}}::removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x
 
 {{#vendorExtensions.x-is-list}}
 std::vector<std::shared_ptr<{{classname}}>> {{classname}}::get({{vendorExtensions.x-parent}} &parent){
-  
   //This methods get the pointers to all the {{classname}} objects in {{vendorExtensions.x-parent}}.
   {{#vendorExtensions.x-is-port-class}}
   std::vector<std::shared_ptr<{{classname}}>> ports_vect;
@@ -195,7 +167,6 @@ std::vector<std::shared_ptr<{{classname}}>> {{classname}}::get({{vendorExtension
 }
 
 void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
-
   //This method removes all {{classname}} objects in {{vendorExtensions.x-parent}}.
   //Remember to call here the remove static method for all-sub-objects of {{classname}}.
   {{#vendorExtensions.x-is-port-class}}
@@ -210,12 +181,8 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
 }
 {{/vendorExtensions.x-is-list}}
 {{/vendorExtensions.x-parent}}
-
-
 {{#vars}}
-{{#isNotContainer}}
-
-{{#isPrimitiveType}}
+{{#isNotContainer}}{{#isPrimitiveType}}
 {{{datatype}}} {{classname}}::{{getter}}(){
   //This method retrieves the {{name}} value.
   {{#vendorExtensions.x-has-default-impl}}
@@ -229,7 +196,22 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
   return IOModule::get_type();
   {{/vendorExtensions.x-is-iomodule-type}}
   {{#vendorExtensions.x-is-iomodule-debug}}
-    return false;
+    switch(IOModule::log_level()){
+      case iovnet::LogLevel::TRACE:
+        return {{datatype}}::TRACE;
+      case iovnet::LogLevel::DEBUG:
+        return {{datatype}}::DEBUG;
+      case iovnet::LogLevel::INFO:
+        return {{datatype}}::INFO;
+      case iovnet::LogLevel::WARN:
+        return {{datatype}}::WARN;
+      case iovnet::LogLevel::ERR:
+        return {{datatype}}::ERR;
+      case iovnet::LogLevel::CRITICAL:
+        return {{datatype}}::CRITICAL;
+      case iovnet::LogLevel::OFF:
+        return {{datatype}}::OFF;
+    }
   {{/vendorExtensions.x-is-iomodule-debug}}
   {{#vendorExtensions.x-is-port-status}}
   return {{{datatype}}}::UP;
@@ -249,17 +231,37 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
   {{/vendorExtensions.x-has-default-impl}}
 }
 
-{{^vendorExtensions.x-is-key}}
-{{^isReadOnly}}
+{{^vendorExtensions.x-is-key}}{{^isReadOnly}}
 void {{classname}}::{{setter}}(const {{{datatype}}} &value){
   //This method set the {{name}} value.
-
   {{#vendorExtensions.x-has-default-impl}}
   {{#vendorExtensions.x-is-port-status}}
   throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
   {{/vendorExtensions.x-is-port-status}}
   {{#vendorExtensions.x-is-iomodule-debug}}
-    return;
+    switch(value){
+      case {{{datatype}}}::TRACE:
+        IOModule::set_log_level(iovnet::LogLevel::TRACE);
+        break;
+      case {{{datatype}}}::DEBUG:
+        IOModule::set_log_level(iovnet::LogLevel::DEBUG);
+        break;
+      case {{{datatype}}}::INFO:
+        IOModule::set_log_level(iovnet::LogLevel::INFO);
+        break;
+      case {{{datatype}}}::WARN:
+        IOModule::set_log_level(iovnet::LogLevel::WARN);
+        break;
+      case {{{datatype}}}::ERR:
+        IOModule::set_log_level(iovnet::LogLevel::ERR);
+        break;
+      case {{{datatype}}}::CRITICAL:
+        IOModule::set_log_level(iovnet::LogLevel::CRITICAL);
+        break;
+      case {{{datatype}}}::OFF:
+        IOModule::set_log_level(iovnet::LogLevel::OFF);
+        break;
+    }
   {{/vendorExtensions.x-is-iomodule-debug}}
   {{#vendorExtensions.x-is-port-peer}}
   //logger->info("Received request to set peer {0}", value);
@@ -270,11 +272,7 @@ void {{classname}}::{{setter}}(const {{{datatype}}} &value){
   throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
   {{/vendorExtensions.x-has-default-impl}}
 }
-
-{{/isReadOnly}}
-{{/vendorExtensions.x-is-key}}
-{{/isPrimitiveType}}
-{{/isNotContainer}}
+{{/isReadOnly}}{{/vendorExtensions.x-is-key}}{{/isPrimitiveType}}{{/isNotContainer}}
 {{/vars}}
 
 {{#vendorExtensions.x-has-yang-actions}}
