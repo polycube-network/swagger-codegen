@@ -31,7 +31,7 @@
 
 {{#vendorExtensions.x-parent}}
 {{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf): parent_(parent){{#vendorExtensions.x-classname-inherited}}, {{this}}(p){{/vendorExtensions.x-classname-inherited}} { 
-  {{vendorExtensions.x-root-object}}::logger()->info("Creating {{classname}} instance");
+  logger()->info("Creating {{classname}} instance");
 }
 {{/vendorExtensions.x-parent}}
 
@@ -116,7 +116,7 @@ void {{classname}}::create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is
   std::tie(iter, inserted) = parent.ports_.emplace(std::piecewise_construct,
                                                    std::forward_as_tuple(name),
                                                    std::forward_as_tuple(parent, p, conf));
-  //{{vendorExtensions.x-root-object}}::logger()->info("New port create with name {0}", name);
+  //logger()->info("New port create with name {0}", name);
   {{/vendorExtensions.x-is-port-class}}
   {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method create not implemented");
@@ -126,7 +126,7 @@ void {{classname}}::create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is
 std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
   //This method retrieves the pointer to {{classname}} object specified by its keys.
   {{#vendorExtensions.x-is-port-class}}
-  //{{vendorExtensions.x-root-object}}::logger()->info("Called getEntry with name: {0}", name);
+  //logger()->info("Called getEntry with name: {0}", name);
   return std::shared_ptr<{{classname}}>(&parent.ports_.at(name), []({{classname}}*){});
   {{/vendorExtensions.x-is-port-class}}
   {{^vendorExtensions.x-is-port-class}}
@@ -279,7 +279,7 @@ void {{classname}}::{{setter}}(const {{{datatype}}} &value){
 {{/vendorExtensions.x-has-yang-actions}}
 
 {{#vendorExtensions.x-parent}}
-std::shared_ptr<spdlog::logger> logger() {
+std::shared_ptr<spdlog::logger> {{classname}}::logger() {
   return parent_.logger();
 }
 {{/vendorExtensions.x-parent}}
