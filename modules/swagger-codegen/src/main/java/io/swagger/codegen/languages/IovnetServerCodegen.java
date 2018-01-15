@@ -491,6 +491,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                                 mv.put("stringValue", lenum.get(j).toLowerCase());//here because if it is TYPE_TC the string value must be type_tc and no type_cls
                                 if(lenum.get(j).equals("TYPE_TC")) {
                                     lenum.set(j, "TYPE_CLS");
+                                    mv.put("stringValue", "TYPE_TC".toLowerCase());
                                 }
                                 p.datatype = "IOModuleType";
                                 p.vendorExtensions.put("x-is-iomodule-type", "true");

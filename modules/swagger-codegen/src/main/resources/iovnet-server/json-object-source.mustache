@@ -232,7 +232,7 @@ std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}
   switch(value){
     {{#allowableValues.values}}
     case {{{datatype}}}::{{value}}:
-      return "{{value}}";
+      return std::toupper(std::string("{{stringValue}}"));
     {{/allowableValues.values}}
     default:
       throw std::runtime_error("Bad {{classname}} {{name}}");
