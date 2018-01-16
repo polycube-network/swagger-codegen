@@ -31,7 +31,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
     @Override
     public String getName() {
-        return "iovnet-server";
+        return "iovnet-ser ver";
     }
 
     @Override
@@ -349,7 +349,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 List<String> method_parameters_name = new ArrayList<String>();
                 //split the path in two substring, in particular we consider the second to get the params 
                 //linked to the particular path element
-                String[] st = path.split("/" + path_without_keys.get(i));   
+                String[] st = path.split("/" + path_without_keys.get(i) + "/");
                 if(st.length <= 1)
                     break;
                 for(String str : st[1].split("/")){
