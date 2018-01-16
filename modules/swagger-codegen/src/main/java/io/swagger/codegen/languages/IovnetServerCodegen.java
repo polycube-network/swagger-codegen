@@ -31,7 +31,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
     @Override
     public String getName() {
-        return "iovnet-ser ver";
+        return "iovnet-server";
     }
 
     @Override
