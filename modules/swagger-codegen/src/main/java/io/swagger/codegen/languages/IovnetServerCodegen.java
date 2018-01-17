@@ -349,17 +349,18 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 List<String> method_parameters_name = new ArrayList<String>();
                 //split the path in two substring, in particular we consider the second to get the params 
                 //linked to the particular path element
-                String[] st = path.split("/" + path_without_keys.get(i));
-                if(st.length <= 1)
-                    break;
-                for(String str : st[1].split("/")){
-                    //get each key name in the path until a new path element is reached 
-                    if(str.length() > 2 && str.charAt(0) == '{'){
-                        str = str.replaceAll("\\{(.*?)}", "$1");
-                        method_parameters_name.add(toParamName(str));
+                String[] st = path.split("/" + path_without_keys.get(i) + "/");
+                if(st.length > 1) {
+                    for (String str : st[1].split("/")) {
+                        //get each key name in the path until a new path element is reached
+                        if (str.length() > 2 && str.charAt(0) == '{') {
+                            str = str.replaceAll("\\{(.*?)}", "$1");
+                            method_parameters_name.add(toParamName(str));
+                        } else if (str.length() > 0)
+                            break;
                     }
-                    else if(str.length() > 0)
-                        break;  
+                } else if(st.length < 1) {
+                    break;
                 }
                 int index = method_parameters_name.size();
                 //put the object name
