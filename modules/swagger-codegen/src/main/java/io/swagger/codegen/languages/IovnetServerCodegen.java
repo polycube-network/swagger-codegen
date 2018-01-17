@@ -278,6 +278,12 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 op.vendorExtensions.put("x-is-yang-action", true);
                 op.vendorExtensions.put("x-action-name", bodyParam.paramName);
             }
+        } else if(op.returnBaseType != null && definitions.containsKey(op.returnBaseType)) {
+            //TODO: Perform the same check for output param
+            ModelImpl def = (ModelImpl)definitions.get(op.returnBaseType);
+            if(def.getVendorExtensions().containsKey("x-is-yang-action-object")){
+                op.vendorExtensions.put("x-is-yang-action", true);
+            }
         } else {
             if(op.httpMethod.equals("POST")) {
                 op.returnType = null;
