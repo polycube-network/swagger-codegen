@@ -6,6 +6,9 @@ import io.swagger.models.Model;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
+import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.Parameter;
+import io.swagger.models.parameters.PathParameter;
 import io.swagger.models.properties.*;
 import io.swagger.codegen.utils.ModelUtils;
 import org.slf4j.Logger;
@@ -191,6 +194,27 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     }
                 }
             }
+
+            if(cp.isString && cp.hasValidation && cp.dataFormat != null && !cp.dataFormat.isEmpty()) {
+                boolean entryFound = false;
+                if(!codegenModel.vendorExtensions.containsKey("x-string-patterns")){
+                    codegenModel.vendorExtensions.put("x-string-patterns", new HashMap<String, String>());
+                }
+
+                Map<String, String> patterns_map = (Map<String, String>) codegenModel.vendorExtensions.get("x-string-patterns");
+                for(Map.Entry<String, String> entry : patterns_map.entrySet()){
+                    if(entry.getValue().equals(cp.dataFormat)){
+                        cp.vendorExtensions.put("x-patter-name", entry.getKey());
+                        entryFound = true;
+                        break;
+                    }
+                }
+                if(!entryFound){
+                    //The pattern is not in the x-string-patterns, we have to put it there
+                    patterns_map.put(toLowerCamelCase(cp.baseName).toUpperCase(), cp.dataFormat);
+                    cp.vendorExtensions.put("x-patter-name", toLowerCamelCase(cp.baseName).toUpperCase());
+                }
+            }
         }
         
         //at this point only ports has this vendorExtensions
@@ -268,16 +292,45 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 op.bodyParam.dataType += "JsonObject";
         }
 
-        if(bodyParam != null)
+        if(bodyParam != null) {
             op.bodyParam.paramName = "value";
+        }
 
         if(bodyParam != null && definitions.containsKey(bodyParam.baseType)){
             //TODO: Perform the same check for output param
             ModelImpl def = (ModelImpl)definitions.get(bodyParam.baseType);
-            if(def.getVendorExtensions().containsKey("x-is-yang-action-object")){
+            if(def.getVendorExtensions().containsKey("x-is-yang-action-object")) {
                 op.vendorExtensions.put("x-is-yang-action", true);
                 op.vendorExtensions.put("x-action-name", bodyParam.paramName);
             }
+
+            if(def.getProperties() != null) {
+                ArrayList<Map<String, String>> keysList = new ArrayList<>();
+                for(Map.Entry<String, Property> entry : def.getProperties().entrySet()){
+                    if(entry.getValue().getVendorExtensions() != null &&
+                            entry.getValue().getVendorExtensions().containsKey("x-is-key") &&
+                            entry.getValue().getVendorExtensions().get("x-is-key").equals(Boolean.TRUE)){
+                        Map<String, String> map = new HashMap<>();
+                        if(op.getHasPathParams() && op.pathParams != null){
+                            for(CodegenParameter pathParam : op.pathParams){
+                                if(pathParam.baseName.equals(entry.getKey())){
+                                    map.put("keyParamName", entry.getKey());
+                                    map.put("getter", toLowerCamelCase("get"+ getterAndSetterCapitalize(entry.getKey())));
+                                    map.put("setter", toLowerCamelCase("set"+ getterAndSetterCapitalize(entry.getKey())));
+                                    break;
+                                }
+                            }
+                        }
+                        if(!map.isEmpty()) {
+                            keysList.add(map);
+                        }
+                    }
+                }
+                if(!keysList.isEmpty()){
+                    bodyParam.vendorExtensions.put("x-key-list", keysList);
+                }
+            }
+
         } else if(op.returnBaseType != null && definitions.containsKey(op.returnBaseType)) {
             //TODO: Perform the same check for output param
             ModelImpl def = (ModelImpl)definitions.get(op.returnBaseType);
@@ -466,7 +519,29 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         property.nameInCamelCase = toUpperCamelCase(name);
         property.name = toLowerCamelCase(name);
 
+        if(property.dataFormat != null && !property.dataFormat.isEmpty()) {
+            property.hasValidation = Boolean.TRUE;
+        }
+
         return property;
+    }
+
+    @Override
+    public CodegenParameter fromParameter(Parameter param, Set<String> imports) {
+        CodegenParameter parameter = super.fromParameter(param, imports);
+        if(param instanceof BodyParameter && ((BodyParameter) param).getSchema() instanceof ModelImpl){
+            ModelImpl model = (ModelImpl) ((BodyParameter) param).getSchema();
+            if(model != null && model.getFormat() != null && !model.getFormat().isEmpty()) {
+                parameter.dataFormat = ((ModelImpl)((BodyParameter) param).getSchema()).getFormat();
+                parameter.hasValidation = Boolean.TRUE;
+            }
+        } else if(param instanceof PathParameter) {
+            if(((PathParameter) param).getFormat() != null && !((PathParameter) param).getFormat().isEmpty()) {
+                parameter.hasValidation = Boolean.TRUE;
+            }
+        }
+
+        return parameter;
     }
 
     @SuppressWarnings("unchecked")
@@ -612,7 +687,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
         return objs;
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
@@ -620,92 +695,94 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         String classname = (String) operations.get("classname");
         operations.put("classnameSnakeUpperCase", DefaultCodegen.underscore(classname).toUpperCase());
         operations.put("classnameSnakeLowerCase", DefaultCodegen.underscore(classname).toLowerCase());
-        
+
         String s = classname.replace("Api", "Type");
-        
+
         List<CodegenOperation> operationList = (List<CodegenOperation>) operations.get("operation");
         for (CodegenOperation op : operationList) {
             op.httpMethod = op.httpMethod.substring(0, 1).toUpperCase() + op.httpMethod.substring(1).toLowerCase();
             List<String> names = new ArrayList<String>();
             String var = null;
             //get varname to build enum name
-                    if(op.vendorExtensions.get("x-call-sequence-method") != null){
-                        for(Map<String, String> m : (List<Map<String, String>>)op.vendorExtensions.get("x-call-sequence-method")){
-                            for(CodegenParameter cp : op.allParams){
-                                if(cp.isEnum && m.get("methodCall").contains(cp.paramName)){
-                                    //cp.baseName = initialCaps(cp.baseName);
-                                    if(cp.vendorExtensions.get("x-typedef") != null){
-                                        cp.dataType = toUpperCamelCase(initialCaps((String)cp.vendorExtensions.get("x-typedef")) + "Enum");
-                                        cp.enumName = cp.dataType;
-                                    }
-                                    else{
-                                      if(cp.paramName.contains(m.get("varName")))
-                                          cp.dataType = toUpperCamelCase(cp.enumName);
-                                      else
-                                          cp.dataType = toUpperCamelCase(initialCaps(m.get("varName")) + initialCaps(cp.baseName) + "Enum"); //enum dataType
-                                    }
-                                }
-                            }
-                            for(CodegenParameter cp : op.pathParams){
-                                if(cp.isEnum && m.get("methodCall").contains(cp.paramName)){
-                                    //cp.baseName = initialCaps(cp.baseName);
-                                    cp.datatypeWithEnum = initialCaps(m.get("varName")) + "JsonObject"; //enum class object
-                                    if(cp.vendorExtensions.get("x-typedef") != null){
-                                        cp.enumName = initialCaps((String)cp.vendorExtensions.get("x-typedef")) + "Enum";
-                                    }
-                                    else{
-                                      if(!cp.enumName.contains(initialCaps(m.get("varName"))))
-                                          cp.enumName = initialCaps(m.get("varName")) + cp.enumName; 
-                                    }
-                                }
-                            }
-                            
-                            if(m.get("lastCall") == null)
-                                names.add(m.get("varName"));
-                            else
-                                var = m.get("varName");
-                        }
-                    }
-                    String name = null;//this string will store the enum name
-                    if(names.size() > 1){
-                            for(int i = 1; i < names.size(); i++){
-                                    if(name != null)
-                                            name += initialCaps(names.get(i));
-                                    else
-                                            name = initialCaps(names.get(i));
-                            }
-                    }
-                    else if(names.size() == 1)
-                            name = initialCaps(names.get(0));
-            if(op.bodyParam != null && op.bodyParam.vendorExtensions.get("x-is-enum") != null){
-                        op.bodyParam.isEnum = true;
-                        op.bodyParam.vendorExtensions.remove("x-is-enum");
-                        op.bodyParam.vendorExtensions.put("x-enum-class", name + "JsonObject"); //enum  class name
-                        //op.bodyParam.baseName = initialCaps(op.bodyParam.baseName); 
-                        if(op.bodyParam.vendorExtensions.get("x-typedef") != null)
-                            op.bodyParam.dataType = toUpperCamelCase(initialCaps((String)op.bodyParam.vendorExtensions.get("x-typedef")) + "Enum");
-                        else
-                            op.bodyParam.dataType = toUpperCamelCase(name + initialCaps(op.bodyParam.baseName) + "Enum"); //enum dataType
-                        if(op.bodyParam.dataType.equals(s)){
-                            op.bodyParam.dataType = "IOModuleType";
-                        }
-                    }
-                    
-            if(op.responses != null){ //in case  the return type is enum
-                        for(CodegenResponse r : op.responses){
-                            if(r.vendorExtensions.get("x-is-enum") != null){
-                                if(r.vendorExtensions.get("x-typedef") != null)
-                                  op.returnType = initialCaps((String)r.vendorExtensions.get("x-typedef")) + "Enum";                                  
+            if (op.vendorExtensions.get("x-call-sequence-method") != null) {
+                for (Map<String, String> m : (List<Map<String, String>>) op.vendorExtensions.get("x-call-sequence-method")) {
+                    for (CodegenParameter cp : op.allParams) {
+                        if (cp.isEnum && m.get("methodCall").contains(cp.paramName)) {
+                            //cp.baseName = initialCaps(cp.baseName);
+                            if (cp.vendorExtensions.get("x-typedef") != null) {
+                                cp.dataType = toUpperCamelCase(initialCaps((String) cp.vendorExtensions.get("x-typedef")) + "Enum");
+                                cp.enumName = cp.dataType;
+                            } else {
+                                if (cp.paramName.contains(m.get("varName")))
+                                    cp.dataType = toUpperCamelCase(cp.enumName);
                                 else
-                                  op.returnType = name + initialCaps(var) + "Enum";
-                                if(op.returnType.equals(s + "Enum"))
-                                    op.returnType = "IOModuleType";
-                                op.returnBaseType = initialCaps(var);
-                                op.returnSimpleType = false; 
-                                op.vendorExtensions.put("x-enum-class", name + "JsonObject");
+                                    cp.dataType = toUpperCamelCase(initialCaps(m.get("varName")) + initialCaps(cp.baseName) + "Enum"); //enum dataType
                             }
                         }
+                    }
+                    for (CodegenParameter cp : op.pathParams) {
+                        if (cp.isEnum && m.get("methodCall").contains(cp.paramName)) {
+                            //cp.baseName = initialCaps(cp.baseName);
+                            cp.datatypeWithEnum = initialCaps(m.get("varName")) + "JsonObject"; //enum class object
+                            if (cp.vendorExtensions.get("x-typedef") != null) {
+                                cp.enumName = initialCaps((String) cp.vendorExtensions.get("x-typedef")) + "Enum";
+                            } else {
+                                if (!cp.enumName.contains(initialCaps(m.get("varName"))))
+                                    cp.enumName = initialCaps(m.get("varName")) + cp.enumName;
+                            }
+                        }
+                    }
+
+                    if (m.get("lastCall") == null)
+                        names.add(m.get("varName"));
+                    else
+                        var = m.get("varName");
                 }
+            }
+            String name = null;//this string will store the enum name
+            if (names.size() > 1) {
+                for (int i = 1; i < names.size(); i++) {
+                    if (name != null)
+                        name += initialCaps(names.get(i));
+                    else
+                        name = initialCaps(names.get(i));
+                }
+            } else if (names.size() == 1) {
+                name = initialCaps(names.get(0));
+            }
+
+            if (op.bodyParam != null && op.bodyParam.vendorExtensions.get("x-is-enum") != null) {
+                op.bodyParam.isEnum = true;
+                op.bodyParam.vendorExtensions.remove("x-is-enum");
+                op.bodyParam.vendorExtensions.put("x-enum-class", name + "JsonObject"); //enum  class name
+                //op.bodyParam.baseName = initialCaps(op.bodyParam.baseName);
+                if (op.bodyParam.vendorExtensions.get("x-typedef") != null)
+                    op.bodyParam.dataType = toUpperCamelCase(initialCaps((String) op.bodyParam.vendorExtensions.get("x-typedef")) + "Enum");
+                else
+                    op.bodyParam.dataType = toUpperCamelCase(name + initialCaps(op.bodyParam.baseName) + "Enum"); //enum dataType
+                if (op.bodyParam.dataType.equals(s)) {
+                    op.bodyParam.dataType = "IOModuleType";
+                }
+            } else if(op.bodyParam != null && op.bodyParam.vendorExtensions.get("x-is-enum") != null &&
+                    op.bodyParam.vendorExtensions.get("x-is-enum").equals(Boolean.FALSE)){
+
+            }
+
+            if (op.responses != null) { //in case  the return type is enum
+                for (CodegenResponse r : op.responses) {
+                    if (r.vendorExtensions.get("x-is-enum") != null) {
+                        if (r.vendorExtensions.get("x-typedef") != null)
+                            op.returnType = initialCaps((String) r.vendorExtensions.get("x-typedef")) + "Enum";
+                        else
+                            op.returnType = name + initialCaps(var) + "Enum";
+                        if (op.returnType.equals(s + "Enum"))
+                            op.returnType = "IOModuleType";
+                        op.returnBaseType = initialCaps(var);
+                        op.returnSimpleType = false;
+                        op.vendorExtensions.put("x-enum-class", name + "JsonObject");
+                    }
+                }
+            }
         }
 
         return objs;

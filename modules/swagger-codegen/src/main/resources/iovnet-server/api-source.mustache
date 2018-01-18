@@ -141,7 +141,6 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{/vendorExtensions.x-is-list}}
 
     {{#hasPathParams}}
-    // Getting the path params
     {{#pathParams}}
     {{#isEnum}}
     auto {{paramName}}_ = {{datatypeWithEnum}}::string_to_{{enumName}}({{paramName}}); 
@@ -162,8 +161,9 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     }
     {{/isListContainer}}
     {{^isListContainer}}
-    {{paramName}}.fromJson(request_body);
-    //{{paramName}}.validate();
+    {{paramName}}.fromJson(request_body);{{#vendorExtensions.x-key-list}}
+    {{paramName}}.{{setter}}({{keyParamName}});{{/vendorExtensions.x-key-list}}
+    {{paramName}}.validate();
     {{/isListContainer}}
     {{/isPrimitiveType}}
     {{#isPrimitiveType}}
