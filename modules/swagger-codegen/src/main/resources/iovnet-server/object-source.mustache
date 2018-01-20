@@ -3,9 +3,9 @@
 //Modify these methods with your own implementation
 
 {{#models}}{{#model}}
-#include "src/{{classname}}.h"
+#include "{{classname}}.h"
 {{#vendorExtensions.x-root-object}}
-#include "src/{{vendorExtensions.x-root-object}}.h"
+#include "{{vendorExtensions.x-root-object}}.h"
 {{/vendorExtensions.x-root-object}}
 {{^vendorExtensions.x-parent}}
 #include "{{classname}}_dp.h"

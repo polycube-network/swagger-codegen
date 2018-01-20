@@ -1,9 +1,9 @@
 {{>licenseInfo}}
 
-//These methods have a default implentation. Your are free to keep it or add your own
+//These methods have a default implementation. Your are free to keep it or add your own
 
 {{#models}}{{#model}}
-#include "{{classname}}.h"
+#include "../{{classname}}.h"
 {{^vendorExtensions.x-parent}}
 #include "../{{classname}}_dp.h"
 {{/vendorExtensions.x-parent}}
@@ -58,7 +58,7 @@ std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}(){
 {{^vendorExtensions.x-is-key}}
 {{^isReadOnly}}
 void {{classname}}::add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &value){
-  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}value); 
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}value);
 }
 
 void {{classname}}::replace{{nameInCamelCase}}(const {{complexType}}JsonObject &conf){
@@ -66,7 +66,7 @@ void {{classname}}::replace{{nameInCamelCase}}(const {{complexType}}JsonObject &
   {{#vendorExtensions.x-key-list}}
   {{type}} {{varName}}_ = conf.{{getter}}();
   {{/vendorExtensions.x-key-list}}
-  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}}conf);  
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}}conf);
 }
 
 void {{classname}}::del{{nameInCamelCase}}(){

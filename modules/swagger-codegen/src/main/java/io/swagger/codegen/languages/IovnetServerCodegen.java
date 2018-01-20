@@ -1099,7 +1099,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
     @Override
     public void processSwagger(Swagger swagger) {
-        File folder = new File(outputFolder + "/src");
+        /*File folder = new File(outputFolder + "/src");
         File[] listOfFiles = folder.listFiles();
         File interfaceFolder = new File(outputFolder + "/src/interface");
         interfaceFolder.mkdir();
@@ -1116,6 +1116,21 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             }
             else if((f.getName().contains("DefaultImpl.cpp") || f.getName().contains(".h")) && !f.getName().contains("_dp.h"))
                 f.renameTo(new File(outputFolder + "/src/src/" + f.getName()));
+        }*/
+    }
+
+    @Override
+    public String toModelFileFolder(String modelName, String templateName) {
+        if(templateName.equals("json-object-header.mustache") ||
+                templateName.equals("json-object-source.mustache")){
+            return modelFileFolder() + File.separator + "serializer";
+        } else if(templateName.equals("interface.mustache")) {
+            return modelFileFolder() + File.separator + "interface";
+        } else if(templateName.equals("object-source-defaultimpl.mustache") ||
+                templateName.equals("object-header-defaultimpl.mustache")) {
+            return modelFileFolder() + File.separator + "default-src";
+        } else {
+            return modelFileFolder();
         }
     }
 
