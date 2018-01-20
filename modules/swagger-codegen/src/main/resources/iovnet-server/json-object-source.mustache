@@ -270,6 +270,26 @@ std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}
   throw std::runtime_error("{{classname}} {{name}} is invalid");
 }
 {{/isEnum}}
+
+{{#vendorExtensions.x-is-iomodule-debug}}
+  iovnet::service::LogLevel getIovnetLoglevel() {
+    switch(m_{{name}}) {
+      case {{{datatype}}}::TRACE:
+        return iovnet::LogLevel::TRACE;
+      case {{{datatype}}}::DEBUG:
+        return iovnet::LogLevel::DEBUG;
+      case {{{datatype}}}::INFO:
+        return iovnet::LogLevel::INFO;
+      case {{{datatype}}}::WARN:
+        return iovnet::LogLevel::WARN;
+      case {{{datatype}}}::ERR:
+        return iovnet::LogLevel::ERR;
+      case {{{datatype}}}::CRITICAL:
+        return iovnet::LogLevel::CRITICAL;
+      case {{{datatype}}}::OFF:
+        return iovnet::LogLevel::OFF;
+    }
+  }{{/vendorExtensions.x-is-iomodule-debug}}
 {{/vars}}
 
 {{#modelNamespaceDeclarations}}

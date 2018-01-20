@@ -11,11 +11,11 @@
 #include "{{classname}}_dp.h"
 
 {{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type)
-                             : IOModule(name, generate_code(), type, iovnet::LogLevel::OFF) {
+                             : IOModule(name, generate_code(), type, conf.getIovnetLoglevel()) {
   logger()->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [{{classname}}] [%n] [%l] %v");
   logger()->info("Creating {{classname}} instance");
 
-  {{#vars}}
+  {{#vars}}{{^vendorExtensions.x-is-iomodule-debug}}
   {{^isNotContainer}}
   add{{nameInCamelCase}}List(conf.{{getter}}());{{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}
   if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{#isPrimitiveType}}
@@ -24,7 +24,8 @@
     {{type}} {{varName}}_ = value.{{getter}}();{{/vendorExtensions.x-key-list}}
     add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());{{/isPrimitiveType}}{{^vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}
   } {{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}
-  {{/isNotContainer}}
+
+  {{/isNotContainer}}{{/vendorExtensions.x-is-iomodule-debug}}
   {{/vars}}   
 
 }
@@ -178,97 +179,17 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
 {{/vendorExtensions.x-is-list}}
 {{/vendorExtensions.x-parent}}
 {{#vars}}
-{{#isNotContainer}}{{#isPrimitiveType}}
+{{^vendorExtensions.x-has-default-impl}}{{#isNotContainer}}{{#isPrimitiveType}}
 {{{datatype}}} {{classname}}::{{getter}}(){
   //This method retrieves the {{name}} value.
-  {{#vendorExtensions.x-has-default-impl}}
-  {{#vendorExtensions.x-is-iomodule-name}}
-  return IOModule::get_name();
-  {{/vendorExtensions.x-is-iomodule-name}}
-  {{#vendorExtensions.x-is-iomodule-uuid}}
-  return IOModule::get_uuid().str();
-  {{/vendorExtensions.x-is-iomodule-uuid}}
-  {{#vendorExtensions.x-is-iomodule-type}}
-  return IOModule::get_type();
-  {{/vendorExtensions.x-is-iomodule-type}}
-  {{#vendorExtensions.x-is-iomodule-debug}}
-    switch(IOModule::get_log_level()){
-      case iovnet::LogLevel::TRACE:
-        return {{datatype}}::TRACE;
-      case iovnet::LogLevel::DEBUG:
-        return {{datatype}}::DEBUG;
-      case iovnet::LogLevel::INFO:
-        return {{datatype}}::INFO;
-      case iovnet::LogLevel::WARN:
-        return {{datatype}}::WARN;
-      case iovnet::LogLevel::ERR:
-        return {{datatype}}::ERR;
-      case iovnet::LogLevel::CRITICAL:
-        return {{datatype}}::CRITICAL;
-      case iovnet::LogLevel::OFF:
-        return {{datatype}}::OFF;
-    }
-  {{/vendorExtensions.x-is-iomodule-debug}}
-  {{#vendorExtensions.x-is-port-status}}
-  return {{{datatype}}}::UP;
-  {{/vendorExtensions.x-is-port-status}}
-  {{#vendorExtensions.x-is-port-peer}}
-  return Port::peer();
-  {{/vendorExtensions.x-is-port-peer}}
-  {{#vendorExtensions.x-is-port-uuid}}
-  return Port::uuid().str();
-  {{/vendorExtensions.x-is-port-uuid}}
-  {{#vendorExtensions.x-is-port-name}}
-  return Port::name();
-  {{/vendorExtensions.x-is-port-name}}
-  {{/vendorExtensions.x-has-default-impl}}
-  {{^vendorExtensions.x-has-default-impl}}
   throw std::runtime_error("[{{classname}}]: Method {{getter}} not implemented");
-  {{/vendorExtensions.x-has-default-impl}}
 }
-
 {{^vendorExtensions.x-is-key}}{{^isReadOnly}}
 void {{classname}}::{{setter}}(const {{{datatype}}} &value){
   //This method set the {{name}} value.
-  {{#vendorExtensions.x-has-default-impl}}
-  {{#vendorExtensions.x-is-port-status}}
   throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
-  {{/vendorExtensions.x-is-port-status}}
-  {{#vendorExtensions.x-is-iomodule-debug}}
-    switch(value){
-      case {{{datatype}}}::TRACE:
-        IOModule::set_log_level(iovnet::LogLevel::TRACE);
-        break;
-      case {{{datatype}}}::DEBUG:
-        IOModule::set_log_level(iovnet::LogLevel::DEBUG);
-        break;
-      case {{{datatype}}}::INFO:
-        IOModule::set_log_level(iovnet::LogLevel::INFO);
-        break;
-      case {{{datatype}}}::WARN:
-        IOModule::set_log_level(iovnet::LogLevel::WARN);
-        break;
-      case {{{datatype}}}::ERR:
-        IOModule::set_log_level(iovnet::LogLevel::ERR);
-        break;
-      case {{{datatype}}}::CRITICAL:
-        IOModule::set_log_level(iovnet::LogLevel::CRITICAL);
-        break;
-      case {{{datatype}}}::OFF:
-        IOModule::set_log_level(iovnet::LogLevel::OFF);
-        break;
-    }
-  {{/vendorExtensions.x-is-iomodule-debug}}
-  {{#vendorExtensions.x-is-port-peer}}
-  //logger()->info("Received request to set peer {0}", value);
-  Port::set_peer(value);
-  {{/vendorExtensions.x-is-port-peer}}
-  {{/vendorExtensions.x-has-default-impl}}
-  {{^vendorExtensions.x-has-default-impl}}
-  throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
-  {{/vendorExtensions.x-has-default-impl}}
 }
-{{/isReadOnly}}{{/vendorExtensions.x-is-key}}{{/isPrimitiveType}}{{/isNotContainer}}
+{{/isReadOnly}}{{/vendorExtensions.x-is-key}}{{/isPrimitiveType}}{{/isNotContainer}}{{/vendorExtensions.x-has-default-impl}}
 {{/vars}}
 
 {{#vendorExtensions.x-has-yang-actions}}
