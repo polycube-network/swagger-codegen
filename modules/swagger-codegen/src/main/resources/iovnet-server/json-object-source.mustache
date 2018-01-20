@@ -31,7 +31,10 @@ void {{classname}}JsonObject::validate() { {{#vars}}{{#vendorExtensions.x-is-req
     throw std::runtime_error("Variable {{baseName}} is required");
   }{{/isPrimitiveType}}{{/vendorExtensions.x-is-key}}{{/vendorExtensions.x-is-required}}{{#hasValidation}}{{#isString}}
   if(m_{{name}}IsSet) {
-    std::regex e ("{{dataFormat}}");
+    std::string patter_value = R"PATTERN(
+    {{dataFormat}}
+    )PATTERN";
+    std::regex e (patter_value);
     if (!std::regex_match(m_{{name}}, e))
       throw std::runtime_error("Variable {{baseName}} has not a valid format");
   }{{/isString}}{{/hasValidation}}
