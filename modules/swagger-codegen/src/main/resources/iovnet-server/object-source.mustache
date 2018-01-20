@@ -12,17 +12,18 @@
 
 {{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type)
                              : IOModule(name, generate_code(), type, iovnet::LogLevel::OFF) {
-  logger()->info("Creating {{classname}} instance {0}", name);
+  logger()->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [{{classname}}] [%n] [%l] %v");
+  logger()->info("Creating {{classname}} instance");
 
   {{#vars}}
   {{^isNotContainer}}
-  add{{nameInCamelCase}}List(conf.{{getter}}());{{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}
-  if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-is-required}}{{#isPrimitiveType}}
+  add{{nameInCamelCase}}List(conf.{{getter}}());{{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}
+  if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{#isPrimitiveType}}
     {{setter}}(conf.{{getter}}());{{/isPrimitiveType}}{{^isPrimitiveType}}
     auto value = conf.{{getter}}();{{#vendorExtensions.x-key-list}}
     {{type}} {{varName}}_ = value.{{getter}}();{{/vendorExtensions.x-key-list}}
-    add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());{{/isPrimitiveType}}{{^vendorExtensions.x-is-required}}
-  } {{/vendorExtensions.x-is-required}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}
+    add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());{{/isPrimitiveType}}{{^vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}
+  } {{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}
   {{/isNotContainer}}
   {{/vars}}   
 
@@ -95,7 +96,7 @@ std::vector<std::string> {{classname}}::generate_code_vector(){
 }
 
 void {{classname}}::packet_in(iovnet::service::Port &port, iovnet::service::PacketInMetadata &md, const std::vector<uint8_t> &packet){
-  logger()->info("{{classname}} {0}: Packet received from port {1}", IOModule::get_name(), port.name());
+  logger()->info("Packet received from port {0}", port.name());
 }
 
 {{/vendorExtensions.x-parent}}{{#vendorExtensions.x-parent}}

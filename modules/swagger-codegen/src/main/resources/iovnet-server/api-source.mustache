@@ -156,14 +156,17 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     for (auto &j : request_body) {
       {{baseType}} a;
       a.fromJson(j);
-      a.validate();
+      a.validateKeys();{{^vendorExtensions.isPatch}}
+      a.validateMandatoryFields();{{/vendorExtensions.isPatch}}
+      a.validateParams();
       {{paramName}}{{#isEnum}}_{{/isEnum}}.push_back(a);
     }
     {{/isListContainer}}
     {{^isListContainer}}
     {{paramName}}.fromJson(request_body);{{#vendorExtensions.x-key-list}}
-    {{paramName}}.{{setter}}({{keyParamName}});{{/vendorExtensions.x-key-list}}
-    {{paramName}}.validate();
+    {{paramName}}.{{setter}}({{keyParamName}});{{/vendorExtensions.x-key-list}}{{^vendorExtensions.isPatch}}
+    {{paramName}}.validateMandatoryFields();{{/vendorExtensions.isPatch}}
+    {{paramName}}.validateParams();
     {{/isListContainer}}
     {{/isPrimitiveType}}
     {{#isPrimitiveType}}

@@ -1,6 +1,7 @@
 package io.swagger.codegen.languages;
 
 
+import com.google.common.base.Strings;
 import io.swagger.codegen.*;
 import io.swagger.models.Model;
 import io.swagger.models.ModelImpl;
@@ -260,6 +261,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         }
         else if(op.httpMethod.equals("PATCH")){
             op.vendorExtensions.put("x-response-code", "Ok");
+            op.vendorExtensions.put("isPatch", true);
+            op.isRestfulUpdate = true;
             if(bodyParam != null && bodyParam.isPrimitiveType)
                 method = "set";
             else if(bodyParam != null)
@@ -314,7 +317,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         if(op.getHasPathParams() && op.pathParams != null){
                             for(CodegenParameter pathParam : op.pathParams){
                                 if(pathParam.baseName.equals(entry.getKey())){
-                                    map.put("keyParamName", entry.getKey());
+                                    map.put("keyParamName", toLowerCamelCase(pathParam.paramName));
                                     map.put("getter", toLowerCamelCase("get"+ getterAndSetterCapitalize(entry.getKey())));
                                     map.put("setter", toLowerCamelCase("set"+ getterAndSetterCapitalize(entry.getKey())));
                                     break;
@@ -520,7 +523,13 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         property.name = toLowerCamelCase(name);
 
         if(property.dataFormat != null && !property.dataFormat.isEmpty()) {
-            property.hasValidation = Boolean.TRUE;
+            if(property.isString) {
+                property.hasValidation = Boolean.TRUE;
+            } else if(property.isInteger && !Strings.isNullOrEmpty(property.minimum) && !Strings.isNullOrEmpty(property.maximum)) {
+                property.hasValidation = Boolean.TRUE;
+            } else {
+                property.hasValidation = Boolean.FALSE;
+            }
         }
 
         return property;
@@ -569,7 +578,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         List<Map<String, String>> l = new ArrayList<>();
                         for(int j = 0; j < lenum.size(); j++){
                             Map<String, String> mv = new HashMap<>();
-                            if(model.vendorExtensions.get("x-parent") == null && p.baseName.contains("type")) {
+                            if(model.vendorExtensions.get("x-parent") == null && p.baseName.trim().equals("type")) {
                                 mv.put("stringValue", lenum.get(j).toLowerCase());//here because if it is TYPE_TC the string value must be type_tc and no type_cls
                                 if(lenum.get(j).equals("TYPE_TC")) {
                                     lenum.set(j, "TYPE_CLS");
@@ -782,6 +791,18 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         op.vendorExtensions.put("x-enum-class", name + "JsonObject");
                     }
                 }
+            }
+
+            if(op.httpMethod.toLowerCase().equals("patch")) {
+                for(CodegenParameter entry : op.bodyParams){
+                    entry.vendorExtensions.put("isPatch", true);
+                }
+                op.vendorExtensions.put("isPatch", true);
+                op.isRestfulUpdate = Boolean.TRUE;
+                if(op.bodyParam != null)
+                    op.bodyParam.vendorExtensions.put("isPatch", true);
+            } else {
+                op.vendorExtensions.put("isPatch", false);
             }
         }
 
