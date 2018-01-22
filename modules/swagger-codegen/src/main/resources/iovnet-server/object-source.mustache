@@ -14,20 +14,15 @@
                              : IOModule(name, generate_code(), type, conf.getIovnetLoglevel()) {
   logger()->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [{{classname}}] [%n] [%l] %v");
   logger()->info("Creating {{classname}} instance");
-
-  {{#vars}}{{^vendorExtensions.x-is-iomodule-debug}}
-  {{^isNotContainer}}
+  {{#vars}}{{^isNotContainer}}
   add{{nameInCamelCase}}List(conf.{{getter}}());{{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}
-  if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{#isPrimitiveType}}
-    {{setter}}(conf.{{getter}}());{{/isPrimitiveType}}{{^isPrimitiveType}}
+  if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{#isPrimitiveType}}{{^vendorExtensions.x-is-iomodule-debug}}
+    {{setter}}(conf.{{getter}}());{{/vendorExtensions.x-is-iomodule-debug}}{{/isPrimitiveType}}{{^isPrimitiveType}}
     auto value = conf.{{getter}}();{{#vendorExtensions.x-key-list}}
     {{type}} {{varName}}_ = value.{{getter}}();{{/vendorExtensions.x-key-list}}
     add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());{{/isPrimitiveType}}{{^vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}
   } {{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}
-
-  {{/isNotContainer}}{{/vendorExtensions.x-is-iomodule-debug}}
-  {{/vars}}   
-
+  {{/isNotContainer}}{{/vars}}   
 }
 {{/vendorExtensions.x-parent}}
 

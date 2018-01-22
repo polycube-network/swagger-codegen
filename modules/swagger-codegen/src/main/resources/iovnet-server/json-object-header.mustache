@@ -96,7 +96,7 @@ public:
   static {{{datatype}}} string_to_{{{datatype}}}(const std::string &str);
   {{/isEnum}}
   {{#vendorExtensions.x-is-iomodule-debug}}
-  iovnet::service::LogLevel getIovnetLoglevel();{{/vendorExtensions.x-is-iomodule-debug}}
+  iovnet::LogLevel getIovnetLoglevel() const;{{/vendorExtensions.x-is-iomodule-debug}}
   {{/vars}}
 
 protected:

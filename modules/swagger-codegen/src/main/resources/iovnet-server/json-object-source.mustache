@@ -272,7 +272,7 @@ std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}
 {{/isEnum}}
 
 {{#vendorExtensions.x-is-iomodule-debug}}
-  iovnet::service::LogLevel {{classname}}JsonObject::getIovnetLoglevel() {
+  iovnet::LogLevel {{classname}}JsonObject::getIovnetLoglevel() const {
     switch(m_{{name}}) {
       case {{{datatype}}}::TRACE:
         return iovnet::LogLevel::TRACE;
