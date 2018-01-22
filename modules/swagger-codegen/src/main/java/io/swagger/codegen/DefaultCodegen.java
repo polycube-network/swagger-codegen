@@ -520,7 +520,7 @@ public class DefaultCodegen {
         return outputFolder + "/" + modelPackage().replace('.', '/');
     }
 
-    public String toModelFileFolder(String modelName) {return modelFileFolder(); }
+    public String toModelFileFolder(String modelName, String templateName) {return modelFileFolder(); }
 
     public String apiTestFileFolder() {
         return outputFolder + "/" + testPackage().replace('.', '/');

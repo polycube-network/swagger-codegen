@@ -43,7 +43,7 @@ public interface CodegenConfig {
 
     String modelFileFolder();
 
-    String toModelFileFolder(String moduleName);
+    String toModelFileFolder(String moduleName, String templateName);
 
     String modelTestFileFolder();
 

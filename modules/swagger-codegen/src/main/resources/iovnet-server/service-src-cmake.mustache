@@ -1,10 +1,10 @@
 aux_source_directory(serializer SERIALIZER_SOURCES)
 aux_source_directory(api API_SOURCES)
-aux_source_directory(src SRC_SOURCES)
+aux_source_directory(default-src SRC_SOURCES)
 
 include_directories(serializer)
 include_directories(interface)
-include_directories(src)
+include_directories(default-src)
 
 add_library(iov-{{serviceNameLowerCase}} SHARED
   ${SERIALIZER_SOURCES}

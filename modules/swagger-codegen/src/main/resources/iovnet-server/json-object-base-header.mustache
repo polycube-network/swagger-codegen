@@ -25,7 +25,9 @@ public:
   JsonObjectBase();
   virtual ~JsonObjectBase();
 
-  virtual void validate() = 0;
+  virtual void validateKeys() = 0;
+  virtual void validateMandatoryFields() = 0;
+  virtual void validateParams() = 0;
 
   virtual nlohmann::json toJson() const = 0;
   virtual void fromJson(nlohmann::json& json) = 0;
