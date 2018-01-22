@@ -237,7 +237,7 @@ void {{classname}}JsonObject::add{{complexType}}({{complexType}}JsonObject value
 
 void {{classname}}JsonObject::{{setter}}({{{datatype}}}{{^isPrimitiveType}}JsonObject{{/isPrimitiveType}} value) {
   m_{{name}} = value;
-  {{^vendorExtensions.x-is-required}}m_{{name}}IsSet = true;{{/vendorExtensions.x-is-required}}
+  m_{{name}}IsSet = true;
 }
 {{/isNotContainer}}
 
