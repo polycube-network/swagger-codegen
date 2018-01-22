@@ -40,9 +40,7 @@ void {{classname}}JsonObject::validateMandatoryFields() {
 void {{classname}}JsonObject::validateParams() {
   {{#vars}}{{#hasValidation}}{{#isString}}
   if(m_{{name}}IsSet) {
-    std::string patter_value = R"PATTERN(
-      {{dataFormat}}
-    )PATTERN";
+    std::string patter_value = R"PATTERN({{dataFormat}})PATTERN";
     std::regex e (patter_value);
     if (!std::regex_match(m_{{name}}, e))
       throw std::runtime_error("Variable {{baseName}} has not a valid format");
