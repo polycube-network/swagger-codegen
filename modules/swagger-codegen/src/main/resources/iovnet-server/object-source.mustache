@@ -38,8 +38,8 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
   //This method updates all the object/parameter in {{classname}} object specified in the conf JsonObject.
   //You can modify this implementation.
   {{#vars}}
-  {{^required}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}
-  if(conf.{{name}}IsSet()) { {{/vendorExtensions.x-is-required}}{{^isNotContainer}}
+  {{^vendorExtensions.x-is-key}}{{^isReadOnly}}
+  if(conf.{{name}}IsSet()) { {{^isNotContainer}}
     for(auto &i : conf.{{getter}}()){ {{#vendorExtensions.x-key-list}}
       auto {{varName}} = i.{{getter}}();{{/vendorExtensions.x-key-list}}
       auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
@@ -47,16 +47,8 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
     }{{/isNotContainer}}{{#isNotContainer}}{{#isPrimitiveType}}
     {{setter}}(conf.{{getter}}());{{/isPrimitiveType}}{{^isPrimitiveType}}
     auto m = {{getter}}();
-    m->update(conf.{{getter}}());{{/isPrimitiveType}}{{/isNotContainer}}{{^vendorExtensions.x-is-required}}
-  } {{/vendorExtensions.x-is-required}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}{{/required}}{{#required}}{{^isNotContainer}}
-  for(auto &i : conf.{{getter}}()){ {{#vendorExtensions.x-key-list}}
-    auto {{varName}} = i.{{getter}}();{{/vendorExtensions.x-key-list}}
-    auto m = get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
-    m->update(i);
-  }{{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{#isPrimitiveType}}
-  {{setter}}(conf.{{getter}}());{{/isPrimitiveType}}{{^isPrimitiveType}}
-  auto m = {{getter}}();
-  m->update(conf.{{getter}}());{{/isPrimitiveType}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}{{/isNotContainer}}{{/required}}
+    m->update(conf.{{getter}}());{{/isPrimitiveType}}{{/isNotContainer}}
+  }{{/isReadOnly}}{{/vendorExtensions.x-is-key}}
   {{/vars}}
 }
 
