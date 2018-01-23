@@ -16,8 +16,8 @@ namespace {{this}} {
   m_{{name}} = {{{defaultValue}}};{{/isString}}{{#isDateTime}}
   m_{{name}} = {{{defaultValue}}};{{/isDateTime}}{{#isEnum}}
   m_{{name}} = {{{defaultValue}}};{{/isEnum}}{{/isPrimitiveType}}{{/isNotContainer}}
-  m_{{name}}IsSet = true;{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}
-  m_{{name}}IsSet = true;{{/vendorExtensions.x-has-default-value}}
+  m_{{name}}IsSet = false;{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}
+  m_{{name}}IsSet = false;{{/vendorExtensions.x-has-default-value}}
   {{/vars}}
 }
 
