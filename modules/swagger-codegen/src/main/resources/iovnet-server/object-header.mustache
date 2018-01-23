@@ -45,9 +45,9 @@ public:
   {{/vendorExtensions.x-parent}}
 
   {{#vendorExtensions.x-parent}}
-  static void create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} &{{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf);
-  static std::shared_ptr<{{classname}}> getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
-  static void removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}});
+  static void create({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}, {{/vendorExtensions.x-key-list}}const {{classname}}JsonObject &conf);
+  static std::shared_ptr<{{classname}}> getEntry({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+  static void removeEntry({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
   {{#vendorExtensions.x-is-list}}
   static std::vector<std::shared_ptr<{{classname}}>> get({{vendorExtensions.x-parent}} &parent);
   static void remove({{vendorExtensions.x-parent}} &parent);

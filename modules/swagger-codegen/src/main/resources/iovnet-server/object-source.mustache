@@ -96,7 +96,7 @@ void {{classname}}::packet_in(iovnet::service::Port &port, iovnet::service::Pack
 }
 
 {{/vendorExtensions.x-parent}}{{#vendorExtensions.x-parent}}
-void {{classname}}::create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} &{{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf){
+void {{classname}}::create({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}, {{/vendorExtensions.x-key-list}}const {{classname}}JsonObject &conf){
 
   //This method creates the actual {{classname}} object given thee key param. 
   //Please remember to call here the create static method for all sub-objects of {{classname}}.
@@ -120,7 +120,7 @@ void {{classname}}::create({{{this}}} &parent, {{#vars}}{{#vendorExtensions.x-is
   {{/vendorExtensions.x-is-port-class}}
 }
 
-std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
+std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
   //This method retrieves the pointer to {{classname}} object specified by its keys.
   {{#vendorExtensions.x-is-port-class}}
   //logger()->info("Called getEntry with name: {0}", name);
@@ -131,7 +131,7 @@ std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vars
   {{/vendorExtensions.x-is-port-class}}
 }
 
-void {{classname}}::removeEntry({{{this}}} &parent{{#vars}}{{#vendorExtensions.x-is-key}}, const {{{datatype}}} &{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}){
+void {{classname}}::removeEntry({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
   //This method removes the single {{classname}} object specified by its keys.
   //Remember to call here the remove static method for all-sub-objects of {{classname}}.
   {{#vendorExtensions.x-is-port-class}}

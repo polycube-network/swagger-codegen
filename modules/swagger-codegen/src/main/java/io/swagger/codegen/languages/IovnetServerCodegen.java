@@ -175,9 +175,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     l.get(i).put("getter", toLowerCamelCase("get_" + l.get(i).get("varName")));
                     l.get(i).put("setter", toLowerCamelCase("set_" + l.get(i).get("varName")));
                     if(l.get(i).get("type").equals("integer")){
-                      String format = l.get(i).get("format");
+                        String format = l.get(i).get("format");
                         l.get(i).put("type", format + "_t");
-                        
                     }
                     if(l.get(i).get("type").equals("string")){
                         if(l.get(i).get("isEnum") != null){
@@ -215,6 +214,14 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     patterns_map.put(toLowerCamelCase(cp.baseName).toUpperCase(), cp.dataFormat);
                     cp.vendorExtensions.put("x-patter-name", toLowerCamelCase(cp.baseName).toUpperCase());
                 }
+            }
+
+            //If the CodegenProperty that I'm trying to fill is equals to the model I'll put the entire x-key-list
+            //in the property
+            if(!Strings.isNullOrEmpty(cp.complexType) && !Strings.isNullOrEmpty(codegenModel.classname) &&
+                    cp.complexType.equalsIgnoreCase(codegenModel.classname) &&
+                    cp.vendorExtensions.containsKey("x-key-list")) {
+                codegenModel.vendorExtensions.put("x-key-list", cp.vendorExtensions.get("x-key-list"));
             }
         }
         
@@ -613,6 +620,13 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                             p.defaultValue = String.format("%s::%s", p.datatype, p.defaultValue);
                         }
                     }
+
+                    if(p.vendorExtensions.containsKey("x-key-list") && !Strings.isNullOrEmpty(p.complexType)){
+                        CodegenModel inner_model = getModelWithClassname(p.complexType, objs);
+                        if(inner_model != null) {
+                            inner_model.vendorExtensions.put("x-key-list", p.vendorExtensions.get("x-key-list"));
+                        }
+                    }
                 }
 
                 //Add vendor extension to recognize the class Ports
@@ -695,6 +709,22 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         }
 
         return objs;
+    }
+
+    private CodegenModel getModelWithClassname(String complexType, Map<String, Object> models) {
+        for (Map.Entry<String, Object> entry : models.entrySet()) {
+            if(entry.getKey().equalsIgnoreCase(complexType)){
+                Map<String, Object> inner = (Map<String, Object>) entry.getValue();
+                List<Map<String, Object>> inner_models = (List<Map<String, Object>>) inner.get("models");
+                for (Map<String, Object> mo : inner_models) {
+                    CodegenModel model = (CodegenModel) mo.get("model");
+                    if(model.classname.equalsIgnoreCase(complexType)){
+                        return model;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
