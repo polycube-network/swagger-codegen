@@ -86,12 +86,9 @@ public:
   void {{setter}}({{{datatype}}}JsonObject value);
   {{/isPrimitiveType}}
   {{/isNotContainer}}
-  {{^vendorExtensions.x-is-required}}
   bool {{name}}IsSet() const;
   void unset{{nameInCamelCase}}();
-  {{/vendorExtensions.x-is-required}}
-	{{#isEnum}}
-  
+  {{#isEnum}}
   static std::string {{{datatype}}}_to_string(const {{{datatype}}} &value);
   static {{{datatype}}} string_to_{{{datatype}}}(const std::string &str);
   {{/isEnum}}
