@@ -164,7 +164,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{/isListContainer}}
     {{^isListContainer}}
     {{paramName}}.fromJson(request_body);{{#vendorExtensions.x-key-list}}
-    {{paramName}}.{{setter}}({{keyParamName}});{{/vendorExtensions.x-key-list}}{{^vendorExtensions.isPatch}}
+    {{paramName}}.{{setter}}({{keyParamName}}{{#isEnum}}_{{/isEnum}});{{/vendorExtensions.x-key-list}}{{^vendorExtensions.isPatch}}
     {{paramName}}.validateMandatoryFields();{{/vendorExtensions.isPatch}}
     {{paramName}}.validateParams();
     {{/isListContainer}}

@@ -315,18 +315,19 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
             }
 
             if(def.getProperties() != null) {
-                ArrayList<Map<String, String>> keysList = new ArrayList<>();
+                ArrayList<Map<String, Object>> keysList = new ArrayList<>();
                 for(Map.Entry<String, Property> entry : def.getProperties().entrySet()){
                     if(entry.getValue().getVendorExtensions() != null &&
                             entry.getValue().getVendorExtensions().containsKey("x-is-key") &&
                             entry.getValue().getVendorExtensions().get("x-is-key").equals(Boolean.TRUE)){
-                        Map<String, String> map = new HashMap<>();
+                        Map<String, Object> map = new HashMap<>();
                         if(op.getHasPathParams() && op.pathParams != null){
                             for(CodegenParameter pathParam : op.pathParams){
                                 if(pathParam.baseName.equals(entry.getKey())){
                                     map.put("keyParamName", toLowerCamelCase(pathParam.paramName));
                                     map.put("getter", toLowerCamelCase("get"+ getterAndSetterCapitalize(entry.getKey())));
                                     map.put("setter", toLowerCamelCase("set"+ getterAndSetterCapitalize(entry.getKey())));
+                                    map.put("isEnum", pathParam.isEnum);
                                     break;
                                 }
                             }
