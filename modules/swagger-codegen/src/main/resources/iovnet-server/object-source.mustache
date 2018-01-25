@@ -112,7 +112,7 @@ void {{classname}}::create({{{this}}} &parent, {{#vendorExtensions.x-key-list}}c
   {{/vendorExtensions.x-is-port-class}}
 }
 
-std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
+std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vendorExtensions.x-key-list}}{{^lastKey}},{{/lastKey}} const {{{type}}} &{{{varName}}}{{/vendorExtensions.x-key-list}}){
   //This method retrieves the pointer to {{classname}} object specified by its keys.
   {{#vendorExtensions.x-is-port-class}}
   //logger()->info("Called getEntry with name: {0}", name);
@@ -123,7 +123,7 @@ std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent, {{#ve
   {{/vendorExtensions.x-is-port-class}}
 }
 
-void {{classname}}::removeEntry({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
+void {{classname}}::removeEntry({{{this}}} &parent{{#vendorExtensions.x-key-list}}{{^lastKey}},{{/lastKey}}const {{{type}}} &{{{varName}}}{{/vendorExtensions.x-key-list}}){
   //This method removes the single {{classname}} object specified by its keys.
   //Remember to call here the remove static method for all-sub-objects of {{classname}}.
   {{#vendorExtensions.x-is-port-class}}
