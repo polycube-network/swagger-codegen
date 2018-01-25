@@ -154,9 +154,11 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
   //This method removes all {{classname}} objects in {{vendorExtensions.x-parent}}.
   //Remember to call here the remove static method for all-sub-objects of {{classname}}.
   {{#vendorExtensions.x-is-port-class}}
-  for(auto &it : parent.ports_) {
-    int port_id = it.second.index();
-    {{classname}}::removeEntry(parent, it.second.name());
+  for(auto it = parent.ports_.begin(); it != parent.ports_.end();) {
+    int port_id = it->second.index();
+    auto tmp = it;
+    it++;
+    {{classname}}::removeEntry(parent, tmp->second.name());
   }
   {{/vendorExtensions.x-is-port-class}}
   {{^vendorExtensions.x-is-port-class}}

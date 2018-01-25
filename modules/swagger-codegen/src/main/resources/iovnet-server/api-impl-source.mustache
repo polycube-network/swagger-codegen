@@ -112,7 +112,8 @@ void {{classname}}Impl::replace_{{classVarName}}_ports_list_by_id(const std::str
 }
 
 void {{classname}}Impl::delete_{{classVarName}}_ports_list_by_id(const std::string &name) {
-  throw std::runtime_error("Method not supported");
+  auto &&m = get_iomodule(name);
+  m.delPortsList();
 }
 
 std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id_get_list(const std::string &name) {
