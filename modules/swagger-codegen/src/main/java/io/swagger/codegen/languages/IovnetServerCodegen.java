@@ -216,12 +216,14 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 }
             }
 
+            cp.vendorExtensions.put("x-has-key-list", cp.vendorExtensions.containsKey("x-key-list"));
             //If the CodegenProperty that I'm trying to fill is equals to the model I'll put the entire x-key-list
             //in the property
             if(!Strings.isNullOrEmpty(cp.complexType) && !Strings.isNullOrEmpty(codegenModel.classname) &&
                     cp.complexType.equalsIgnoreCase(codegenModel.classname) &&
                     cp.vendorExtensions.containsKey("x-key-list")) {
                 codegenModel.vendorExtensions.put("x-key-list", cp.vendorExtensions.get("x-key-list"));
+                codegenModel.vendorExtensions.put("x-has-key-list", true);
             }
         }
         
