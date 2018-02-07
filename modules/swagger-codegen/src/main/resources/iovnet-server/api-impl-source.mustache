@@ -172,12 +172,6 @@ void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::stri
   p->setPeer(peer);
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName, const PortsStatusEnum &status) {
-  auto &&m = get_iomodule(name);
-  auto &&p = m.getPorts(portsName);
-  p->setStatus(status);
-}
-
 
 {{#operation}}
 {{^vendorExtensions.x-has-default-impl}}
