@@ -15,7 +15,7 @@ const std::string {{serviceNameLowerCase}}_code = R"IOVNET_DP(
 static __always_inline 
 int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
   // Put your eBPF datapth code here
-  iovnet_log(LOG_DEBUG, md->module_index, 0, "Hello from iovnet! :-)");
+  iovnet_log(ctx, LOG_INFO, "Hello from iovnet! :-)");
   return RX_DROP;
 }
 )IOVNET_DP";
