@@ -22,7 +22,7 @@ using namespace {{modelNamespace}};
 {{baseName}} &{{classname}}Impl::get_iomodule(const std::string &name) {
   try {
     return iomodules.at(name);
-  } catch (std::exception e) {
+  } catch (const std::exception &e) {
     throw std::runtime_error("IOModule " + name + " does not exist");
   }
 }
