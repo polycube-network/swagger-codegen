@@ -20,11 +20,12 @@ using namespace {{modelNamespace}};
 */
 
 {{baseName}} &{{classname}}Impl::get_iomodule(const std::string &name) {
-  try {
-    return iomodules.at(name);
-  } catch (const std::exception &e) {
+  auto iter = iomodules.find(name);
+  if (iter == iomodules.end()) {
     throw std::runtime_error("IOModule " + name + " does not exist");
   }
+  
+  return iter->second;
 }
 
 void {{classname}}Impl::create_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &jsonObject) {
