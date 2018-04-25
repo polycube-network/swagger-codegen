@@ -76,6 +76,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
         case HelpType::ADD:
           #ifdef NODE_IS_LIST_CONTAINER
           val["params"] = {{baseType}}JsonObject::getKeys();
+          val["optional-params"] = {{baseType}}JsonObject::getWritableLeafs();
           #else
           response.send(iovnet::service::Http::Code::Bad_Request);
           return;
@@ -143,7 +144,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{#hasPathParams}}
     {{#pathParams}}
     {{#isEnum}}
-    auto {{paramName}}_ = {{datatypeWithEnum}}::string_to_{{enumName}}({{paramName}}); 
+    auto {{paramName}}_ = {{datatypeWithEnum}}::string_to_{{enumName}}({{paramName}});
     {{/isEnum}}
     {{/pathParams}}
     {{/hasPathParams}}
@@ -203,7 +204,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{/isListContainer}}
     {{/returnTypeIsPrimitive}}
     response.send(iovnet::service::Http::Code::{{vendorExtensions.x-response-code}}, response_body.dump(4));
-    
+
     {{/returnType}}
     {{^returnType}}
     {{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
@@ -211,10 +212,10 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{/returnType}}
   }
   catch(std::runtime_error &e)
-  {   
+  {
       response.send(iovnet::service::Http::Code::Internal_Server_Error, e.what());
   }
-  
+
 }
 
 {{/operation}}
