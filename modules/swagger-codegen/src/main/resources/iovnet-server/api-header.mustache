@@ -10,7 +10,7 @@
 
 #pragma once
 
-#define SERVICE_NAME "{{classVarName}}"
+#define IOVNET_SERVICE_NAME "{{classVarName}}"
 
 {{{defaultInclude}}}
 #include <iovnet/services/http_router.h>
@@ -28,14 +28,14 @@ using namespace {{modelNamespace}};
 using namespace iovnet::service;
 
 class {{declspec}} {{classname}} : public ManagementInterface {
-public:
+ public:
   {{classname}}();
   virtual ~{{classname}}() {};
 
-  const std::string base = "{{basePathWithoutHost}}" + std::string(SERVICE_NAME) + "/";
+  const std::string base = "{{basePathWithoutHost}}" + std::string(IOVNET_SERVICE_NAME) + "/";
 
-protected:
-  void setupRoutes();
+ protected:
+  void setup_routes();
   void control_handler(const HttpHandleRequest &request, HttpHandleResponse &response) override;
 
   {{#operation}}

@@ -24,7 +24,7 @@ using namespace {{modelNamespace}};
   if (iter == iomodules.end()) {
     throw std::runtime_error("IOModule " + name + " does not exist");
   }
-  
+
   return iter->second;
 }
 
@@ -76,7 +76,7 @@ std::string {{classname}}Impl::read_{{classVarName}}_uuid_by_id(const std::strin
 }
 
 std::vector<{{baseName}}JsonObject> {{classname}}Impl::read_{{classVarName}}_list_by_id() {
-  std::vector<{{baseName}}JsonObject> jsonObject_vect; 
+  std::vector<{{baseName}}JsonObject> jsonObject_vect;
   for(auto &i : iomodules) {
     jsonObject_vect.push_back(get_iomodule(i.first).toJsonObject());
   }
