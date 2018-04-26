@@ -18,10 +18,10 @@ using namespace {{modelNamespace}};
 
 void {{classname}}::control_handler(const HttpHandleRequest &request, HttpHandleResponse &response) {
   try {
-      auto s = router.route(request, response);
-      if (s == Rest::Router::Status::NotFound) {
-        response.send(Http::Code::Not_Found);
-      }
+    auto s = router.route(request, response);
+    if (s == Rest::Router::Status::NotFound) {
+      response.send(Http::Code::Not_Found);
+    }
   } catch (const std::exception &e) {
     response.send(iovnet::service::Http::Code::Bad_Request, e.what());
   }

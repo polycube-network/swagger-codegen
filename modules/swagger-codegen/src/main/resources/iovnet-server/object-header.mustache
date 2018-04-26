@@ -27,43 +27,43 @@ using iovnet::service::IOModuleType;
 {{/vendorExtensions.x-parent}}
 
 class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{/vendorExtensions.x-inherits-from}}public {{classname}}Interface {
-  {{^vendorExtensions.x-parent}}
+{{^vendorExtensions.x-parent}}
   friend class {{vendorExtensions.x-child-ports-classname}};
-  {{/vendorExtensions.x-parent}}
-public:
-  {{^vendorExtensions.x-parent}}
+{{/vendorExtensions.x-parent}}
+ public:
+{{^vendorExtensions.x-parent}}
   {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type = IOModuleType::TYPE_CLS);
-  {{/vendorExtensions.x-parent}}
-  {{#vendorExtensions.x-parent}}
+{{/vendorExtensions.x-parent}}
+{{#vendorExtensions.x-parent}}
   {{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf);
-  {{/vendorExtensions.x-parent}}
+{{/vendorExtensions.x-parent}}
   virtual ~{{classname}}();
-  {{^vendorExtensions.x-parent}}
+{{^vendorExtensions.x-parent}}
   std::string generate_code();
   std::vector<std::string> generate_code_vector();
   void packet_in(iovnet::service::Port &port, iovnet::service::PacketInMetadata &md, const std::vector<uint8_t> &packet) override;
-  {{/vendorExtensions.x-parent}}
+{{/vendorExtensions.x-parent}}
 
-  {{#vendorExtensions.x-parent}}
+{{#vendorExtensions.x-parent}}
   static void create({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}, {{/vendorExtensions.x-key-list}}const {{classname}}JsonObject &conf);
   static std::shared_ptr<{{classname}}> getEntry({{{this}}} &parent{{#vendorExtensions.x-key-list}}{{#lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}{{#vendorExtensions.x-key-list}} const {{{type}}} &{{{varName}}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}});
   static void removeEntry({{{this}}} &parent{{#vendorExtensions.x-key-list}}{{#lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}{{#vendorExtensions.x-key-list}} const {{{type}}} &{{{varName}}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}});
-  {{#vendorExtensions.x-is-list}}
+{{#vendorExtensions.x-is-list}}
   static std::vector<std::shared_ptr<{{classname}}>> get({{vendorExtensions.x-parent}} &parent);
   static void remove({{vendorExtensions.x-parent}} &parent);
-  {{/vendorExtensions.x-is-list}}
-  {{/vendorExtensions.x-parent}}
-  {{#vendorExtensions.x-parent}}
+{{/vendorExtensions.x-is-list}}
+{{/vendorExtensions.x-parent}}
+{{#vendorExtensions.x-parent}}
   std::shared_ptr<spdlog::logger> logger();
-  {{/vendorExtensions.x-parent}}
+{{/vendorExtensions.x-parent}}
   void update(const {{classname}}JsonObject &conf) override;
   {{classname}}JsonObject toJsonObject() override;
-  {{#vars}}
-  
+{{#vars}}
+
   /// <summary>
-  /// {{description}}
+  ///{{#description}} {{description}}{{/description}}
   /// </summary>
-  {{^isNotContainer}}
+{{^isNotContainer}}
   std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
   std::vector<std::shared_ptr<{{complexType}}>> get{{nameInCamelCase}}List() override;
   void add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
@@ -71,42 +71,41 @@ public:
   void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
   void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
   void del{{nameInCamelCase}}List() override;
-  {{/isNotContainer}}
-  {{#isNotContainer}}
-  {{#isPrimitiveType}}
+{{/isNotContainer}}
+{{#isNotContainer}}
+{{#isPrimitiveType}}
   {{{datatype}}} {{getter}}() override;
-  {{^vendorExtensions.x-is-key}}
-  {{^isReadOnly}}
+{{^vendorExtensions.x-is-key}}
+{{^isReadOnly}}
   void {{setter}}(const {{{datatype}}} &value) override;
-  {{/isReadOnly}}
-  {{/vendorExtensions.x-is-key}}
-  {{/isPrimitiveType}}
-  {{^isPrimitiveType}}
+{{/isReadOnly}}
+{{/vendorExtensions.x-is-key}}
+{{/isPrimitiveType}}
+{{^isPrimitiveType}}
   std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}() override;
-  {{^vendorExtensions.x-is-key}}
-  {{^isReadOnly}}
+{{^vendorExtensions.x-is-key}}
+{{^isReadOnly}}
   void add{{nameInCamelCase}}(const {{complexType}}JsonObject &value) override;
   void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
   void del{{nameInCamelCase}}() override;
-  {{/isReadOnly}}
-  {{/vendorExtensions.x-is-key}}
-  {{/isPrimitiveType}}
-  {{/isNotContainer}}
-  {{/vars}}
+{{/isReadOnly}}
+{{/vendorExtensions.x-is-key}}
+{{/isPrimitiveType}}
+{{/isNotContainer}}
+{{/vars}}
 
-  {{#vendorExtensions.x-has-yang-actions}}
-  {{#vendorExtensions.x-yang-actions}}
-  {{#x-yang-action-has-output}}{{x-yang-action-output-object}}JsonObject{{/x-yang-action-has-output}}{{^x-yang-action-has-output}}void{{/x-yang-action-has-output}} {{x-yang-action-name-lower-camelcase}}({{#x-yang-action-has-input}}{{x-yang-action-input-object}}JsonObject input{{/x-yang-action-has-input}}) override;
-  {{/vendorExtensions.x-yang-actions}}
-  {{/vendorExtensions.x-has-yang-actions}}
-private:    
-  {{#vendorExtensions.x-parent}}
-  {{this}} &parent_;
-  {{/vendorExtensions.x-parent}}
-  {{^vendorExtensions.x-parent}}
+{{#vendorExtensions.x-has-yang-actions}}
+{{#vendorExtensions.x-yang-actions}}
+{{#x-yang-action-has-output}}  {{x-yang-action-output-object}}JsonObject{{/x-yang-action-has-output}}{{^x-yang-action-has-output}}void{{/x-yang-action-has-output}} {{x-yang-action-name-lower-camelcase}}({{#x-yang-action-has-input}}{{x-yang-action-input-object}}JsonObject input{{/x-yang-action-has-input}}) override;
+{{/vendorExtensions.x-yang-actions}}
+{{/vendorExtensions.x-has-yang-actions}}
+private:
+{{#vendorExtensions.x-parent}}
+{{this}}   &parent_;
+{{/vendorExtensions.x-parent}}
+{{^vendorExtensions.x-parent}}
   std::unordered_map<std::string, {{vendorExtensions.x-child-ports-classname}}> ports_;
-  {{/vendorExtensions.x-parent}}
-  
+{{/vendorExtensions.x-parent}}
 };
 
 {{/model}}

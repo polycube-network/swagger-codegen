@@ -5,7 +5,7 @@
 {{#models}}{{#model}}/*
 * {{classname}}Interface.h
 *
-* {{description}}
+*{{#description}} {{description}}{{/description}}
 */
 
 #pragma once
@@ -26,13 +26,13 @@ using namespace io::swagger::server::model;
 
 class {{classname}}Interface {
 public:
-  
+
   virtual void update(const {{classname}}JsonObject &conf) = 0;
   virtual {{classname}}JsonObject toJsonObject() = 0;
   {{#vars}}
-  
+
   /// <summary>
-  /// {{description}}
+  ///{{#description}} {{description}}{{/description}}
   /// </summary>
   {{^isNotContainer}}
   virtual std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) = 0;

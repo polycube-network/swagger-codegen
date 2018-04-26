@@ -184,43 +184,43 @@ void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::stri
 * @param[in] {{paramName}} {{description}}{{^required}} (optional{{#defaultValue}}, default to {{.}}{{/defaultValue}}){{/required}}{{/allParams}}
 *
 * Responses:
-* {{#returnType}}{{{returnType}}}{{/returnType}}
+*{{#returnType}} {{{returnType}}}{{/returnType}}
 */
 {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
 {{classname}}Impl::{{operationIdSnakeCase}}({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
-  {{^vendorExtensions.x-is-list-update}}
-  {{#vendorExtensions.x-call-sequence-method}}
-  {{^lastCall}}
+{{^vendorExtensions.x-is-list-update}}
+{{#vendorExtensions.x-call-sequence-method}}
+{{^lastCall}}
   auto &&{{{varName}}} = {{{methodCall}}};
-  {{/lastCall}}
-  {{#lastCall}}
-  {{^vendorExtensions.x-is-list}}
-  {{#vendorExtensions.x-is-yang-action}}
-  {{#returnType}}return {{{methodCall}}};{{/returnType}}
-  {{/vendorExtensions.x-is-yang-action}}
-  {{^vendorExtensions.x-is-yang-action}}
-  {{#returnType}}return {{{methodCall}}}{{^returnTypeIsPrimitive}}toJsonObject(){{/returnTypeIsPrimitive}};{{/returnType}}
-  {{/vendorExtensions.x-is-yang-action}}
-  {{^returnType}}{{{methodCall}}};{{/returnType}}
-  {{/vendorExtensions.x-is-list}}
-  {{#vendorExtensions.x-is-list}}
-  {{^returnType}}
+{{/lastCall}}
+{{#lastCall}}
+{{^vendorExtensions.x-is-list}}
+{{#vendorExtensions.x-is-yang-action}}
+{{#returnType}}return {{{methodCall}}};{{/returnType}}
+{{/vendorExtensions.x-is-yang-action}}
+{{^vendorExtensions.x-is-yang-action}}
+{{#returnType}}  return {{{methodCall}}}{{^returnTypeIsPrimitive}}toJsonObject(){{/returnTypeIsPrimitive}};{{/returnType}}
+{{/vendorExtensions.x-is-yang-action}}
+{{^returnType}}  {{{methodCall}}};{{/returnType}}
+{{/vendorExtensions.x-is-list}}
+{{#vendorExtensions.x-is-list}}
+{{^returnType}}
   {{{methodCall}}};
-  {{/returnType}}
-  {{#returnType}}
+{{/returnType}}
+{{#returnType}}
   auto &&{{{varName}}} = {{{methodCall}}};
   {{{returnType}}} m;
   for(auto &i : {{{varName}}})
     m.push_back(i->toJsonObject());
   return m;
-  {{/returnType}}
-  {{/vendorExtensions.x-is-list}}
-  {{/lastCall}}
-  {{/vendorExtensions.x-call-sequence-method}}
-  {{/vendorExtensions.x-is-list-update}}
-  {{#vendorExtensions.x-is-list-update}}
+{{/returnType}}
+{{/vendorExtensions.x-is-list}}
+{{/lastCall}}
+{{/vendorExtensions.x-call-sequence-method}}
+{{/vendorExtensions.x-is-list-update}}
+{{#vendorExtensions.x-is-list-update}}
   throw std::runtime_error("Method not supported");
-  {{/vendorExtensions.x-is-list-update}}
+{{/vendorExtensions.x-is-list-update}}
 }
 
 {{#vendorExtensions.x-is-list}}
@@ -228,7 +228,7 @@ void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::stri
 {{#responses}}
 {{^primitiveType}}
 std::vector<std::string> {{classname}}Impl::{{operationIdSnakeCase}}_get_list({{#pathParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}}) {
-    return std::vector<std::string>();
+  return std::vector<std::string>();
 }
 {{/primitiveType}}
 {{/responses}}
@@ -236,7 +236,6 @@ std::vector<std::string> {{classname}}Impl::{{operationIdSnakeCase}}_get_list({{
 {{/vendorExtensions.x-is-list}}
 {{/vendorExtensions.x-has-default-impl}}
 {{/operation}}
-
 {{#apiNamespaceDeclarations}}
 }
 {{/apiNamespaceDeclarations}}

@@ -1,6 +1,6 @@
 {{>licenseInfo}}
 
-//These methods have a default implementation. Your are free to keep it or add your own
+// These methods have a default implementation. Your are free to keep it or add your own
 
 {{#models}}{{#model}}
 #include "../{{classname}}.h"
@@ -37,7 +37,7 @@ void {{classname}}::replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}c
   {{type}} {{varName}}_ = conf.{{getter}}();
   {{/vendorExtensions.x-key-list}}
   {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}}conf);
-  
+
 }
 
 void {{classname}}::del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
@@ -63,7 +63,7 @@ void {{classname}}::add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const
 
 void {{classname}}::replace{{nameInCamelCase}}(const {{complexType}}JsonObject &conf){
   {{complexType}}::removeEntry(*this);
-  {{#vendorExtensions.x-key-list}}
+{{#vendorExtensions.x-key-list}}
   {{type}} {{varName}}_ = conf.{{getter}}();
   {{/vendorExtensions.x-key-list}}
   {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}}conf);
@@ -79,17 +79,17 @@ void {{classname}}::del{{nameInCamelCase}}(){
 {{/isPrimitiveType}}{{#isPrimitiveType}}
 {{#vendorExtensions.x-has-default-impl}}
 {{{datatype}}} {{classname}}::{{getter}}(){
-  //This method retrieves the {{name}} value.
-  {{#vendorExtensions.x-is-iomodule-name}}
+  // This method retrieves the {{name}} value.
+{{#vendorExtensions.x-is-iomodule-name}}
   return IOModule::get_name();
-  {{/vendorExtensions.x-is-iomodule-name}}
-  {{#vendorExtensions.x-is-iomodule-uuid}}
+{{/vendorExtensions.x-is-iomodule-name}}
+{{#vendorExtensions.x-is-iomodule-uuid}}
   return IOModule::get_uuid().str();
-  {{/vendorExtensions.x-is-iomodule-uuid}}
-  {{#vendorExtensions.x-is-iomodule-type}}
+{{/vendorExtensions.x-is-iomodule-uuid}}
+{{#vendorExtensions.x-is-iomodule-type}}
   return IOModule::get_type();
-  {{/vendorExtensions.x-is-iomodule-type}}
-  {{#vendorExtensions.x-is-iomodule-debug}}
+{{/vendorExtensions.x-is-iomodule-type}}
+{{#vendorExtensions.x-is-iomodule-debug}}
     switch(IOModule::get_log_level()){
       case iovnet::LogLevel::TRACE:
         return {{datatype}}::TRACE;
@@ -106,8 +106,8 @@ void {{classname}}::del{{nameInCamelCase}}(){
       case iovnet::LogLevel::OFF:
         return {{datatype}}::OFF;
     }
-  {{/vendorExtensions.x-is-iomodule-debug}}
-  {{#vendorExtensions.x-is-port-status}}
+{{/vendorExtensions.x-is-iomodule-debug}}
+{{#vendorExtensions.x-is-port-status}}
   switch (Port::get_status()) {
     case iovnet::service::PortStatus::UP:
       return PortsStatusEnum::UP;
@@ -116,24 +116,24 @@ void {{classname}}::del{{nameInCamelCase}}(){
     default:
       return PortsStatusEnum::DOWN;
   }
-  {{/vendorExtensions.x-is-port-status}}
-  {{#vendorExtensions.x-is-port-peer}}
+{{/vendorExtensions.x-is-port-status}}
+{{#vendorExtensions.x-is-port-peer}}
   return Port::peer();
-  {{/vendorExtensions.x-is-port-peer}}
-  {{#vendorExtensions.x-is-port-uuid}}
+{{/vendorExtensions.x-is-port-peer}}
+{{#vendorExtensions.x-is-port-uuid}}
   return Port::uuid().str();
-  {{/vendorExtensions.x-is-port-uuid}}
-  {{#vendorExtensions.x-is-port-name}}
+{{/vendorExtensions.x-is-port-uuid}}
+{{#vendorExtensions.x-is-port-name}}
   return Port::name();
-  {{/vendorExtensions.x-is-port-name}}
+{{/vendorExtensions.x-is-port-name}}
 }
 {{^vendorExtensions.x-is-key}}{{^isReadOnly}}
 void {{classname}}::{{setter}}(const {{{datatype}}} &value){
-  //This method set the {{name}} value.
-  {{#vendorExtensions.x-is-port-status}}
+  // This method sets the {{name}} value.
+{{#vendorExtensions.x-is-port-status}}
   throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
-  {{/vendorExtensions.x-is-port-status}}
-  {{#vendorExtensions.x-is-iomodule-debug}}
+{{/vendorExtensions.x-is-port-status}}
+{{#vendorExtensions.x-is-iomodule-debug}}
     switch(value){
       case {{{datatype}}}::TRACE:
         IOModule::set_log_level(iovnet::LogLevel::TRACE);
@@ -157,11 +157,11 @@ void {{classname}}::{{setter}}(const {{{datatype}}} &value){
         IOModule::set_log_level(iovnet::LogLevel::OFF);
         break;
     }
-  {{/vendorExtensions.x-is-iomodule-debug}}
-  {{#vendorExtensions.x-is-port-peer}}
+{{/vendorExtensions.x-is-iomodule-debug}}
+{{#vendorExtensions.x-is-port-peer}}
   //logger()->info("Received request to set peer {0}", value);
   Port::set_peer(value);
-  {{/vendorExtensions.x-is-port-peer}}
+{{/vendorExtensions.x-is-port-peer}}
 }
 {{/isReadOnly}}{{/vendorExtensions.x-is-key}}
 {{/vendorExtensions.x-has-default-impl}}
