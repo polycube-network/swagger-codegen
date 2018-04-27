@@ -37,14 +37,17 @@ void {{classname}}::setup_routes() {
 
 {{#operation}}
 void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest::Request &request, iovnet::service::HttpHandleResponse &response) {
-  {{#vendorExtensions.x-is-list}}
   {{#hasPathParams}}
   // Getting the path params
   {{#pathParams}}
   auto {{paramName}} = request.param(":{{baseName}}").as<{{dataType}}>();
+  {{#isEnum}}
+  auto {{paramName}}_ = {{datatypeWithEnum}}::string_to_{{enumName}}({{paramName}});
+  {{/isEnum}}
   {{/pathParams}}
   {{/hasPathParams}}
 
+  {{#vendorExtensions.x-is-list}}
   {{#hasBodyParam}}
   // Getting the body param
   {{#bodyParam}}
@@ -61,13 +64,13 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{#responses}}
     {{^primitiveType}}
     using iovnet::service::HelpType;
-    nlohmann::json val = nlohmann::json::object();
     if (request.help_type() != HelpType::NO_HELP) {
+      nlohmann::json val = nlohmann::json::object();
       switch (request.help_type()) {
         case HelpType::SHOW:
           #ifdef NODE_IS_LIST_CONTAINER
           val["params"] = {{baseType}}JsonObject::getKeys();
-          val["elements"] = {{operationIdSnakeCase}}_get_list({{#pathParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}});
+          val["elements"] = {{operationIdSnakeCase}}_get_list({{#allParams}}{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
           #else // element is complex
           val["params"] = {{baseType}}JsonObject::getElements();
           #endif
@@ -95,7 +98,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
         case HelpType::DEL:
           #ifdef NODE_IS_LIST_CONTAINER
           val["params"] = {{baseType}}JsonObject::getKeys();
-          val["elements"] = {{operationIdSnakeCase}}_get_list({{#pathParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}});
+          val["elements"] = {{operationIdSnakeCase}}_get_list({{#allParams}}{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
           #else
           response.send(iovnet::service::Http::Code::Bad_Request);
           return;
@@ -107,7 +110,7 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
           auto cmds = {"add", "del", "show"};
           val["commands"] = cmds;
           val["params"] = {{baseType}}JsonObject::getKeys();
-          val["elements"] = {{operationIdSnakeCase}}_get_list({{#pathParams}}{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}});
+          val["elements"] = {{operationIdSnakeCase}}_get_list({{#allParams}}{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
           #else // complex type
           auto cmds = {"set", "show"};
           val["commands"] = cmds;
@@ -126,13 +129,6 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{/vendorExtensions.x-is-list}}
 
     {{^vendorExtensions.x-is-list}}
-    {{#hasPathParams}}
-    // Getting the path params
-    {{#pathParams}}
-    auto {{paramName}} = request.param(":{{baseName}}").as<{{dataType}}>();
-    {{/pathParams}}
-    {{/hasPathParams}}
-
     {{#hasBodyParam}}
     // Getting the body param
     {{#bodyParam}}
@@ -140,14 +136,6 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const iovnet::service::Rest
     {{/bodyParam}}
     {{/hasBodyParam}}
     {{/vendorExtensions.x-is-list}}
-
-    {{#hasPathParams}}
-    {{#pathParams}}
-    {{#isEnum}}
-    auto {{paramName}}_ = {{datatypeWithEnum}}::string_to_{{enumName}}({{paramName}});
-    {{/isEnum}}
-    {{/pathParams}}
-    {{/hasPathParams}}
 
     {{#hasBodyParam}}
     {{#bodyParam}}

@@ -83,12 +83,14 @@ std::vector<{{baseName}}JsonObject> {{classname}}Impl::read_{{classVarName}}_lis
   return jsonObject_vect;
 }
 
-std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_list_by_id_get_list() {
-  std::vector<std::string> modules;
+std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::read_{{classVarName}}_list_by_id_get_list() {
+  std::vector<nlohmann::fifo_map<std::string, std::string>> r;
   for (auto &x : iomodules) {
-    modules.push_back(x.first);
+    nlohmann::fifo_map<std::string, std::string> m;
+    m["name"] = x.first;
+    r.push_back(std::move(m));
   }
-  return modules;
+  return r;
 }
 
 /*
@@ -117,13 +119,15 @@ void {{classname}}Impl::delete_{{classVarName}}_ports_list_by_id(const std::stri
   m.delPortsList();
 }
 
-std::vector<std::string> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id_get_list(const std::string &name) {
-  std::vector<std::string> vect;
+std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id_get_list(const std::string &name) {
+  std::vector<nlohmann::fifo_map<std::string, std::string>> r;
   auto &&m = get_iomodule(name);
   for(auto &i : m.getPortsList()){
-    vect.push_back(i->getName());
+    nlohmann::fifo_map<std::string, std::string> m;
+    m["name"] = i->getName();
+    r.push_back(std::move(m));
   }
-  return vect;
+  return r;
 }
 
 /*
@@ -227,13 +231,47 @@ void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::stri
 {{^bodyParams}}
 {{#responses}}
 {{^primitiveType}}
-std::vector<std::string> {{classname}}Impl::{{operationIdSnakeCase}}_get_list({{#pathParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}}) {
-  return std::vector<std::string>();
-}
+#define IMPLEMENT_IOVNET_GET_LIST
 {{/primitiveType}}
 {{/responses}}
 {{/bodyParams}}
 {{/vendorExtensions.x-is-list}}
+
+{{#vendorExtensions.x-is-list}}
+#ifdef IMPLEMENT_IOVNET_GET_LIST
+std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::{{operationIdSnakeCase}}_get_list({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
+  std::vector<nlohmann::fifo_map<std::string, std::string>> r;
+{{^vendorExtensions.x-is-list-update}}
+{{#vendorExtensions.x-call-sequence-method}}
+{{^lastCall}}
+  auto &&{{{varName}}} = {{{methodCall}}};
+{{/lastCall}}
+{{#lastCall}}
+
+{{#vendorExtensions.x-is-list}}
+  auto &&{{{varName}}} = {{{methodCall}}};
+  for(auto &i : {{{varName}}}) {
+    r.push_back(i->getKeys());
+  }
+  return r;
+{{/vendorExtensions.x-is-list}}
+{{/lastCall}}
+{{/vendorExtensions.x-call-sequence-method}}
+{{/vendorExtensions.x-is-list-update}}
+}
+#endif
+{{/vendorExtensions.x-is-list}}
+
+{{#vendorExtensions.x-is-list}}
+{{^bodyParams}}
+{{#responses}}
+{{^primitiveType}}
+#undef IMPLEMENT_IOVNET_GET_LIST
+{{/primitiveType}}
+{{/responses}}
+{{/bodyParams}}
+{{/vendorExtensions.x-is-list}}
+
 {{/vendorExtensions.x-has-default-impl}}
 {{/operation}}
 {{#apiNamespaceDeclarations}}

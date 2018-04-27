@@ -156,6 +156,8 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
     it++;
     {{classname}}::removeEntry(parent, tmp->second.name());
   }
+
+
 {{/vendorExtensions.x-is-port-class}}
 {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method remove not implemented");

@@ -59,7 +59,7 @@ class {{declspec}} {{classname}} : public ManagementInterface {
   {{^bodyParams}}
   {{#responses}}
   {{^primitiveType}}
-  virtual std::vector<std::string> {{operationIdSnakeCase}}_get_list({{#pathParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}}) = 0;
+  virtual std::vector<nlohmann::fifo_map<std::string, std::string>> {{operationIdSnakeCase}}_get_list({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) = 0;
   {{/primitiveType}}
   {{/responses}}
   {{/bodyParams}}

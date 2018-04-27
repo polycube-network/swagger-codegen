@@ -37,7 +37,7 @@ public:
   {{^bodyParams}}
   {{#responses}}
   {{^primitiveType}}
-  std::vector<std::string> {{operationIdSnakeCase}}_get_list({{#pathParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/pathParams}});
+  std::vector<nlohmann::fifo_map<std::string, std::string>> {{operationIdSnakeCase}}_get_list({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
   {{/primitiveType}}
   {{/responses}}
   {{/bodyParams}}
