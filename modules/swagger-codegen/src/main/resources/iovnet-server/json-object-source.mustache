@@ -164,7 +164,6 @@ nlohmann::json {{classname}}JsonObject::getElements() {
   {{/isBoolean}}
   val["{{baseName}}"]["description"] = R"IOVNET({{{description}}})IOVNET";
   val["{{baseName}}"]["example"] = R"IOVNET({{{example}}})IOVNET";
-  val["{{baseName}}"]["jsonSchema"] = nlohmann::json::parse(R"IOVNET({{{jsonSchema}}})IOVNET");
   {{/vendorExtensions.x-is-key}}
   {{/vars}}
 
@@ -190,7 +189,6 @@ nlohmann::json {{classname}}JsonObject::getWritableLeafs() {
   {{/isBoolean}}
   val["{{baseName}}"]["description"] = R"IOVNET({{{description}}})IOVNET";
   val["{{baseName}}"]["example"] = R"IOVNET({{{example}}})IOVNET";
-  val["{{baseName}}"]["jsonSchema"] = nlohmann::json::parse(R"IOVNET({{{jsonSchema}}})IOVNET");
   {{/isPrimitiveType}}
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
