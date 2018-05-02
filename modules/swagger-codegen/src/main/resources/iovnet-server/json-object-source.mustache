@@ -119,7 +119,7 @@ void {{classname}}JsonObject::fromJson(nlohmann::json& val) {
 {{/vars}}
 }
 
-nlohmann::json {{classname}}JsonObject::getKeys() {
+nlohmann::json {{classname}}JsonObject::helpKeys() {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}
@@ -143,7 +143,7 @@ nlohmann::json {{classname}}JsonObject::getKeys() {
   return val;
 }
 
-nlohmann::json {{classname}}JsonObject::getElements() {
+nlohmann::json {{classname}}JsonObject::helpElements() {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}
@@ -170,7 +170,7 @@ nlohmann::json {{classname}}JsonObject::getElements() {
   return val;
 }
 
-nlohmann::json {{classname}}JsonObject::getWritableLeafs() {
+nlohmann::json {{classname}}JsonObject::helpWritableLeafs() {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}
@@ -197,7 +197,7 @@ nlohmann::json {{classname}}JsonObject::getWritableLeafs() {
   return val;
 }
 
-nlohmann::json {{classname}}JsonObject::getComplexElements() {
+nlohmann::json {{classname}}JsonObject::helpComplexElements() {
   nlohmann::json val = nlohmann::json::object();
 
   {{#vars}}
@@ -214,6 +214,16 @@ nlohmann::json {{classname}}JsonObject::getComplexElements() {
   {{/isPrimitiveType}}
   {{/vars}}
 
+  return val;
+}
+
+std::vector<std::string> {{classname}}JsonObject::helpActions() {
+  std::vector<std::string> val;
+  {{#vendorExtensions.x-has-yang-actions}}
+  {{#vendorExtensions.x-yang-actions}}
+  val.push_back("{{x-yang-action-baseName}}");
+  {{/vendorExtensions.x-yang-actions}}
+  {{/vendorExtensions.x-has-yang-actions}}
   return val;
 }
 

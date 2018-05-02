@@ -49,7 +49,7 @@ public class CodegenOperation {
     private static boolean nonempty(List<?> params) {
         return params != null && params.size() > 0;
     }
-    
+
     /**
      * Check if there's at least one body parameter
      *

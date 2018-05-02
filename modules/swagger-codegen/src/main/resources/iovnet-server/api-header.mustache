@@ -42,6 +42,18 @@ class {{declspec}} {{classname}} : public ManagementInterface {
   void {{operationIdSnakeCase}}_handler(const iovnet::service::Rest::Request &request, iovnet::service::HttpHandleResponse &response);
   {{/operation}}
 
+  {{#operation}}
+  {{#vendorExtensions.x-needs-help}}
+  void {{operationIdSnakeCase}}_help(const iovnet::service::Rest::Request &request, iovnet::service::HttpHandleResponse &response);
+  {{/vendorExtensions.x-needs-help}}
+  {{/operation}}
+
+  {{#operation}}
+  {{#vendorExtensions.x-is-yang-action}}
+  void {{operationIdSnakeCase}}_help(const iovnet::service::Rest::Request &request, iovnet::service::HttpHandleResponse &response);
+  {{/vendorExtensions.x-is-yang-action}}
+  {{/operation}}
+
   iovnet::service::Rest::Router router;
 
   {{#operation}}

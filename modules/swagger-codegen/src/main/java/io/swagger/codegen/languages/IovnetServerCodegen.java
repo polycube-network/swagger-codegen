@@ -51,9 +51,9 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
         modelTemplateFiles.put("json-object-header.mustache", "JsonObject.h");
         modelTemplateFiles.put("json-object-source.mustache", "JsonObject.cpp");
-        
+
         modelTemplateFiles.put("interface.mustache", "Interface.h");
-        
+
         modelTemplateFiles.put("object-header.mustache", ".h");
         modelTemplateFiles.put("object-source.mustache", ".cpp");
         modelTemplateFiles.put("object-source-defaultimpl.mustache", "DefaultImpl.cpp");
@@ -157,14 +157,14 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         for (String imp : oldImports) {
             String newImp = toModelImport(imp);
             if (!newImp.isEmpty()) {
-                codegenModel.imports.add(newImp); 
+                codegenModel.imports.add(newImp);
                 if (!importMapping.containsKey(imp)){
                     interfaceImports.add(imp);
-                }       
+                }
             }
         }
-        codegenModel.vendorExtensions.put("x-interface-imports", interfaceImports); 
-        
+        codegenModel.vendorExtensions.put("x-interface-imports", interfaceImports);
+
         List<CodegenProperty> cpl = codegenModel.vars;
         for(CodegenProperty cp : cpl){
             List<Map<String, String>> l = (List<Map<String, String>>) cp.vendorExtensions.get("x-key-list");
@@ -181,15 +181,15 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     if(l.get(i).get("type").equals("string")){
                         if(l.get(i).get("isEnum") != null){
                             if(l.get(i).get("x-typedef") != null){
-                                 String enumType = initialCaps((String)l.get(i).get("x-typedef")) + "Enum";        
-                                 l.get(i).put("type", enumType); 
+                                 String enumType = initialCaps((String)l.get(i).get("x-typedef")) + "Enum";
+                                 l.get(i).put("type", enumType);
                             }
                             else{
                                 String enumType = cp.nameInCamelCase + toUpperCamelCase(l.get(i).get("name")) + "Enum";
                                 l.get(i).put("type", enumType);
                             }
-                        } 
-                        else   
+                        }
+                        else
                           l.get(i).put("type", "std::string");
                     }
                 }
@@ -226,18 +226,18 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 codegenModel.vendorExtensions.put("x-has-key-list", true);
             }
         }
-        
+
         //at this point only ports has this vendorExtensions
         if(codegenModel.vendorExtensions.get("x-inherits-from") != null)
             codegenModel.vendorExtensions.put("x-classname-inherited", "Port");
-        
+
         if(codegenModel.vendorExtensions.get("x-parent") != null){
             if(codegenModel.vendorExtensions.get("x-parent").equals(codegenModel.name)){
                 codegenModel.vendorExtensions.remove("x-parent");
                 codegenModel.vendorExtensions.put("x-inherits-from", "iovnet::service::IOModule");
             }
         }
-        
+
         return codegenModel;
     }
 
@@ -246,13 +246,13 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
       Map<String, Model> definitions, Swagger swagger) {
         CodegenOperation op = super.fromOperation(path, httpMethod, operation, definitions, swagger);
 
-        
+
         //check the kind of httpMethod and basing on it
         //initialize the method string and add response code
         String method = null;
         //get the bodyParam
         CodegenParameter bodyParam = op.bodyParam;
-        
+
         if(op.httpMethod.equals("POST")){
             op.vendorExtensions.put("x-response-code", "Created");
             method = "add";
@@ -271,23 +271,25 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         else if(op.httpMethod.equals("PATCH")){
             op.vendorExtensions.put("x-response-code", "Ok");
             op.vendorExtensions.put("isPatch", true);
-            op.isRestfulUpdate = true;
             if(bodyParam != null && bodyParam.isPrimitiveType)
                 method = "set";
             else if(bodyParam != null)
                 method = "update";
-        }   
+        }
         else if(op.httpMethod.equals("GET")){
             op.vendorExtensions.put("x-response-code", "Ok");
+            if (!op.responses.get(0).primitiveType) {
+                op.vendorExtensions.put("x-needs-help", true);
+            }
             method = "get";
         }
-        
+
         if (op.operationId.contains("List")) {
             op.vendorExtensions.put("x-is-list", true);
             if(op.httpMethod.equals("PATCH"))
                 op.vendorExtensions.put("x-is-list-update", true);//now we not support update of list
             if(bodyParam != null && !bodyParam.isPrimitiveType){
-                op.bodyParam.dataType = op.bodyParam.dataType.replace(">", "JsonObject>");  
+                op.bodyParam.dataType = op.bodyParam.dataType.replace(">", "JsonObject>");
                 op.bodyParam.baseType += "JsonObject";
             }
             if(op.httpMethod.equals("PUT"))
@@ -357,7 +359,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 op.returnBaseType = null;
             }
         }
-            
+
         op.vendorExtensions.put("x-call-sequence-method", getCallMethodSequence(method, path, op));
         //Remove initial service name
         String pathForRouter = path.replaceAll("\\/[^\\/]*\\/(.*)", "$1");
@@ -389,7 +391,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
         return newString;
     }
-    
+
     private List<Map<String, String>> getCallMethodSequence(String method, String path, CodegenOperation op){
         boolean isYangAction = false;
         if(op.vendorExtensions.containsKey("x-is-yang-action") && op.vendorExtensions.get("x-is-yang-action").equals(Boolean.TRUE)){
@@ -399,20 +401,20 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
         //this list will contain the sequence of method call
         List<Map<String,String>> l = new ArrayList<Map<String,String>>();
-        
-        //this list will contain the path element without name 
+
+        //this list will contain the path element without name
         List<String> path_without_keys = new ArrayList<String>();
-        
+
         //get the path element
         for(String retval : path.split("/")){
             if(retval.length() > 0 && retval.charAt(0) != '{')
                 path_without_keys.add(retval);
         }
-        int len = path_without_keys.size(); 
+        int len = path_without_keys.size();
         String objectName = null;
         boolean lastCall = false;
         CodegenParameter bodyParam = op.bodyParam;
-        
+
         if(len > 0){
             for(int i = 0; i < len; i++){
                 if(i == (len - 1) && !method.equals("update"))
@@ -420,7 +422,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 String methodCall = null;
                 Map<String, String> m = new HashMap<String, String>();
                 List<String> method_parameters_name = new ArrayList<String>();
-                //split the path in two substring, in particular we consider the second to get the params 
+                //split the path in two substring, in particular we consider the second to get the params
                 //linked to the particular path element
                 String[] st = path.split("/" + path_without_keys.get(i) + "/");
                 if(st.length > 1) {
@@ -477,7 +479,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                   if(index != 0) //if there are keys index is != 0
                     methodCall += ", ";
                   methodCall += bodyParam.paramName;
-                }  
+                }
                 methodCall += ")";
                 //check if is the lastCall method and if the returnType is not primitive in order to call the toJsonObject() properly
                 if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive && !op.operationId.contains("List") && !isYangAction){
@@ -497,8 +499,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
                 if(lastCall){
                 //mark the last method call, useful to determine if have to apply the return in template
-                  m.put("lastCall", "true");   
-                }   
+                  m.put("lastCall", "true");
+                }
                 l.add(m);
                 //if the method is update and this is the last object call the update on the last element
                 if(method.equals("update") && i == (len - 1)){
@@ -524,7 +526,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         }
         return l;
     }
-    
+
     @Override
     public CodegenProperty fromProperty(String name, Property p) {
         CodegenProperty property = super.fromProperty(name, p);
@@ -832,7 +834,6 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     entry.vendorExtensions.put("isPatch", true);
                 }
                 op.vendorExtensions.put("isPatch", true);
-                op.isRestfulUpdate = Boolean.TRUE;
                 if(op.bodyParam != null)
                     op.bodyParam.vendorExtensions.put("isPatch", true);
             } else {
@@ -902,7 +903,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
           supportingFiles.add(new SupportingFile("service-lib.mustache", "src", service_name_camel_case + "-lib.cpp"));
           supportingFiles.add(new SupportingFile("service-src-cmake.mustache", "src", "CMakeLists.txt"));
         }
-        
+
         return objs;
     }
 
@@ -1065,7 +1066,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         if(swaggerType.equals("integer")){
           String format = p.getFormat();
           type = format + "_t";
-          return type; 
+          return type;
         }
         if (typeMapping.containsKey(swaggerType)) {
             type = typeMapping.get(swaggerType);
@@ -1183,7 +1184,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     public String escapeUnsafeCharacters(String input) {
         return input.replace("*/", "*_/").replace("/*", "/_*");
     }
-    
-    
+
+
 
 }
