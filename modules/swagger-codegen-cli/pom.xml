@@ -59,7 +59,7 @@
                         <configuration>
                             <tasks>
                                 <copy file="${project.build.outputDirectory}/gitversion.txt"
-                                      toFile="${user.home}/.config/iovnet/swagger_codegen_config.json" overwrite="true" />
+                                      toFile="${user.home}/.config/polycube/swagger_codegen_config.json" overwrite="true" />
                             </tasks>
                         </configuration>
                         <goals>

@@ -10,14 +10,14 @@
 {{^vendorExtensions.x-parent}}
 #include "{{classname}}_dp.h"
 
-{{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, IOModuleType type)
-  : IOModule(name, generate_code(), type, conf.getIovnetLoglevel()) {
+{{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, CubeType type)
+  : Cube(name, generate_code(), type, conf.getPolycubeLoglevel()) {
   logger()->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [{{classname}}] [%n] [%l] %v");
   logger()->info("Creating {{classname}} instance");
 {{#vars}}{{^isNotContainer}}  add{{nameInCamelCase}}List(conf.{{getter}}());{{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}
   if (conf.{{name}}IsSet()) {
-{{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{#isPrimitiveType}}{{^vendorExtensions.x-is-iomodule-debug}}
-    {{setter}}(conf.{{getter}}());{{/vendorExtensions.x-is-iomodule-debug}}{{/isPrimitiveType}}{{^isPrimitiveType}}
+{{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{#isPrimitiveType}}{{^vendorExtensions.x-is-cube-debug}}
+    {{setter}}(conf.{{getter}}());{{/vendorExtensions.x-is-cube-debug}}{{/isPrimitiveType}}{{^isPrimitiveType}}
     auto value = conf.{{getter}}();{{#vendorExtensions.x-key-list}}
     {{type}} {{varName}}_ = value.{{getter}}();{{/vendorExtensions.x-key-list}}
     add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());{{/isPrimitiveType}}{{^vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}
@@ -79,7 +79,7 @@ std::vector<std::string> {{classname}}::generate_code_vector(){
   throw std::runtime_error("Method not implemented");
 }
 
-void {{classname}}::packet_in(iovnet::service::Port &port, iovnet::service::PacketInMetadata &md, const std::vector<uint8_t> &packet){
+void {{classname}}::packet_in(polycube::service::Port &port, polycube::service::PacketInMetadata &md, const std::vector<uint8_t> &packet){
   logger()->info("Packet received from port {0}", port.name());
 }
 
@@ -94,7 +94,7 @@ void {{classname}}::create({{{this}}} &parent, {{#vendorExtensions.x-key-list}}c
     throw std::runtime_error("port already exists");
   }
 
-  auto p = parent.IOModule::add_port(name);
+  auto p = parent.Cube::add_port(name);
   std::unordered_map<std::string, {{classname}}>::iterator iter;
   bool inserted;
 
@@ -123,7 +123,7 @@ void {{classname}}::removeEntry({{{this}}} &parent{{#vendorExtensions.x-key-list
   // This method removes the single {{classname}} object specified by its keys.
   // Remember to call here the remove static method for all-sub-objects of {{classname}}.
 {{#vendorExtensions.x-is-port-class}}
-  parent.IOModule::remove_port(name);
+  parent.Cube::remove_port(name);
   parent.ports_.erase(name);
 {{/vendorExtensions.x-is-port-class}}
 {{^vendorExtensions.x-is-port-class}}

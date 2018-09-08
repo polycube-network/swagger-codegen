@@ -6,15 +6,15 @@ include_directories(serializer)
 include_directories(interface)
 include_directories(default-src)
 
-add_library(iov-{{serviceNameLowerCase}} SHARED
+add_library(pcn-{{serviceNameLowerCase}} SHARED
   ${SERIALIZER_SOURCES}
   ${API_SOURCES}
   ${SRC_SOURCES}{{#models}}{{#model}}{{^vendorExtensions.x-should-skip-model-process}}
   {{classname}}.cpp{{/vendorExtensions.x-should-skip-model-process}}{{/model}}{{/models}}
   {{serviceNameCamelCase}}-lib.cpp)
 
-target_link_libraries(iov-{{serviceNameLowerCase}}
-  iovnet
+target_link_libraries(pcn-{{serviceNameLowerCase}}
+  polycube
   uuid)
 
 # Specify shared library install directory
@@ -23,7 +23,7 @@ set(CMAKE_INSTALL_LIBDIR /usr/lib)
 
 install(
     TARGETS
-    iov-{{serviceNameLowerCase}}
+    pcn-{{serviceNameLowerCase}}
     DESTINATION
     "${CMAKE_INSTALL_LIBDIR}"
 )

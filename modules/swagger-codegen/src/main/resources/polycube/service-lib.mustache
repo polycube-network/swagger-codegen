@@ -10,8 +10,8 @@
 #define SERVICE_PYANG_GIT "{{pyangGitRepoId}}"
 #define SERVICE_SWAGGER_CODEGEN_GIT "{{gitRepoId}}"
 #define SERVICE_REQUIRED_KERNEL_VERSION "{{service-min-kernel-version}}"
-const std::string SERVICE_DATA_MODEL = R"IOVNET_DM(
+const std::string SERVICE_DATA_MODEL = R"POLYCUBE_DM(
 {{{yangDataModel}}}
-)IOVNET_DM";
+)POLYCUBE_DM";
 {{/swagger}}
-#include <iovnet/services/shared_library.h>
+#include <polycube/services/shared_library.h>

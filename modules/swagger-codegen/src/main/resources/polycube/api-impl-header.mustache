@@ -45,8 +45,8 @@ public:
   {{/operation}}
 
 private:
-  std::unordered_map<std::string, {{baseName}}> iomodules;
-  {{baseName}} &get_iomodule(const std::string &name);
+  std::unordered_map<std::string, {{baseName}}> cubes;
+  {{baseName}} &get_cube(const std::string &name);
 };
 
 {{#apiNamespaceDeclarations}}

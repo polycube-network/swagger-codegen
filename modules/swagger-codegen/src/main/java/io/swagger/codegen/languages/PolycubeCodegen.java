@@ -20,13 +20,13 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.*;
 
-public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig {
-    protected static final Logger LOGGER = LoggerFactory.getLogger(IovnetServerCodegen.class);
+public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(PolycubeCodegen.class);
     protected String implFolder = "/src/api";
 
 
-    public static final String IOVNET_SERVER_UPDATE = "update";
-    protected Boolean iovnetServerUpdate = Boolean.FALSE;
+    public static final String POLYCUBE_SERVER_UPDATE = "update";
+    protected Boolean polycubeServerUpdate = Boolean.FALSE;
 
     @Override
     public CodegenType getTag() {
@@ -35,15 +35,15 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
 
     @Override
     public String getName() {
-        return "iovnet-server";
+        return "polycube";
     }
 
     @Override
     public String getHelp() {
-        return "Generates a stub for an Iovnet service control plane";
+        return "Generates a stub for an Polycube service control plane";
     }
 
-    public IovnetServerCodegen() {
+    public PolycubeCodegen() {
         super();
 
         apiPackage = "io.swagger.server.api";
@@ -61,7 +61,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         apiTemplateFiles.put("api-header.mustache", ".h");
         apiTemplateFiles.put("api-source.mustache", ".cpp");
 
-        embeddedTemplateDir = templateDir = "iovnet-server";
+        embeddedTemplateDir = templateDir = "polycube";
 
         reservedWords = new HashSet<>();
 
@@ -97,7 +97,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         importMapping.put("Object", "#include \"Object.h\"");
 
         cliOptions.clear();
-        cliOptions.add(new CliOption(IOVNET_SERVER_UPDATE, "If set to TRUE the generator will not " +
+        cliOptions.add(new CliOption(POLYCUBE_SERVER_UPDATE, "If set to TRUE the generator will not " +
                 "override the implementation files", "boolean").defaultValue("false"));
     }
 
@@ -105,15 +105,15 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
     public void processOpts() {
         super.processOpts();
 
-        if (additionalProperties.containsKey(IOVNET_SERVER_UPDATE)) {
-            if(additionalProperties.get(IOVNET_SERVER_UPDATE) instanceof String){
-                this.iovnetServerUpdate = Boolean.parseBoolean((String)additionalProperties.get(IOVNET_SERVER_UPDATE));
+        if (additionalProperties.containsKey(POLYCUBE_SERVER_UPDATE)) {
+            if(additionalProperties.get(POLYCUBE_SERVER_UPDATE) instanceof String){
+                this.polycubeServerUpdate = Boolean.parseBoolean((String)additionalProperties.get(POLYCUBE_SERVER_UPDATE));
             }
         }
 
-        additionalProperties.put(IOVNET_SERVER_UPDATE, this.iovnetServerUpdate);
+        additionalProperties.put(POLYCUBE_SERVER_UPDATE, this.polycubeServerUpdate);
 
-        if (!this.iovnetServerUpdate) {
+        if (!this.polycubeServerUpdate) {
             apiTemplateFiles.put("api-impl-header.mustache", ".h");
             apiTemplateFiles.put("api-impl-source.mustache", ".cpp");
 
@@ -234,7 +234,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         if(codegenModel.vendorExtensions.get("x-parent") != null){
             if(codegenModel.vendorExtensions.get("x-parent").equals(codegenModel.name)){
                 codegenModel.vendorExtensions.remove("x-parent");
-                codegenModel.vendorExtensions.put("x-inherits-from", "iovnet::service::IOModule");
+                codegenModel.vendorExtensions.put("x-inherits-from", "polycube::service::Cube");
             }
         }
 
@@ -364,7 +364,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         //Remove initial service name
         String pathForRouter = path.replaceAll("\\/[^\\/]*\\/(.*)", "$1");
         pathForRouter = pathForRouter.replaceAll("\\{(.*?)}", ":$1");
-        op.vendorExtensions.put("x-codegen-iovnet-router-path", pathForRouter);
+        op.vendorExtensions.put("x-codegen-polycube-router-path", pathForRouter);
 
         return op;
     }
@@ -442,7 +442,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 m.put("varName", toVarName(path_without_keys.get(i)));
                 //if i == 0 the path element is the service
                 if(i == 0)
-                    methodCall = "get_iomodule";
+                    methodCall = "get_cube";
                 else if(lastCall && i != 1) { //the last path element has a particular method basing on httpMethod
                     methodCall = path_without_keys.get(i - 1) + "->" + method + toUpperCamelCase(path_without_keys.get(i));
                     int c_index = methodCall.indexOf('>');
@@ -489,7 +489,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         methodCall += "->";
                 }
 
-                if(methodCall.contains("get_iomodule")){
+                if(methodCall.contains("get_cube")){
                     m.put("methodCall", methodCall);
                 } else if(methodCall.toLowerCase().contains("get_ports")){
                     m.put("methodCall", methodCall.replaceAll("(?i)(get_ports)", "get_ports"));
@@ -511,7 +511,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     else
                         methodCall = toUpperCamelCase(path_without_keys.get(i)) + "->" + method + "(" + bodyParam.paramName + ")";
 
-                    if(methodCall.contains("get_iomodule")){
+                    if(methodCall.contains("get_cube")){
                         m2.put("methodCall", methodCall);
                     } else if(methodCall.toLowerCase().contains("get_ports")){
                         m2.put("methodCall", methodCall.replaceAll("(?i)(get_ports)", "get_ports"));
@@ -597,8 +597,8 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                                     lenum.set(j, "TYPE_CLS");
                                     mv.put("stringValue", "TYPE_TC".toLowerCase());
                                 }
-                                p.datatype = "IOModuleType";
-                                p.vendorExtensions.put("x-is-iomodule-type", "true");
+                                p.datatype = "CubeType";
+                                p.vendorExtensions.put("x-is-cube-type", "true");
                             } else {
                                 if(p.vendorExtensions.get("x-typedef") != null) {
                                     p.datatype = toUpperCamelCase(initialCaps((String)p.vendorExtensions.get("x-typedef")) + "Enum");
@@ -636,7 +636,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 }
 
                 //Add vendor extension to recognize the class Ports
-                if (model.vendorExtensions.containsKey("x-inherits-from") && ((String) model.vendorExtensions.get("x-inherits-from")).equals("iovnet::service::Port")) {
+                if (model.vendorExtensions.containsKey("x-inherits-from") && ((String) model.vendorExtensions.get("x-inherits-from")).equals("polycube::service::Port")) {
                     model.vendorExtensions.put("x-is-port-class", true);
                     portsClassName = model.classname;
 
@@ -665,29 +665,29 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                     }
                 }
 
-                if (model.vendorExtensions.containsKey("x-inherits-from") && ((String) model.vendorExtensions.get("x-inherits-from")).equals("iovnet::service::IOModule")) {
+                if (model.vendorExtensions.containsKey("x-inherits-from") && ((String) model.vendorExtensions.get("x-inherits-from")).equals("polycube::service::Cube")) {
                     model.vendorExtensions.put("x-is-root-object", true);
                     rootObjectModel = model;
 
                     for (CodegenProperty cp : lp) {
                         switch (cp.baseName.toLowerCase()) {
                             case "name":
-                                cp.vendorExtensions.put("x-is-iomodule-name", true);
+                                cp.vendorExtensions.put("x-is-cube-name", true);
                                 cp.vendorExtensions.put("x-has-default-impl", true);
                                 break;
                             case "uuid":
-                                cp.vendorExtensions.put("x-is-iomodule-uuid", true);
+                                cp.vendorExtensions.put("x-is-cube-uuid", true);
                                 cp.vendorExtensions.put("x-has-default-impl", true);
                                 break;
                             case "type":
-                                cp.vendorExtensions.put("x-is-iomodule-type", true);
+                                cp.vendorExtensions.put("x-is-cube-type", true);
                                 cp.vendorExtensions.put("x-has-default-impl", true);
                                 break;
                             case "ports":
                                 cp.vendorExtensions.put("x-is-port-class", true);
                                 break;
                             case "loglevel":
-                                cp.vendorExtensions.put("x-is-iomodule-debug", true);
+                                cp.vendorExtensions.put("x-is-cube-debug", true);
                                 cp.vendorExtensions.put("x-has-default-impl", true);
                                 break;
                             default:
@@ -806,7 +806,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                 else
                     op.bodyParam.dataType = toUpperCamelCase(name + initialCaps(op.bodyParam.baseName) + "Enum"); //enum dataType
                 if (op.bodyParam.dataType.equals(s)) {
-                    op.bodyParam.dataType = "IOModuleType";
+                    op.bodyParam.dataType = "CubeType";
                 }
             } else if(op.bodyParam != null && op.bodyParam.vendorExtensions.get("x-is-enum") != null &&
                     op.bodyParam.vendorExtensions.get("x-is-enum").equals(Boolean.FALSE)){
@@ -821,7 +821,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
                         else
                             op.returnType = name + initialCaps(var) + "Enum";
                         if (op.returnType.equals(s + "Enum"))
-                            op.returnType = "IOModuleType";
+                            op.returnType = "CubeType";
                         op.returnBaseType = initialCaps(var);
                         op.returnSimpleType = false;
                         op.vendorExtensions.put("x-enum-class", name + "JsonObject");
@@ -897,7 +897,7 @@ public class IovnetServerCodegen extends DefaultCodegen implements CodegenConfig
         objs.put("serviceNameCamelCase", service_name_camel_case);
 
         // Files that are use to generate a server stub
-        if(!this.iovnetServerUpdate) {
+        if(!this.polycubeServerUpdate) {
           //supportingFiles.add(new SupportingFile("service-source.mustache", "src", service_name_camel_case + ".cpp"));
           supportingFiles.add(new SupportingFile("service-dp.mustache", "src", service_name_camel_case + "_dp.h"));
           supportingFiles.add(new SupportingFile("service-lib.mustache", "src", service_name_camel_case + "-lib.cpp"));

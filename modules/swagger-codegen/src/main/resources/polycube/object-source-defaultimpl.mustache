@@ -90,38 +90,38 @@ void {{classname}}::del{{nameInCamelCase}}(){
 {{#vendorExtensions.x-has-default-impl}}
 {{{datatype}}} {{classname}}::{{getter}}(){
   // This method retrieves the {{name}} value.
-{{#vendorExtensions.x-is-iomodule-name}}
-  return IOModule::get_name();
-{{/vendorExtensions.x-is-iomodule-name}}
-{{#vendorExtensions.x-is-iomodule-uuid}}
-  return IOModule::get_uuid().str();
-{{/vendorExtensions.x-is-iomodule-uuid}}
-{{#vendorExtensions.x-is-iomodule-type}}
-  return IOModule::get_type();
-{{/vendorExtensions.x-is-iomodule-type}}
-{{#vendorExtensions.x-is-iomodule-debug}}
-    switch(IOModule::get_log_level()){
-      case iovnet::LogLevel::TRACE:
+{{#vendorExtensions.x-is-cube-name}}
+  return Cube::get_name();
+{{/vendorExtensions.x-is-cube-name}}
+{{#vendorExtensions.x-is-cube-uuid}}
+  return Cube::get_uuid().str();
+{{/vendorExtensions.x-is-cube-uuid}}
+{{#vendorExtensions.x-is-cube-type}}
+  return Cube::get_type();
+{{/vendorExtensions.x-is-cube-type}}
+{{#vendorExtensions.x-is-cube-debug}}
+    switch(Cube::get_log_level()){
+      case polycube::LogLevel::TRACE:
         return {{datatype}}::TRACE;
-      case iovnet::LogLevel::DEBUG:
+      case polycube::LogLevel::DEBUG:
         return {{datatype}}::DEBUG;
-      case iovnet::LogLevel::INFO:
+      case polycube::LogLevel::INFO:
         return {{datatype}}::INFO;
-      case iovnet::LogLevel::WARN:
+      case polycube::LogLevel::WARN:
         return {{datatype}}::WARN;
-      case iovnet::LogLevel::ERR:
+      case polycube::LogLevel::ERR:
         return {{datatype}}::ERR;
-      case iovnet::LogLevel::CRITICAL:
+      case polycube::LogLevel::CRITICAL:
         return {{datatype}}::CRITICAL;
-      case iovnet::LogLevel::OFF:
+      case polycube::LogLevel::OFF:
         return {{datatype}}::OFF;
     }
-{{/vendorExtensions.x-is-iomodule-debug}}
+{{/vendorExtensions.x-is-cube-debug}}
 {{#vendorExtensions.x-is-port-status}}
   switch (Port::get_status()) {
-    case iovnet::service::PortStatus::UP:
+    case polycube::service::PortStatus::UP:
       return PortsStatusEnum::UP;
-    case iovnet::service::PortStatus::DOWN:
+    case polycube::service::PortStatus::DOWN:
       return PortsStatusEnum::DOWN;
     default:
       return PortsStatusEnum::DOWN;
@@ -143,31 +143,31 @@ void {{classname}}::{{setter}}(const {{{datatype}}} &value){
 {{#vendorExtensions.x-is-port-status}}
   throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
 {{/vendorExtensions.x-is-port-status}}
-{{#vendorExtensions.x-is-iomodule-debug}}
+{{#vendorExtensions.x-is-cube-debug}}
     switch(value){
       case {{{datatype}}}::TRACE:
-        IOModule::set_log_level(iovnet::LogLevel::TRACE);
+        Cube::set_log_level(polycube::LogLevel::TRACE);
         break;
       case {{{datatype}}}::DEBUG:
-        IOModule::set_log_level(iovnet::LogLevel::DEBUG);
+        Cube::set_log_level(polycube::LogLevel::DEBUG);
         break;
       case {{{datatype}}}::INFO:
-        IOModule::set_log_level(iovnet::LogLevel::INFO);
+        Cube::set_log_level(polycube::LogLevel::INFO);
         break;
       case {{{datatype}}}::WARN:
-        IOModule::set_log_level(iovnet::LogLevel::WARN);
+        Cube::set_log_level(polycube::LogLevel::WARN);
         break;
       case {{{datatype}}}::ERR:
-        IOModule::set_log_level(iovnet::LogLevel::ERR);
+        Cube::set_log_level(polycube::LogLevel::ERR);
         break;
       case {{{datatype}}}::CRITICAL:
-        IOModule::set_log_level(iovnet::LogLevel::CRITICAL);
+        Cube::set_log_level(polycube::LogLevel::CRITICAL);
         break;
       case {{{datatype}}}::OFF:
-        IOModule::set_log_level(iovnet::LogLevel::OFF);
+        Cube::set_log_level(polycube::LogLevel::OFF);
         break;
     }
-{{/vendorExtensions.x-is-iomodule-debug}}
+{{/vendorExtensions.x-is-cube-debug}}
 {{#vendorExtensions.x-is-port-peer}}
   //logger()->info("Received request to set peer {0}", value);
   Port::set_peer(value);

@@ -19,41 +19,41 @@ using namespace {{modelNamespace}};
 * extend adapt this implementation to his needs.
 */
 
-{{baseName}} &{{classname}}Impl::get_iomodule(const std::string &name) {
-  auto iter = iomodules.find(name);
-  if (iter == iomodules.end()) {
-    throw std::runtime_error("IOModule " + name + " does not exist");
+{{baseName}} &{{classname}}Impl::get_cube(const std::string &name) {
+  auto iter = cubes.find(name);
+  if (iter == cubes.end()) {
+    throw std::runtime_error("Cube " + name + " does not exist");
   }
 
   return iter->second;
 }
 
 void {{classname}}Impl::create_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &jsonObject) {
-  if (iomodules.count(name) != 0) {
-    throw std::runtime_error("There is already an IOModule with name " + name);
+  if (cubes.count(name) != 0) {
+    throw std::runtime_error("There is already an Cube with name " + name);
   }
 
   {{baseName}}JsonObject localJsonObject(jsonObject);
 
   if(localJsonObject.typeIsSet()) {
     switch(localJsonObject.getType()) {
-      case IOModuleType::TYPE_XDP_SKB:
-        iomodules.emplace(std::piecewise_construct,
+      case CubeType::TYPE_XDP_SKB:
+        cubes.emplace(std::piecewise_construct,
                                    std::forward_as_tuple(name),
-                                   std::forward_as_tuple(name, jsonObject, IOModuleType::TYPE_XDP_SKB));
+                                   std::forward_as_tuple(name, jsonObject, CubeType::TYPE_XDP_SKB));
         break;
-      case IOModuleType::TYPE_XDP_DRV:
-        iomodules.emplace(std::piecewise_construct,
+      case CubeType::TYPE_XDP_DRV:
+        cubes.emplace(std::piecewise_construct,
                                    std::forward_as_tuple(name),
-                                   std::forward_as_tuple(name, jsonObject, IOModuleType::TYPE_XDP_DRV));
+                                   std::forward_as_tuple(name, jsonObject, CubeType::TYPE_XDP_DRV));
         break;
       default:
-        iomodules.emplace(std::piecewise_construct,
+        cubes.emplace(std::piecewise_construct,
                                    std::forward_as_tuple(name),
                                    std::forward_as_tuple(name, jsonObject));
     }
   } else {
-    iomodules.emplace(std::piecewise_construct,
+    cubes.emplace(std::piecewise_construct,
                                    std::forward_as_tuple(name),
                                    std::forward_as_tuple(name, jsonObject));
   }
@@ -64,28 +64,28 @@ void {{classname}}Impl::replace_{{classVarName}}_by_id(const std::string &name, 
 }
 
 void {{classname}}Impl::delete_{{classVarName}}_by_id(const std::string &name) {
-  if (iomodules.count(name) == 0) {
-    throw std::runtime_error("IOModule " + name + " does not exist");
+  if (cubes.count(name) == 0) {
+    throw std::runtime_error("Cube " + name + " does not exist");
   }
-  iomodules.erase(name);
+  cubes.erase(name);
 }
 
 std::string {{classname}}Impl::read_{{classVarName}}_uuid_by_id(const std::string &name) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   return m.getUuid();
 }
 
 std::vector<{{baseName}}JsonObject> {{classname}}Impl::read_{{classVarName}}_list_by_id() {
   std::vector<{{baseName}}JsonObject> jsonObject_vect;
-  for(auto &i : iomodules) {
-    jsonObject_vect.push_back(get_iomodule(i.first).toJsonObject());
+  for(auto &i : cubes) {
+    jsonObject_vect.push_back(get_cube(i.first).toJsonObject());
   }
   return jsonObject_vect;
 }
 
 std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::read_{{classVarName}}_list_by_id_get_list() {
   std::vector<nlohmann::fifo_map<std::string, std::string>> r;
-  for (auto &x : iomodules) {
+  for (auto &x : cubes) {
     nlohmann::fifo_map<std::string, std::string> m;
     m["name"] = x.first;
     r.push_back(std::move(m));
@@ -97,13 +97,13 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::rea
 * Ports list related functions
 */
 void {{classname}}Impl::create_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   m.addPortsList(ports);
 }
 
 std::vector<PortsJsonObject> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id(const std::string &name) {
   std::vector<PortsJsonObject> vect;
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   for(auto &i : m.getPortsList()){
     vect.push_back(i->toJsonObject());
   }
@@ -115,13 +115,13 @@ void {{classname}}Impl::replace_{{classVarName}}_ports_list_by_id(const std::str
 }
 
 void {{classname}}Impl::delete_{{classVarName}}_ports_list_by_id(const std::string &name) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   m.delPortsList();
 }
 
 std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id_get_list(const std::string &name) {
   std::vector<nlohmann::fifo_map<std::string, std::string>> r;
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   for(auto &i : m.getPortsList()){
     nlohmann::fifo_map<std::string, std::string> m;
     m["name"] = i->getName();
@@ -134,45 +134,45 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::rea
 * Ports related functions
 */
 void {{classname}}Impl::create_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   return m.addPorts(portsName, ports);
 }
 
 PortsJsonObject {{classname}}Impl::read_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   return m.getPorts(portsName)->toJsonObject();
 }
 
 void {{classname}}Impl::replace_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   m.replacePorts(portsName, ports);
 }
 
 void {{classname}}Impl::delete_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   m.delPorts(portsName);
 }
 
 std::string {{classname}}Impl::read_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   auto &&p = m.getPorts(portsName);
   return p->getPeer();
 }
 
 PortsStatusEnum {{classname}}Impl::read_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   auto &&p = m.getPorts(portsName);
   return p->getStatus();
 }
 
 std::string {{classname}}Impl::read_{{classVarName}}_ports_uuid_by_id(const std::string &name, const std::string &portsName) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   auto &&p = m.getPorts(portsName);
   return p->getUuid();
 }
 
 void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName, const std::string &peer) {
-  auto &&m = get_iomodule(name);
+  auto &&m = get_cube(name);
   auto &&p = m.getPorts(portsName);
   p->setPeer(peer);
 }
@@ -231,14 +231,14 @@ void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::stri
 {{^bodyParams}}
 {{#responses}}
 {{^primitiveType}}
-#define IMPLEMENT_IOVNET_GET_LIST
+#define IMPLEMENT_POLYCUBE_GET_LIST
 {{/primitiveType}}
 {{/responses}}
 {{/bodyParams}}
 {{/vendorExtensions.x-is-list}}
 
 {{#vendorExtensions.x-is-list}}
-#ifdef IMPLEMENT_IOVNET_GET_LIST
+#ifdef IMPLEMENT_POLYCUBE_GET_LIST
 std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::{{operationIdSnakeCase}}_get_list({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
   std::vector<nlohmann::fifo_map<std::string, std::string>> r;
 {{^vendorExtensions.x-is-list-update}}
@@ -266,7 +266,7 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::{{o
 {{^bodyParams}}
 {{#responses}}
 {{^primitiveType}}
-#undef IMPLEMENT_IOVNET_GET_LIST
+#undef IMPLEMENT_POLYCUBE_GET_LIST
 {{/primitiveType}}
 {{/responses}}
 {{/bodyParams}}

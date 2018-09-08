@@ -135,8 +135,8 @@ nlohmann::json {{classname}}JsonObject::helpKeys() {
   {{#isBoolean}}
   val["{{baseName}}"]["simpletype"] = "boolean";
   {{/isBoolean}}
-  val["{{baseName}}"]["description"] = R"IOVNET({{{description}}})IOVNET";
-  val["{{baseName}}"]["example"] = R"IOVNET({{{example}}})IOVNET";
+  val["{{baseName}}"]["description"] = R"POLYCUBE({{{description}}})POLYCUBE";
+  val["{{baseName}}"]["example"] = R"POLYCUBE({{{example}}})POLYCUBE";
   {{/vendorExtensions.x-is-key}}
   {{/vars}}
 
@@ -162,8 +162,8 @@ nlohmann::json {{classname}}JsonObject::helpElements() {
   {{#isBoolean}}
   val["{{baseName}}"]["simpletype"] = "boolean";
   {{/isBoolean}}
-  val["{{baseName}}"]["description"] = R"IOVNET({{{description}}})IOVNET";
-  val["{{baseName}}"]["example"] = R"IOVNET({{{example}}})IOVNET";
+  val["{{baseName}}"]["description"] = R"POLYCUBE({{{description}}})POLYCUBE";
+  val["{{baseName}}"]["example"] = R"POLYCUBE({{{example}}})POLYCUBE";
   {{/vendorExtensions.x-is-key}}
   {{/vars}}
 
@@ -187,8 +187,8 @@ nlohmann::json {{classname}}JsonObject::helpWritableLeafs() {
   {{#isBoolean}}
   val["{{baseName}}"]["simpletype"] = "boolean";
   {{/isBoolean}}
-  val["{{baseName}}"]["description"] = R"IOVNET({{{description}}})IOVNET";
-  val["{{baseName}}"]["example"] = R"IOVNET({{{example}}})IOVNET";
+  val["{{baseName}}"]["description"] = R"POLYCUBE({{{description}}})POLYCUBE";
+  val["{{baseName}}"]["example"] = R"POLYCUBE({{{example}}})POLYCUBE";
   {{/isPrimitiveType}}
   {{/isReadOnly}}
   {{/vendorExtensions.x-is-key}}
@@ -209,8 +209,8 @@ nlohmann::json {{classname}}JsonObject::helpComplexElements() {
   {{^isListContainer}}
   val["{{baseName}}"]["type"] = "complex";
   {{/isListContainer}}
-  val["{{baseName}}"]["description"] = R"IOVNET({{{description}}})IOVNET";
-  val["{{baseName}}"]["example"] = R"IOVNET({{{example}}})IOVNET";
+  val["{{baseName}}"]["description"] = R"POLYCUBE({{{description}}})POLYCUBE";
+  val["{{baseName}}"]["example"] = R"POLYCUBE({{{example}}})POLYCUBE";
   {{/isPrimitiveType}}
   {{/vars}}
 
@@ -274,25 +274,25 @@ std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}
 }
 {{/isEnum}}
 
-{{#vendorExtensions.x-is-iomodule-debug}}
-  iovnet::LogLevel {{classname}}JsonObject::getIovnetLoglevel() const {
+{{#vendorExtensions.x-is-cube-debug}}
+  polycube::LogLevel {{classname}}JsonObject::getPolycubeLoglevel() const {
     switch(m_{{name}}) {
       case {{{datatype}}}::TRACE:
-        return iovnet::LogLevel::TRACE;
+        return polycube::LogLevel::TRACE;
       case {{{datatype}}}::DEBUG:
-        return iovnet::LogLevel::DEBUG;
+        return polycube::LogLevel::DEBUG;
       case {{{datatype}}}::INFO:
-        return iovnet::LogLevel::INFO;
+        return polycube::LogLevel::INFO;
       case {{{datatype}}}::WARN:
-        return iovnet::LogLevel::WARN;
+        return polycube::LogLevel::WARN;
       case {{{datatype}}}::ERR:
-        return iovnet::LogLevel::ERR;
+        return polycube::LogLevel::ERR;
       case {{{datatype}}}::CRITICAL:
-        return iovnet::LogLevel::CRITICAL;
+        return polycube::LogLevel::CRITICAL;
       case {{{datatype}}}::OFF:
-        return iovnet::LogLevel::OFF;
+        return polycube::LogLevel::OFF;
     }
-  }{{/vendorExtensions.x-is-iomodule-debug}}
+  }{{/vendorExtensions.x-is-cube-debug}}
 {{/vars}}
 
 {{#modelNamespaceDeclarations}}

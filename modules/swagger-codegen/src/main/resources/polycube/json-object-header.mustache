@@ -17,9 +17,9 @@
 {{{this}}}
 {{/imports}}
 {{^vendorExtensions.x-parent}}
-#include "iovnet/services/iomodule.h"
+#include "polycube/services/cube.h"
 
-using iovnet::service::IOModuleType;
+using polycube::service::CubeType;
 {{/vendorExtensions.x-parent}}
 
 {{#modelNamespaceDeclarations}}
@@ -28,7 +28,7 @@ namespace {{this}} {
 
 {{#vars}}
 {{#isEnum}}
-{{^vendorExtensions.x-is-iomodule-type}}
+{{^vendorExtensions.x-is-cube-type}}
 {{#vendorExtensions.x-typedef}}
 #ifndef {{{datatypeWithEnum}}}
 #define {{{datatypeWithEnum}}}
@@ -39,7 +39,7 @@ enum class {{{datatype}}} {
 {{#vendorExtensions.x-typedef}}
 #endif
 {{/vendorExtensions.x-typedef}}
-{{/vendorExtensions.x-is-iomodule-type}}
+{{/vendorExtensions.x-is-cube-type}}
 {{/isEnum}}
 {{/vars}}
 
@@ -93,8 +93,8 @@ public:
   static std::string {{{datatype}}}_to_string(const {{{datatype}}} &value);
   static {{{datatype}}} string_to_{{{datatype}}}(const std::string &str);
   {{/isEnum}}
-  {{#vendorExtensions.x-is-iomodule-debug}}
-  iovnet::LogLevel getIovnetLoglevel() const;{{/vendorExtensions.x-is-iomodule-debug}}
+  {{#vendorExtensions.x-is-cube-debug}}
+  polycube::LogLevel getPolycubeLoglevel() const;{{/vendorExtensions.x-is-cube-debug}}
   {{/vars}}
 
 protected:

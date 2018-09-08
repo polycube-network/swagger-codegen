@@ -10,11 +10,11 @@
 
 #pragma once
 
-#define IOVNET_SERVICE_NAME "{{classVarName}}"
+#define POLYCUBE_SERVICE_NAME "{{classVarName}}"
 
 {{{defaultInclude}}}
-#include <iovnet/services/http_router.h>
-#include <iovnet/services/management_interface.h>
+#include <polycube/services/http_router.h>
+#include <polycube/services/management_interface.h>
 #include <vector>
 
 {{#imports}}{{{import}}}
@@ -25,36 +25,36 @@ namespace {{this}} {
 {{/apiNamespaceDeclarations}}
 
 using namespace {{modelNamespace}};
-using namespace iovnet::service;
+using namespace polycube::service;
 
 class {{declspec}} {{classname}} : public ManagementInterface {
  public:
   {{classname}}();
   virtual ~{{classname}}() {};
 
-  const std::string base = "{{basePathWithoutHost}}" + std::string(IOVNET_SERVICE_NAME) + "/";
+  const std::string base = "{{basePathWithoutHost}}" + std::string(POLYCUBE_SERVICE_NAME) + "/";
 
  protected:
   void setup_routes();
   void control_handler(const HttpHandleRequest &request, HttpHandleResponse &response) override;
 
   {{#operation}}
-  void {{operationIdSnakeCase}}_handler(const iovnet::service::Rest::Request &request, iovnet::service::HttpHandleResponse &response);
+  void {{operationIdSnakeCase}}_handler(const polycube::service::Rest::Request &request, polycube::service::HttpHandleResponse &response);
   {{/operation}}
 
   {{#operation}}
   {{#vendorExtensions.x-needs-help}}
-  void {{operationIdSnakeCase}}_help(const iovnet::service::Rest::Request &request, iovnet::service::HttpHandleResponse &response);
+  void {{operationIdSnakeCase}}_help(const polycube::service::Rest::Request &request, polycube::service::HttpHandleResponse &response);
   {{/vendorExtensions.x-needs-help}}
   {{/operation}}
 
   {{#operation}}
   {{#vendorExtensions.x-is-yang-action}}
-  void {{operationIdSnakeCase}}_help(const iovnet::service::Rest::Request &request, iovnet::service::HttpHandleResponse &response);
+  void {{operationIdSnakeCase}}_help(const polycube::service::Rest::Request &request, polycube::service::HttpHandleResponse &response);
   {{/vendorExtensions.x-is-yang-action}}
   {{/operation}}
 
-  iovnet::service::Rest::Router router;
+  polycube::service::Rest::Router router;
 
   {{#operation}}
   /// <summary>

@@ -23,34 +23,34 @@ void {{classname}}::control_handler(const HttpHandleRequest &request, HttpHandle
       response.send(Http::Code::Not_Found);
     }
   } catch (const std::exception &e) {
-    response.send(iovnet::service::Http::Code::Bad_Request, e.what());
+    response.send(polycube::service::Http::Code::Bad_Request, e.what());
   }
 }
 
 void {{classname}}::setup_routes() {
-  using namespace iovnet::service::Rest;
+  using namespace polycube::service::Rest;
 
   {{#operation}}
-  Routes::{{httpMethod}}(router, base + "{{{vendorExtensions.x-codegen-iovnet-router-path}}}", Routes::bind(&{{classname}}::{{operationIdSnakeCase}}_handler, this));
+  Routes::{{httpMethod}}(router, base + "{{{vendorExtensions.x-codegen-polycube-router-path}}}", Routes::bind(&{{classname}}::{{operationIdSnakeCase}}_handler, this));
   {{/operation}}
 
   {{#operation}}
   {{#vendorExtensions.x-needs-help}}
-  Routes::Options(router, base + "{{{vendorExtensions.x-codegen-iovnet-router-path}}}", Routes::bind(&{{classname}}::{{operationIdSnakeCase}}_help, this));
+  Routes::Options(router, base + "{{{vendorExtensions.x-codegen-polycube-router-path}}}", Routes::bind(&{{classname}}::{{operationIdSnakeCase}}_help, this));
   {{/vendorExtensions.x-needs-help}}
   {{/operation}}
 
   {{#operation}}
   {{#vendorExtensions.x-is-yang-action}}
-  Routes::Options(router, base + "{{{vendorExtensions.x-codegen-iovnet-router-path}}}", Routes::bind(&{{classname}}::{{operationIdSnakeCase}}_help, this));
+  Routes::Options(router, base + "{{{vendorExtensions.x-codegen-polycube-router-path}}}", Routes::bind(&{{classname}}::{{operationIdSnakeCase}}_help, this));
   {{/vendorExtensions.x-is-yang-action}}
   {{/operation}}
 }
 
 {{#operation}}
 void {{classname}}::{{operationIdSnakeCase}}_handler(
-  const iovnet::service::Rest::Request &request,
-  iovnet::service::HttpHandleResponse &response) {
+  const polycube::service::Rest::Request &request,
+  polycube::service::HttpHandleResponse &response) {
   {{#hasPathParams}}
   // Getting the path params
   {{#pathParams}}
@@ -134,15 +134,15 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(
     response_body = x.toJson();
     {{/isListContainer}}
     {{/returnTypeIsPrimitive}}
-    response.send(iovnet::service::Http::Code::{{vendorExtensions.x-response-code}}, response_body.dump(4));
+    response.send(polycube::service::Http::Code::{{vendorExtensions.x-response-code}}, response_body.dump(4));
 
     {{/returnType}}
     {{^returnType}}
     {{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
-    response.send(iovnet::service::Http::Code::{{vendorExtensions.x-response-code}});
+    response.send(polycube::service::Http::Code::{{vendorExtensions.x-response-code}});
     {{/returnType}}
   } catch(const std::exception &e) {
-    response.send(iovnet::service::Http::Code::Internal_Server_Error, e.what());
+    response.send(polycube::service::Http::Code::Internal_Server_Error, e.what());
   }
 }
 {{/operation}}
@@ -150,8 +150,8 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(
 {{#operation}}
 {{#vendorExtensions.x-needs-help}}
 void {{classname}}::{{operationIdSnakeCase}}_help(
-  const iovnet::service::Rest::Request &request,
-  iovnet::service::HttpHandleResponse &response) {
+  const polycube::service::Rest::Request &request,
+  polycube::service::HttpHandleResponse &response) {
   {{#hasPathParams}}
   // Getting the path params
   {{#pathParams}}
@@ -171,7 +171,7 @@ void {{classname}}::{{operationIdSnakeCase}}_help(
   {{/hasBodyParam}}
   {{/vendorExtensions.x-is-list}}
 
-  using iovnet::service::HelpType;
+  using polycube::service::HelpType;
   nlohmann::json val = nlohmann::json::object();
   switch (request.help_type()) {
   case HelpType::SHOW:
@@ -191,7 +191,7 @@ void {{classname}}::{{operationIdSnakeCase}}_help(
   break;
     {{/vendorExtensions.x-is-list}}
     {{^vendorExtensions.x-is-list}}
-    response.send(iovnet::service::Http::Code::Bad_Request);
+    response.send(polycube::service::Http::Code::Bad_Request);
   return;
     {{/vendorExtensions.x-is-list}}
 
@@ -201,7 +201,7 @@ void {{classname}}::{{operationIdSnakeCase}}_help(
   break;
     {{/vendorExtensions.x-is-list}}
     {{#vendorExtensions.x-is-list}}
-    response.send(iovnet::service::Http::Code::Bad_Request);
+    response.send(polycube::service::Http::Code::Bad_Request);
   return;
     {{/vendorExtensions.x-is-list}}
 
@@ -212,7 +212,7 @@ void {{classname}}::{{operationIdSnakeCase}}_help(
   break;
     {{/vendorExtensions.x-is-list}}
     {{^vendorExtensions.x-is-list}}
-    response.send(iovnet::service::Http::Code::Bad_Request);
+    response.send(polycube::service::Http::Code::Bad_Request);
   return;
     {{/vendorExtensions.x-is-list}}
 
@@ -230,10 +230,10 @@ void {{classname}}::{{operationIdSnakeCase}}_help(
   break;
 
   case HelpType::NO_HELP:
-    response.send(iovnet::service::Http::Code::Bad_Request);
+    response.send(polycube::service::Http::Code::Bad_Request);
     return;
   }
-  response.send(iovnet::service::Http::Code::Ok, val.dump(4));
+  response.send(polycube::service::Http::Code::Ok, val.dump(4));
 }
 
 {{/vendorExtensions.x-needs-help}}
@@ -242,8 +242,8 @@ void {{classname}}::{{operationIdSnakeCase}}_help(
 {{#operation}}
 {{#vendorExtensions.x-is-yang-action}}
 void {{classname}}::{{operationIdSnakeCase}}_help(
-  const iovnet::service::Rest::Request &request,
-  iovnet::service::HttpHandleResponse &response) {
+  const polycube::service::Rest::Request &request,
+  polycube::service::HttpHandleResponse &response) {
   nlohmann::json val = nlohmann::json::object();
   {{#bodyParam}}
   {{^isPrimitiveType}}
@@ -251,7 +251,7 @@ void {{classname}}::{{operationIdSnakeCase}}_help(
   {{/isPrimitiveType}}
   {{/bodyParam}}
 
-  response.send(iovnet::service::Http::Code::Ok, val.dump(4));
+  response.send(polycube::service::Http::Code::Ok, val.dump(4));
 }
 {{/vendorExtensions.x-is-yang-action}}
 {{/operation}}

@@ -4,18 +4,18 @@
 
 #include <string>
 
-const std::string {{serviceNameLowerCase}}_code = R"IOVNET_DP(
+const std::string {{serviceNameLowerCase}}_code = R"POLYCUBE_DP(
 /*
- * This function is called each time a packet arrives to the iomodule.
+ * This function is called each time a packet arrives to the cube.
  * ctx contains the packet and md some additional metadata for the packet.
  * If the service is of type TYPE_XDP_SKB/DRV CTXTYPE is equivalent to the struct xdp_md
  * otherwise, if the service is of type TYPE_TC, CTXTYPE is equivalent to the __sk_buff struct
- * Please look at the libiovnet documentation for more details.
+ * Please look at the libpolycube documentation for more details.
  */
 static __always_inline 
 int handle_rx(struct CTXTYPE *ctx, struct pkt_metadata *md) {
   // Put your eBPF datapth code here
-  iovnet_log(ctx, LOG_INFO, "Hello from iovnet! :-)");
+  polycube_log(ctx, LOG_INFO, "Hello from polycube! :-)");
   return RX_DROP;
 }
-)IOVNET_DP";
+)POLYCUBE_DP";
