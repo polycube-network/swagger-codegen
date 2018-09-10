@@ -15,6 +15,7 @@
 {{{defaultInclude}}}
 #include <memory>
 #include <map>
+#include <mutex>
 #include "../{{baseName}}.h"
 
 {{#imports}}{{{import}}}
@@ -45,8 +46,9 @@ public:
   {{/operation}}
 
 private:
-  std::unordered_map<std::string, {{baseName}}> cubes;
-  {{baseName}} &get_cube(const std::string &name);
+  std::unordered_map<std::string, std::shared_ptr<{{baseName}}>> cubes;
+  std::shared_ptr<{{baseName}}> get_cube(const std::string &name);
+  std::mutex cubes_mutex;
 };
 
 {{#apiNamespaceDeclarations}}

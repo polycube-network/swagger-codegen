@@ -443,22 +443,15 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                 //if i == 0 the path element is the service
                 if(i == 0)
                     methodCall = "get_cube";
-                else if(lastCall && i != 1) { //the last path element has a particular method basing on httpMethod
+                else if(lastCall) {
                     methodCall = path_without_keys.get(i - 1) + "->" + method + toUpperCamelCase(path_without_keys.get(i));
                     int c_index = methodCall.indexOf('>');
                     char[] methodCallChar = methodCall.toCharArray();
                     methodCallChar[++c_index] = Character.toLowerCase(methodCall.charAt(c_index));
                     methodCall = String.valueOf(methodCallChar);
                 }
-                else if(lastCall && i == 1) {
-                    methodCall = path_without_keys.get(i - 1) + "." + method + toUpperCamelCase(path_without_keys.get(i));
-                    int c_index = methodCall.indexOf('>');
-                    char[] methodCallChar = methodCall.toCharArray();
-                    methodCallChar[++c_index] = Character.toLowerCase(methodCall.charAt(c_index));
-                    methodCall = String.valueOf(methodCallChar);
-                }
                 else if(i == 1) //the second path element has a get method but called by .
-                    methodCall = path_without_keys.get(i-1) + ".get" + toUpperCamelCase(path_without_keys.get(i));
+                    methodCall = path_without_keys.get(i-1) + "->get" + toUpperCamelCase(path_without_keys.get(i));
                 else //the remaining methods are all get
                     methodCall = path_without_keys.get(i-1) + "->get" + toUpperCamelCase(path_without_keys.get(i));
                 if(lastCall && op.operationId.contains("List")){
@@ -483,10 +476,7 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                 methodCall += ")";
                 //check if is the lastCall method and if the returnType is not primitive in order to call the toJsonObject() properly
                 if(op.returnType != null && lastCall && !op.returnTypeIsPrimitive && !op.operationId.contains("List") && !isYangAction){
-                    if(i == 0)
-                        methodCall += ".";
-                    else
-                        methodCall += "->";
+                    methodCall += "->";
                 }
 
                 if(methodCall.contains("get_cube")){
@@ -506,11 +496,7 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                 if(method.equals("update") && i == (len - 1)){
                     Map<String, String> m2 = new HashMap<String, String>();
                     m2.put("varName", toVarName(path_without_keys.get(i)));
-                    if(i == 0)
-                        methodCall = toUpperCamelCase(path_without_keys.get(i)) + "." + method + "(" + bodyParam.paramName + ")";
-                    else
-                        methodCall = toUpperCamelCase(path_without_keys.get(i)) + "->" + method + "(" + bodyParam.paramName + ")";
-
+                    methodCall = toUpperCamelCase(path_without_keys.get(i)) + "->" + method + "(" + bodyParam.paramName + ")";
                     if(methodCall.contains("get_cube")){
                         m2.put("methodCall", methodCall);
                     } else if(methodCall.toLowerCase().contains("get_ports")){
