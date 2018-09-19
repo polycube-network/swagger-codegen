@@ -1,0 +1,114 @@
+{{>licenseInfo}}
+
+#pragma once
+
+{{#models}}{{#model}}
+#include "../interface/{{classname}}Interface.h"
+
+{{#vendorExtensions.x-inherits-from}}
+#include "polycube/services/cube.h"
+#include "polycube/services/port.h"
+#include "polycube/services/utils.h"
+#include "polycube/services/fifo_map.hpp"
+{{/vendorExtensions.x-inherits-from}}
+
+#include <spdlog/spdlog.h>
+
+{{#vendorExtensions.x-interface-imports}}
+#include "{{{this}}}.h"
+{{/vendorExtensions.x-interface-imports}}
+
+{{#vendorExtensions.x-parent}}
+class {{{this}}};
+{{/vendorExtensions.x-parent}}
+
+using namespace io::swagger::server::model;
+{{^vendorExtensions.x-parent}}
+using polycube::service::CubeType;
+{{/vendorExtensions.x-parent}}
+
+class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{/vendorExtensions.x-inherits-from}}public {{classname}}Interface {
+{{^vendorExtensions.x-parent}}
+  friend class {{vendorExtensions.x-child-ports-classname}};
+{{/vendorExtensions.x-parent}}
+ public:
+{{^vendorExtensions.x-parent}}
+  {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, CubeType type = CubeType::TYPE_CLS);
+{{/vendorExtensions.x-parent}}
+{{#vendorExtensions.x-parent}}
+  {{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf);
+{{/vendorExtensions.x-parent}}
+  virtual ~{{classname}}();
+{{^vendorExtensions.x-parent}}
+  std::string generate_code();
+  std::vector<std::string> generate_code_vector();
+  void packet_in(polycube::service::Port &port, polycube::service::PacketInMetadata &md, const std::vector<uint8_t> &packet) override;
+{{/vendorExtensions.x-parent}}
+
+{{#vendorExtensions.x-parent}}
+  static void create({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}, {{/vendorExtensions.x-key-list}}const {{classname}}JsonObject &conf);
+  static std::shared_ptr<{{classname}}> getEntry({{{this}}} &parent{{#vendorExtensions.x-key-list}}{{#lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}{{#vendorExtensions.x-key-list}} const {{{type}}} &{{{varName}}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}});
+  static void removeEntry({{{this}}} &parent{{#vendorExtensions.x-key-list}}{{#lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}{{#vendorExtensions.x-key-list}} const {{{type}}} &{{{varName}}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}});
+{{#vendorExtensions.x-is-list}}
+  static std::vector<std::shared_ptr<{{classname}}>> get({{vendorExtensions.x-parent}} &parent);
+  static void remove({{vendorExtensions.x-parent}} &parent);
+  nlohmann::fifo_map<std::string, std::string> getKeys();
+{{/vendorExtensions.x-is-list}}
+{{/vendorExtensions.x-parent}}
+{{#vendorExtensions.x-parent}}
+  std::shared_ptr<spdlog::logger> logger();
+{{/vendorExtensions.x-parent}}
+  void update(const {{classname}}JsonObject &conf) override;
+  {{classname}}JsonObject toJsonObject() override;
+{{#vars}}
+
+  /// <summary>
+  ///{{#description}} {{description}}{{/description}}
+  /// </summary>
+{{^isNotContainer}}
+  std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
+  std::vector<std::shared_ptr<{{complexType}}>> get{{nameInCamelCase}}List() override;
+  void add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
+  void add{{nameInCamelCase}}List(const std::vector<{{complexType}}JsonObject> &conf) override;
+  void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
+  void del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}) override;
+  void del{{nameInCamelCase}}List() override;
+{{/isNotContainer}}
+{{#isNotContainer}}
+{{#isPrimitiveType}}
+  {{{datatype}}} {{getter}}() override;
+{{^vendorExtensions.x-is-key}}
+{{^isReadOnly}}
+  void {{setter}}(const {{{datatype}}} &value) override;
+{{/isReadOnly}}
+{{/vendorExtensions.x-is-key}}
+{{/isPrimitiveType}}
+{{^isPrimitiveType}}
+  std::shared_ptr<{{complexType}}> get{{nameInCamelCase}}() override;
+{{^vendorExtensions.x-is-key}}
+{{^isReadOnly}}
+  void add{{nameInCamelCase}}(const {{complexType}}JsonObject &value) override;
+  void replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{name}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf) override;
+  void del{{nameInCamelCase}}() override;
+{{/isReadOnly}}
+{{/vendorExtensions.x-is-key}}
+{{/isPrimitiveType}}
+{{/isNotContainer}}
+{{/vars}}
+
+{{#vendorExtensions.x-has-yang-actions}}
+{{#vendorExtensions.x-yang-actions}}
+{{#x-yang-action-has-output}}  {{x-yang-action-output-object}}JsonObject{{/x-yang-action-has-output}}{{^x-yang-action-has-output}}void{{/x-yang-action-has-output}} {{x-yang-action-name-lower-camelcase}}({{#x-yang-action-has-input}}{{x-yang-action-input-object}}JsonObject input{{/x-yang-action-has-input}}) override;
+{{/vendorExtensions.x-yang-actions}}
+{{/vendorExtensions.x-has-yang-actions}}
+private:
+{{#vendorExtensions.x-parent}}
+{{this}}   &parent_;
+{{/vendorExtensions.x-parent}}
+{{^vendorExtensions.x-parent}}
+  std::unordered_map<std::string, {{vendorExtensions.x-child-ports-classname}}> ports_;
+{{/vendorExtensions.x-parent}}
+};
+
+{{/model}}
+{{/models}}

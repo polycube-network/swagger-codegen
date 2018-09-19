@@ -1,0 +1,182 @@
+{{>licenseInfo}}
+
+// These methods have a default implementation. Your are free to keep it or add your own
+
+{{#models}}{{#model}}
+#include "../{{classname}}.h"
+{{^vendorExtensions.x-parent}}
+#include "../{{classname}}_dp.h"
+{{/vendorExtensions.x-parent}}
+
+{{#vendorExtensions.x-parent}}{{#vendorExtensions.x-is-list}}
+nlohmann::fifo_map<std::string, std::string>  {{classname}}::getKeys() {
+  nlohmann::fifo_map<std::string, std::string>  r;
+{{#vars}}{{#vendorExtensions.x-is-key}}
+  r["{{name}}"] = {{#isEnum}}{{classname}}JsonObject::{{{datatype}}}_to_string({{getter}}()){{/isEnum}}{{^isEnum}}{{getter}}(){{/isEnum}};
+{{/vendorExtensions.x-is-key}}{{/vars}}
+  return r;
+}
+{{/vendorExtensions.x-is-list}}{{/vendorExtensions.x-parent}}
+
+{{#vars}}
+{{^isNotContainer}}
+std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
+  return {{complexType}}::getEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+}
+
+std::vector<std::shared_ptr<{{complexType}}>> {{classname}}::get{{nameInCamelCase}}List(){
+  return {{complexType}}::get(*this);
+}
+
+void {{classname}}::add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf){
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf);
+}
+
+void {{classname}}::add{{nameInCamelCase}}List(const std::vector<{{complexType}}JsonObject> &conf){
+  for(auto &i : conf){
+    {{#vendorExtensions.x-key-list}}
+    {{type}} {{varName}}_ = i.{{getter}}();
+    {{/vendorExtensions.x-key-list}}
+    {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}} i);
+  }
+}
+
+void {{classname}}::replace{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &conf){
+  {{complexType}}::removeEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+  {{#vendorExtensions.x-key-list}}
+  {{type}} {{varName}}_ = conf.{{getter}}();
+  {{/vendorExtensions.x-key-list}}
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}}conf);
+
+}
+
+void {{classname}}::del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){
+  {{complexType}}::removeEntry(*this, {{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
+}
+
+void {{classname}}::del{{nameInCamelCase}}List(){
+  {{complexType}}::remove(*this);
+}
+
+{{/isNotContainer}}
+{{#isNotContainer}}
+{{^isPrimitiveType}}
+std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}(){
+  return {{complexType}}::getEntry(*this);
+}
+
+{{^vendorExtensions.x-is-key}}
+{{^isReadOnly}}
+void {{classname}}::add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}, {{/vendorExtensions.x-key-list}}const {{complexType}}JsonObject &value){
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}value);
+}
+
+void {{classname}}::replace{{nameInCamelCase}}(const {{complexType}}JsonObject &conf){
+  {{complexType}}::removeEntry(*this);
+{{#vendorExtensions.x-key-list}}
+  {{type}} {{varName}}_ = conf.{{getter}}();
+  {{/vendorExtensions.x-key-list}}
+  {{complexType}}::create(*this, {{#vendorExtensions.x-key-list}}{{varName}}_, {{/vendorExtensions.x-key-list}}conf);
+}
+
+void {{classname}}::del{{nameInCamelCase}}(){
+  {{complexType}}::removeEntry(*this);
+}
+
+
+{{/isReadOnly}}
+{{/vendorExtensions.x-is-key}}
+{{/isPrimitiveType}}{{#isPrimitiveType}}
+{{#vendorExtensions.x-has-default-impl}}
+{{{datatype}}} {{classname}}::{{getter}}(){
+  // This method retrieves the {{name}} value.
+{{#vendorExtensions.x-is-cube-name}}
+  return Cube::get_name();
+{{/vendorExtensions.x-is-cube-name}}
+{{#vendorExtensions.x-is-cube-uuid}}
+  return Cube::get_uuid().str();
+{{/vendorExtensions.x-is-cube-uuid}}
+{{#vendorExtensions.x-is-cube-type}}
+  return Cube::get_type();
+{{/vendorExtensions.x-is-cube-type}}
+{{#vendorExtensions.x-is-cube-debug}}
+    switch(Cube::get_log_level()){
+      case polycube::LogLevel::TRACE:
+        return {{datatype}}::TRACE;
+      case polycube::LogLevel::DEBUG:
+        return {{datatype}}::DEBUG;
+      case polycube::LogLevel::INFO:
+        return {{datatype}}::INFO;
+      case polycube::LogLevel::WARN:
+        return {{datatype}}::WARN;
+      case polycube::LogLevel::ERR:
+        return {{datatype}}::ERR;
+      case polycube::LogLevel::CRITICAL:
+        return {{datatype}}::CRITICAL;
+      case polycube::LogLevel::OFF:
+        return {{datatype}}::OFF;
+    }
+{{/vendorExtensions.x-is-cube-debug}}
+{{#vendorExtensions.x-is-port-status}}
+  switch (Port::get_status()) {
+    case polycube::service::PortStatus::UP:
+      return PortsStatusEnum::UP;
+    case polycube::service::PortStatus::DOWN:
+      return PortsStatusEnum::DOWN;
+    default:
+      return PortsStatusEnum::DOWN;
+  }
+{{/vendorExtensions.x-is-port-status}}
+{{#vendorExtensions.x-is-port-peer}}
+  return Port::peer();
+{{/vendorExtensions.x-is-port-peer}}
+{{#vendorExtensions.x-is-port-uuid}}
+  return Port::uuid().str();
+{{/vendorExtensions.x-is-port-uuid}}
+{{#vendorExtensions.x-is-port-name}}
+  return Port::name();
+{{/vendorExtensions.x-is-port-name}}
+}
+{{^vendorExtensions.x-is-key}}{{^isReadOnly}}
+void {{classname}}::{{setter}}(const {{{datatype}}} &value){
+  // This method sets the {{name}} value.
+{{#vendorExtensions.x-is-port-status}}
+  throw std::runtime_error("[{{classname}}]: Method {{setter}} not implemented");
+{{/vendorExtensions.x-is-port-status}}
+{{#vendorExtensions.x-is-cube-debug}}
+    switch(value){
+      case {{{datatype}}}::TRACE:
+        Cube::set_log_level(polycube::LogLevel::TRACE);
+        break;
+      case {{{datatype}}}::DEBUG:
+        Cube::set_log_level(polycube::LogLevel::DEBUG);
+        break;
+      case {{{datatype}}}::INFO:
+        Cube::set_log_level(polycube::LogLevel::INFO);
+        break;
+      case {{{datatype}}}::WARN:
+        Cube::set_log_level(polycube::LogLevel::WARN);
+        break;
+      case {{{datatype}}}::ERR:
+        Cube::set_log_level(polycube::LogLevel::ERR);
+        break;
+      case {{{datatype}}}::CRITICAL:
+        Cube::set_log_level(polycube::LogLevel::CRITICAL);
+        break;
+      case {{{datatype}}}::OFF:
+        Cube::set_log_level(polycube::LogLevel::OFF);
+        break;
+    }
+{{/vendorExtensions.x-is-cube-debug}}
+{{#vendorExtensions.x-is-port-peer}}
+  //logger()->info("Received request to set peer {0}", value);
+  Port::set_peer(value);
+{{/vendorExtensions.x-is-port-peer}}
+}
+{{/isReadOnly}}{{/vendorExtensions.x-is-key}}
+{{/vendorExtensions.x-has-default-impl}}
+{{/isPrimitiveType}}
+{{/isNotContainer}}
+{{/vars}}
+
+{{/model}}{{/models}}

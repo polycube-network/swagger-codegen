@@ -21,11 +21,13 @@ io.swagger.codegen.languages.ErlangServerCodegen
 io.swagger.codegen.languages.FinchServerCodegen
 io.swagger.codegen.languages.FlashClientCodegen
 io.swagger.codegen.languages.FlaskConnexionCodegen
+io.swagger.codegen.languages.GoCliCodegen
 io.swagger.codegen.languages.GoClientCodegen
 io.swagger.codegen.languages.GoServerCodegen
 io.swagger.codegen.languages.GroovyClientCodegen
 io.swagger.codegen.languages.HaskellHttpClientCodegen
 io.swagger.codegen.languages.HaskellServantCodegen
+io.swagger.codegen.languages.PolycubeCodegen
 io.swagger.codegen.languages.JMeterCodegen
 io.swagger.codegen.languages.JavaCXFClientCodegen
 io.swagger.codegen.languages.JavaCXFServerCodegen

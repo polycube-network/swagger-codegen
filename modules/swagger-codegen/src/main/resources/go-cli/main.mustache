@@ -1,0 +1,15 @@
+{{>partial_header}}
+
+package main
+
+import "{{goCliImportPath}}/cmd"
+
+{{#model}}
+    {{#description}}
+        // {{{description}}}
+    {{/description}}
+{{/model}}
+
+func main() {
+    cmd.Execute()
+}

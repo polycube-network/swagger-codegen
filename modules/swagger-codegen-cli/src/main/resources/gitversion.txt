@@ -1,0 +1,4 @@
+{
+  "gitUserId" : "netgroup-polito",
+  "gitRepoId" : "${git.branch}/${git.commit.id.abbrev}"
+}
