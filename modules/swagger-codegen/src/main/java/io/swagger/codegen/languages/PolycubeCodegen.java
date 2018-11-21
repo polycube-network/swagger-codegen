@@ -959,6 +959,10 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         if (p instanceof StringProperty) {
             if(((StringProperty) p).getDefault() != null && !((StringProperty) p).getDefault().isEmpty()) {
                 ((StringProperty) p).setVendorExtension("x-has-default-value", true);
+                // if type is not enum, qoute default value
+                if (((StringProperty) p).getEnum() == null) {
+                    return "\"" + ((StringProperty) p).getDefault() + "\"";
+                }
                 return ((StringProperty) p).getDefault();
             } else {
                 ((StringProperty) p).setVendorExtension("x-has-default-value", false);
