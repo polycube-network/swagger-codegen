@@ -54,10 +54,6 @@ public:
   /////////////////////////////////////////////
   /// JsonObjectBase overrides
 
-  void validateKeys() override;
-  void validateMandatoryFields() override;
-  void validateParams() override;
-
   nlohmann::json toJson() const override;
   void fromJson(nlohmann::json& json) override;
 

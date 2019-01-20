@@ -24,35 +24,6 @@ namespace {{this}} {
 
 {{classname}}JsonObject::~{{classname}}JsonObject() {}
 
-void {{classname}}JsonObject::validateKeys() {
-{{#vars}}{{#vendorExtensions.x-is-key}}{{#isPrimitiveType}}
-  if (!m_{{name}}IsSet) {
-    throw std::runtime_error("Variable {{baseName}} is required");
-  }{{/isPrimitiveType}}{{/vendorExtensions.x-is-key}}{{/vars}}
-}
-
-void {{classname}}JsonObject::validateMandatoryFields() {
-{{#vars}}{{#vendorExtensions.x-is-required}}{{#isPrimitiveType}}
-  if (!m_{{name}}IsSet) {
-    throw std::runtime_error("Variable {{baseName}} is required");
-  }{{/isPrimitiveType}}{{/vendorExtensions.x-is-required}}{{/vars}}
-}
-
-void {{classname}}JsonObject::validateParams() {
-{{#vars}}{{#hasValidation}}{{#isString}}
-  if (m_{{name}}IsSet) {
-    std::string patter_value = R"PATTERN({{dataFormat}})PATTERN";
-    std::regex e (patter_value);
-    if (!std::regex_match(m_{{name}}, e))
-      throw std::runtime_error("Variable {{baseName}} has not a valid format");
-  }{{/isString}}{{#isInteger}}
-  if (m_{{name}}IsSet) {
-    if (m_{{name}} < {{minimum}} || m_{{name}} > {{maximum}}) {
-      throw std::runtime_error("Variable {{baseName}} is not in the range");
-    }
-  }{{/isInteger}}{{/hasValidation}}{{/vars}}
-}
-
 nlohmann::json {{classname}}JsonObject::toJson() const {
   nlohmann::json val = nlohmann::json::object();
 

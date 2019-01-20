@@ -274,6 +274,7 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
             op.vendorExtensions.put("x-response-code", "Ok");
             if (!op.responses.get(0).primitiveType) {
                 op.vendorExtensions.put("x-needs-help", true);
+                op.vendorExtensions.put("x-help-name", toSnakeCase(op.operationId.substring(4)));
             }
             method = "get";
         }
@@ -385,11 +386,27 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         return newString;
     }
 
+    private String toSnakeCase(String stringToConvert) {
+        String helpname = stringToConvert
+                .replace("ID", "_id")
+                .replace('.', '_')
+                .replace('-', '_');
+        helpname = helpname.substring(0, 1).toLowerCase() + helpname.substring(1);
+        Pattern upper = Pattern.compile("([A-Z])");
+        Matcher m = upper.matcher(helpname);
+        while (m.find()) {
+            String s = m.group(1);
+            helpname = helpname.replaceAll(s, "_" + s.toLowerCase());
+        }
+        return helpname;
+    }
+
     private List<Map<String, String>> getCallMethodSequence(String method, String path, CodegenOperation op) {
         boolean isYangAction = false;
         if (op.vendorExtensions.containsKey("x-is-yang-action") && op.vendorExtensions.get("x-is-yang-action").equals(Boolean.TRUE)) {
             method = "";
             isYangAction = true;
+            op.vendorExtensions.put("x-help-name", toSnakeCase(op.operationId.substring(6)));
         }
 
         //this list will contain the sequence of method call
@@ -744,14 +761,45 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                         }
                     }
                     for (CodegenParameter cp : op.pathParams) {
-                        if (cp.isEnum && m.get("methodCall").contains(cp.paramName)) {
-                            //cp.baseName = initialCaps(cp.baseName);
-                            cp.datatypeWithEnum = initialCaps(m.get("varName")) + "JsonObject"; //enum class object
-                            if (cp.vendorExtensions.get("x-typedef") != null) {
-                                cp.enumName = initialCaps((String) cp.vendorExtensions.get("x-typedef")) + "Enum";
-                            } else {
-                                if (!cp.enumName.contains(initialCaps(m.get("varName"))))
-                                    cp.enumName = initialCaps(m.get("varName")) + cp.enumName;
+                        if (cp.paramName.equals("name")) {
+                            cp.vendorExtensions.put("x-is-cube-name", true);
+                        } else {
+                            if (cp.isEnum && m.get("methodCall").contains(cp.paramName)) {
+                                //cp.baseName = initialCaps(cp.baseName);
+                                cp.datatypeWithEnum = initialCaps(m.get("varName")) + "JsonObject"; //enum class object
+                                if (cp.vendorExtensions.get("x-typedef") != null) {
+                                    cp.enumName = initialCaps((String) cp.vendorExtensions.get("x-typedef")) + "Enum";
+                                } else {
+                                    if (!cp.enumName.contains(initialCaps(m.get("varName"))))
+                                        cp.enumName = initialCaps(m.get("varName")) + cp.enumName;
+                                }
+                            }
+                            if (cp.isString) {
+                                cp.vendorExtensions.put("x-value-type", "string");
+                            } else if (cp.isInteger || cp.isLong) {
+                                if (cp.dataType.equals("int8_t")) {
+                                    cp.vendorExtensions.put("x-value-type", "int8");
+                                } else if (cp.dataType.equals("int16_t")) {
+                                    cp.vendorExtensions.put("x-value-type", "int16");
+                                } else if (cp.dataType.equals("int32_t")) {
+                                    cp.vendorExtensions.put("x-value-type", "int32");
+                                } else if (cp.dataType.equals("int64_t")) {
+                                    cp.vendorExtensions.put("x-value-type", "int64");
+                                } else if (cp.dataType.equals("uint8_t")) {
+                                    cp.vendorExtensions.put("x-value-type", "uint8");
+                                } else if (cp.dataType.equals("uint16_t")) {
+                                    cp.vendorExtensions.put("x-value-type", "uint16");
+                                } else if (cp.dataType.equals("uint32_t")) {
+                                    cp.vendorExtensions.put("x-value-type", "uint32");
+                                } else if (cp.dataType.equals("uint64_t")) {
+                                    cp.vendorExtensions.put("x-value-type", "uint64");
+                                }
+                            } else if (cp.isFloat || cp.isDouble) {
+                                cp.vendorExtensions.put("x-value-type", "string");
+                            } else if (cp.isBinary) {
+                                cp.vendorExtensions.put("x-value-type", "string");
+                            } else if (cp.isBoolean) {
+                                cp.vendorExtensions.put("x-value-type", "boolean");
                             }
                         }
                     }
@@ -840,7 +888,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
 
         return null;
     }
-
 
 
     @SuppressWarnings("unchecked")
@@ -1166,7 +1213,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
     public String escapeUnsafeCharacters(String input) {
         return input.replace("*/", "*_/").replace("/*", "/_*");
     }
-
 
 
 }
