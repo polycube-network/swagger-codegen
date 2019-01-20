@@ -49,13 +49,13 @@ enum class {{{datatype}}} {
 class {{declspec}} {{classname}}JsonObject : public JsonObjectBase {
 public:
   {{classname}}JsonObject();
+  {{classname}}JsonObject(nlohmann::json& json);
   ~{{classname}}JsonObject() final = default;
 
   /////////////////////////////////////////////
   /// JsonObjectBase overrides
 
   nlohmann::json toJson() const final;
-  void fromJson(nlohmann::json& json) final;
 
   static nlohmann::json helpKeys();
   static nlohmann::json helpElements();

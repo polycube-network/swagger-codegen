@@ -22,6 +22,34 @@ namespace {{this}} {
 {{/vars}}
 }
 
+{{classname}}JsonObject::{{classname}}JsonObject(nlohmann::json& val) {
+{{#vars}}
+{{#isPrimitiveType}}{{^isListContainer}}
+  if (val.find("{{baseName}}") != val.end()) {
+    {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
+  }{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
+  m_{{name}}.clear();
+  for (auto& item : val["{{baseName}}"]) {
+  {{#isPrimitiveType}}
+    m_{{name}}.push_back(item);{{/isPrimitiveType}}{{^isPrimitiveType}}{{#items.isString}}
+    m_{{name}}.push_back(item);{{/items.isString}}{{^items.isString}}{{#items.isDateTime}}
+    m_{{name}}.push_back(item);{{/items.isDateTime}}{{^items.isDateTime}}
+    {{{items.datatype}}}JsonObject newItem { item };
+    m_{{name}}.push_back(newItem);{{/items.isDateTime}}{{/items.isString}}
+    m_{{name}}IsSet = true;{{/isPrimitiveType}}
+  }
+  {{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}
+  if (val.find("{{baseName}}") != val.end()) {
+  {{#isString}}    {{setter}}(val.at("{{baseName}}"));{{/isString}}{{^isString}}
+  {{#isDateTime}}    {{setter}}(val.at("{{baseName}}"));{{/isDateTime}}{{^isDateTime}}
+    if (!val["{{baseName}}"].is_null()) {
+      {{{datatype}}}JsonObject newItem { val["{{baseName}}"] };
+      {{setter}}(newItem);
+    }{{/isDateTime}}{{/isString}}
+  }{{/isPrimitiveType}}{{/isListContainer}}
+{{/vars}}
+}
+
 nlohmann::json {{classname}}JsonObject::toJson() const {
   nlohmann::json val = nlohmann::json::object();
 
@@ -48,36 +76,6 @@ nlohmann::json {{classname}}JsonObject::toJson() const {
 {{/vendorExtensions.x-is-required}}{{#vendorExtensions.x-is-required}}  val["{{baseName}}"] = JsonObjectBase::toJson(m_{{name}});
 {{/vendorExtensions.x-is-required}}{{/isPrimitiveType}}{{/isListContainer}}{{/vars}}
   return val;
-}
-
-void {{classname}}JsonObject::fromJson(nlohmann::json& val) {
-{{#vars}}
-{{#isPrimitiveType}}{{^isListContainer}}
-  if (val.find("{{baseName}}") != val.end()) {
-    {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
-  }{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
-  m_{{name}}.clear();
-  for (auto& item : val["{{baseName}}"]) {
-{{#isPrimitiveType}}
-    m_{{name}}.push_back(item);{{/isPrimitiveType}}{{^isPrimitiveType}}{{#items.isString}}
-    m_{{name}}.push_back(item);{{/items.isString}}{{^items.isString}}{{#items.isDateTime}}
-    m_{{name}}.push_back(item);{{/items.isDateTime}}{{^items.isDateTime}}
-    {{{items.datatype}}}JsonObject newItem;
-    newItem.fromJson(item);
-    m_{{name}}.push_back(newItem);{{/items.isDateTime}}{{/items.isString}}
-    m_{{name}}IsSet = true;{{/isPrimitiveType}}
-  }
-{{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}
-  if (val.find("{{baseName}}") != val.end()) {
-{{#isString}}    {{setter}}(val.at("{{baseName}}"));{{/isString}}{{^isString}}
-{{#isDateTime}}    {{setter}}(val.at("{{baseName}}"));{{/isDateTime}}{{^isDateTime}}
-    if (!val["{{baseName}}"].is_null()) {
-      {{{datatype}}}JsonObject newItem;
-      newItem.fromJson(val["{{baseName}}"]);
-      {{setter}}(newItem);
-    }{{/isDateTime}}{{/isString}}
-  }{{/isPrimitiveType}}{{/isListContainer}}
-{{/vars}}
 }
 
 nlohmann::json {{classname}}JsonObject::helpKeys() {
