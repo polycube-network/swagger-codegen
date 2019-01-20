@@ -49,13 +49,13 @@ enum class {{{datatype}}} {
 class {{declspec}} {{classname}}JsonObject : public JsonObjectBase {
 public:
   {{classname}}JsonObject();
-  virtual ~{{classname}}JsonObject();
+  ~{{classname}}JsonObject() final = default;
 
   /////////////////////////////////////////////
   /// JsonObjectBase overrides
 
-  nlohmann::json toJson() const override;
-  void fromJson(nlohmann::json& json) override;
+  nlohmann::json toJson() const final;
+  void fromJson(nlohmann::json& json) final;
 
   static nlohmann::json helpKeys();
   static nlohmann::json helpElements();
@@ -93,7 +93,7 @@ public:
   polycube::LogLevel getPolycubeLoglevel() const;{{/vendorExtensions.x-is-cube-debug}}
   {{/vars}}
 
-protected:
+private:
   {{#vars}}
   {{#isNotContainer}}
   {{#isPrimitiveType}}

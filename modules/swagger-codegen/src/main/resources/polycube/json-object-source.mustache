@@ -22,8 +22,6 @@ namespace {{this}} {
 {{/vars}}
 }
 
-{{classname}}JsonObject::~{{classname}}JsonObject() {}
-
 nlohmann::json {{classname}}JsonObject::toJson() const {
   nlohmann::json val = nlohmann::json::object();
 
