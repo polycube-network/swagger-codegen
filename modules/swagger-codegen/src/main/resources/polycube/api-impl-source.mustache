@@ -12,14 +12,12 @@ namespace {{this}} {
 
 using namespace {{modelNamespace}};
 
-{{classname}}Impl::{{classname}}Impl() {}
+namespace {{classname}}Impl {
+namespace {
+std::unordered_map<std::string, std::shared_ptr<{{baseName}}>> cubes;
+std::mutex cubes_mutex;
 
-/*
-* These functions include a default basic implementation.  The user could
-* extend adapt this implementation to his needs.
-*/
-
-std::shared_ptr<{{baseName}}> {{classname}}Impl::get_cube(const std::string &name) {
+std::shared_ptr<{{baseName}}> get_cube(const std::string &name) {
   std::lock_guard<std::mutex> guard(cubes_mutex);
   auto iter = cubes.find(name);
   if (iter == cubes.end()) {
@@ -29,7 +27,13 @@ std::shared_ptr<{{baseName}}> {{classname}}Impl::get_cube(const std::string &nam
   return iter->second;
 }
 
-void {{classname}}Impl::create_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &jsonObject) {
+}
+
+/*
+* These functions include a default basic implementation.  The user could
+* extend adapt this implementation to his needs.
+*/
+void create_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &jsonObject) {
   {
     // check if name is valid before creating it
     std::lock_guard<std::mutex> guard(cubes_mutex);
@@ -49,11 +53,11 @@ void {{classname}}Impl::create_{{classVarName}}_by_id(const std::string &name, c
   }
 }
 
-void {{classname}}Impl::replace_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &bridge){
+void replace_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &bridge){
   throw std::runtime_error("Method not supported!");
 }
 
-void {{classname}}Impl::delete_{{classVarName}}_by_id(const std::string &name) {
+void delete_{{classVarName}}_by_id(const std::string &name) {
   std::lock_guard<std::mutex> guard(cubes_mutex);
   if (cubes.count(name) == 0) {
     throw std::runtime_error("Cube " + name + " does not exist");
@@ -61,12 +65,12 @@ void {{classname}}Impl::delete_{{classVarName}}_by_id(const std::string &name) {
   cubes.erase(name);
 }
 
-std::string {{classname}}Impl::read_{{classVarName}}_uuid_by_id(const std::string &name) {
+std::string read_{{classVarName}}_uuid_by_id(const std::string &name) {
   auto m = get_cube(name);
   return m->getUuid();
 }
 
-std::vector<{{baseName}}JsonObject> {{classname}}Impl::read_{{classVarName}}_list_by_id() {
+std::vector<{{baseName}}JsonObject> read_{{classVarName}}_list_by_id() {
   std::vector<{{baseName}}JsonObject> jsonObject_vect;
   for(auto &i : cubes) {
     auto m = get_cube(i.first);
@@ -75,7 +79,7 @@ std::vector<{{baseName}}JsonObject> {{classname}}Impl::read_{{classVarName}}_lis
   return jsonObject_vect;
 }
 
-std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::read_{{classVarName}}_list_by_id_get_list() {
+std::vector<nlohmann::fifo_map<std::string, std::string>> read_{{classVarName}}_list_by_id_get_list() {
   std::vector<nlohmann::fifo_map<std::string, std::string>> r;
   for (auto &x : cubes) {
     nlohmann::fifo_map<std::string, std::string> m;
@@ -88,12 +92,12 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::rea
 /*
 * Ports list related functions
 */
-void {{classname}}Impl::create_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
+void create_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
   auto m = get_cube(name);
   m->addPortsList(ports);
 }
 
-std::vector<PortsJsonObject> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id(const std::string &name) {
+std::vector<PortsJsonObject> read_{{classVarName}}_ports_list_by_id(const std::string &name) {
   std::vector<PortsJsonObject> vect;
   auto m = get_cube(name);
   for (auto &i : m->getPortsList()) {
@@ -102,16 +106,16 @@ std::vector<PortsJsonObject> {{classname}}Impl::read_{{classVarName}}_ports_list
   return vect;
 }
 
-void {{classname}}Impl::replace_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
+void replace_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
   throw std::runtime_error("Method not supported");
 }
 
-void {{classname}}Impl::delete_{{classVarName}}_ports_list_by_id(const std::string &name) {
+void delete_{{classVarName}}_ports_list_by_id(const std::string &name) {
   auto m = get_cube(name);
   m->delPortsList();
 }
 
-std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::read_{{classVarName}}_ports_list_by_id_get_list(const std::string &name) {
+std::vector<nlohmann::fifo_map<std::string, std::string>> read_{{classVarName}}_ports_list_by_id_get_list(const std::string &name) {
   std::vector<nlohmann::fifo_map<std::string, std::string>> r;
   auto m = get_cube(name);
   for(auto &i : m->getPortsList()){
@@ -125,45 +129,45 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::rea
 /*
 * Ports related functions
 */
-void {{classname}}Impl::create_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
+void create_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
   auto m = get_cube(name);
   return m->addPorts(portsName, ports);
 }
 
-PortsJsonObject {{classname}}Impl::read_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
+PortsJsonObject read_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
   auto m = get_cube(name);
   return m->getPorts(portsName)->toJsonObject();
 }
 
-void {{classname}}Impl::replace_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
+void replace_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
   auto m = get_cube(name);
   m->replacePorts(portsName, ports);
 }
 
-void {{classname}}Impl::delete_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
+void delete_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
   auto m = get_cube(name);
   m->delPorts(portsName);
 }
 
-std::string {{classname}}Impl::read_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName) {
+std::string read_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName) {
   auto m = get_cube(name);
   auto p = m->getPorts(portsName);
   return p->getPeer();
 }
 
-PortsStatusEnum {{classname}}Impl::read_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName) {
+PortsStatusEnum read_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName) {
   auto m = get_cube(name);
   auto p = m->getPorts(portsName);
   return p->getStatus();
 }
 
-std::string {{classname}}Impl::read_{{classVarName}}_ports_uuid_by_id(const std::string &name, const std::string &portsName) {
+std::string read_{{classVarName}}_ports_uuid_by_id(const std::string &name, const std::string &portsName) {
   auto m = get_cube(name);
   auto p = m->getPorts(portsName);
   return p->getUuid();
 }
 
-void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName, const std::string &peer) {
+void update_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName, const std::string &peer) {
   auto m = get_cube(name);
   auto p = m->getPorts(portsName);
   p->setPeer(peer);
@@ -183,7 +187,7 @@ void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::stri
 *{{#returnType}} {{{returnType}}}{{/returnType}}
 */
 {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
-{{classname}}Impl::{{operationIdSnakeCase}}({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
+{{operationIdSnakeCase}}({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
 {{^vendorExtensions.x-is-list-update}}
 {{#vendorExtensions.x-call-sequence-method}}
 {{^lastCall}}
@@ -231,7 +235,7 @@ void {{classname}}Impl::update_{{classVarName}}_ports_peer_by_id(const std::stri
 
 {{#vendorExtensions.x-is-list}}
 #ifdef IMPLEMENT_POLYCUBE_GET_LIST
-std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::{{operationIdSnakeCase}}_get_list({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
+std::vector<nlohmann::fifo_map<std::string, std::string>> {{operationIdSnakeCase}}_get_list({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
   std::vector<nlohmann::fifo_map<std::string, std::string>> r;
 {{^vendorExtensions.x-is-list-update}}
 {{#vendorExtensions.x-call-sequence-method}}
@@ -266,6 +270,7 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> {{classname}}Impl::{{o
 
 {{/vendorExtensions.x-has-default-impl}}
 {{/operation}}
+}
 {{#apiNamespaceDeclarations}}
 }
 {{/apiNamespaceDeclarations}}

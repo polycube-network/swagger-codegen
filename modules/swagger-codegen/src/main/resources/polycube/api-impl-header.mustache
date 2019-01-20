@@ -10,8 +10,6 @@
 
 #pragma once
 
-#include "{{classname}}.h"
-
 {{{defaultInclude}}}
 #include <memory>
 #include <map>
@@ -27,11 +25,7 @@ namespace {{this}} {
 
 using namespace {{modelNamespace}};
 
-class {{classname}}Impl : public {{apiNamespace}}::{{classname}} {
-public:
-  {{classname}}Impl();
-  ~{{classname}}Impl() { };
-
+namespace {{classname}}Impl {
   {{#operation}}
   {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}} {{operationIdSnakeCase}}({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
   {{#vendorExtensions.x-is-list}}
@@ -43,14 +37,8 @@ public:
   {{/responses}}
   {{/bodyParams}}
   {{/vendorExtensions.x-is-list}}
-  {{/operation}}
-
-private:
-  std::unordered_map<std::string, std::shared_ptr<{{baseName}}>> cubes;
-  std::shared_ptr<{{baseName}}> get_cube(const std::string &name);
-  std::mutex cubes_mutex;
-};
-
+  {{/operation}}  
+}
 {{#apiNamespaceDeclarations}}
 }
 {{/apiNamespaceDeclarations}}
