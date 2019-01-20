@@ -11,18 +11,47 @@
 namespace {{this}} {
 {{/modelNamespaceDeclarations}}
 
-{{classname}}JsonObject::{{classname}}JsonObject() {
-{{#vars}}{{#vendorExtensions.x-has-default-value}}{{#isNotContainer}}{{#isPrimitiveType}}
-  m_{{name}} = {{{defaultValue}}};{{/isPrimitiveType}}{{^isPrimitiveType}}{{#isString}}
-  m_{{name}} = {{{defaultValue}}};{{/isString}}{{#isDateTime}}
-  m_{{name}} = {{{defaultValue}}};{{/isDateTime}}{{#isEnum}}
-  m_{{name}} = {{{defaultValue}}};{{/isEnum}}{{/isPrimitiveType}}{{/isNotContainer}}
-  m_{{name}}IsSet = false;{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}
-  m_{{name}}IsSet = false;{{/vendorExtensions.x-has-default-value}}
+{{classname}}JsonObject::{{classname}}JsonObject() {{#hasVars}}:{{/hasVars}} {{#vars}}{{^isListContainer}}{{#isPrimitiveType}}{{#vendorExtensions.x-has-default-value}}
+  m_{{name}} ({{{defaultValue}}}),
+  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{/isPrimitiveType}}{{^isPrimitiveType}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isPrimitiveType}}{{^vendorExtensions.x-has-default-value}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{/isListContainer}}{{#isListContainer}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isListContainer}}{{/vars}} { }
+
+{{classname}}JsonObject::{{classname}}JsonObject(nlohmann::json& val) {{#hasVars}}:{{/hasVars}} {{#vars}}{{^isListContainer}}{{#isPrimitiveType}}{{#vendorExtensions.x-has-default-value}}
+  // Item with a default value, granted to be part of the request body
+  m_{{name}} ({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}").get<std::string>()){{/isEnum}}{{^isEnum}}val.at("{{baseName}}").get<{{{datatype}}}>(){{/isEnum}}),
+  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-key}}{{#vendorExtensions.x-is-required}}
+  // Mandatory item
+  m_{{name}} ({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}").get<std::string>()){{/isEnum}}{{^isEnum}}val.at("{{baseName}}").get<{{{datatype}}}>(){{/isEnum}}),
+  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-is-key}}{{#vendorExtensions.x-is-key}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-key}}{{^vendorExtensions.x-is-required}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isPrimitiveType}}{{^isPrimitiveType}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isPrimitiveType}}{{/isListContainer}}{{#isListContainer}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isListContainer}}{{/vars}} { {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-required}}
+  if (val.count("{{baseName}}") != 0) {
+    {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
+  }{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
+  m_{{name}}.clear();
+  for (auto& item : val["{{baseName}}"]) { {{#isPrimitiveType}}
+    m_{{name}}.push_back(item);{{/isPrimitiveType}}{{^isPrimitiveType}}{{#items.isString}}
+    m_{{name}}.push_back(item);{{/items.isString}}{{^items.isString}}{{#items.isDateTime}}
+    m_{{name}}.push_back(item);{{/items.isDateTime}}{{^items.isDateTime}}
+    {{{items.datatype}}}JsonObject newItem { item };
+    m_{{name}}.push_back(newItem);{{/items.isDateTime}}{{/items.isString}}
+  }
+  m_{{name}}IsSet = !m_{{name}}.empty();{{/isPrimitiveType}}
+  {{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}
+  if (val.count("{{baseName}}") != 0) {
+  {{#isString}}    {{setter}}(val.at("{{baseName}}"));{{/isString}}{{^isString}}
+  {{#isDateTime}}    {{setter}}(val.at("{{baseName}}"));{{/isDateTime}}{{^isDateTime}}
+    if (!val["{{baseName}}"].is_null()) {
+      {{{datatype}}}JsonObject newItem { val["{{baseName}}"] };
+      {{setter}}(newItem);
+    }{{/isDateTime}}{{/isString}}
+  }{{/isPrimitiveType}}{{/isListContainer}}
 {{/vars}}
 }
-
-{{classname}}JsonObject::~{{classname}}JsonObject() {}
 
 nlohmann::json {{classname}}JsonObject::toJson() const {
   nlohmann::json val = nlohmann::json::object();
@@ -50,44 +79,6 @@ nlohmann::json {{classname}}JsonObject::toJson() const {
 {{/vendorExtensions.x-is-required}}{{#vendorExtensions.x-is-required}}  val["{{baseName}}"] = JsonObjectBase::toJson(m_{{name}});
 {{/vendorExtensions.x-is-required}}{{/isPrimitiveType}}{{/isListContainer}}{{/vars}}
   return val;
-}
-
-void {{classname}}JsonObject::fromJson(nlohmann::json& val) {
-  for(nlohmann::json::iterator it = val.begin(); it != val.end(); ++it) {
-    std::string key = it.key();
-    bool found = (std::find(allowedParameters_.begin(), allowedParameters_.end(), key) != allowedParameters_.end());
-    if (!found) {
-      throw std::runtime_error(key + " is not a valid parameter");
-      return;
-    }
-  }
-{{#vars}}
-{{#isPrimitiveType}}{{^isListContainer}}
-  if (val.find("{{baseName}}") != val.end()) {
-    {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
-  }{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
-  m_{{name}}.clear();
-  for (auto& item : val["{{baseName}}"]) {
-{{#isPrimitiveType}}
-    m_{{name}}.push_back(item);{{/isPrimitiveType}}{{^isPrimitiveType}}{{#items.isString}}
-    m_{{name}}.push_back(item);{{/items.isString}}{{^items.isString}}{{#items.isDateTime}}
-    m_{{name}}.push_back(item);{{/items.isDateTime}}{{^items.isDateTime}}
-    {{{items.datatype}}}JsonObject newItem;
-    newItem.fromJson(item);
-    m_{{name}}.push_back(newItem);{{/items.isDateTime}}{{/items.isString}}
-    m_{{name}}IsSet = true;{{/isPrimitiveType}}
-  }
-{{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}
-  if (val.find("{{baseName}}") != val.end()) {
-{{#isString}}    {{setter}}(val.at("{{baseName}}"));{{/isString}}{{^isString}}
-{{#isDateTime}}    {{setter}}(val.at("{{baseName}}"));{{/isDateTime}}{{^isDateTime}}
-    if (!val["{{baseName}}"].is_null()) {
-      {{{datatype}}}JsonObject newItem;
-      newItem.fromJson(val["{{baseName}}"]);
-      {{setter}}(newItem);
-    }{{/isDateTime}}{{/isString}}
-  }{{/isPrimitiveType}}{{/isListContainer}}
-{{/vars}}
 }
 
 nlohmann::json {{classname}}JsonObject::helpKeys() {
@@ -220,9 +211,10 @@ bool {{classname}}JsonObject::{{name}}IsSet() const {
   return m_{{name}}IsSet;
 }
 
+{{^vendorExtensions.x-is-required}}
 void {{classname}}JsonObject::unset{{nameInCamelCase}}() {
   m_{{name}}IsSet = false;
-}
+}{{/vendorExtensions.x-is-required}}
 
 {{#isEnum}}
 std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}}} &value){

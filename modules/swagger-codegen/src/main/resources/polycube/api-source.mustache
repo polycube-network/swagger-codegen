@@ -48,38 +48,35 @@ Response {{operationIdSnakeCase}}_handler(
   {{/vendorExtensions.x-is-list}}
 
   try {
-    {{^vendorExtensions.x-is-list}}
-    {{#hasBodyParam}}
-    // Getting the body param
-    {{#bodyParam}}
-    {{{dataType}}} unique_{{paramName}}{{#isEnum}}_{{/isEnum}};
-    {{/bodyParam}}
-    {{/hasBodyParam}}
-    {{/vendorExtensions.x-is-list}}
-
     {{#hasBodyParam}}
     {{#bodyParam}}
     auto request_body = nlohmann::json::parse(std::string { value });
     {{^isPrimitiveType}}
     {{#isListContainer}}
+    {{^vendorExtensions.x-is-list}}
+    // Getting the body param
+    {{{dataType}}} unique_{{paramName}}{{#isEnum}}_{{/isEnum}};
+    {{/vendorExtensions.x-is-list}}
     for (auto &j : request_body) {
-      {{baseType}} a;
-      a.fromJson(j);
+      {{baseType}} a { j };
       unique_{{paramName}}{{#isEnum}}_{{/isEnum}}.push_back(a);
     }
     {{/isListContainer}}
     {{^isListContainer}}
-    unique_{{paramName}}.fromJson(request_body);{{#vendorExtensions.x-key-list}}
+    {{^vendorExtensions.x-is-list}}
+    // Getting the body param
+    {{{dataType}}} unique_{{paramName}} { request_body };
+    {{/vendorExtensions.x-is-list}}{{#vendorExtensions.x-key-list}}
     unique_{{paramName}}.{{setter}}(unique_{{keyParamName}}{{#isEnum}}_{{/isEnum}});{{/vendorExtensions.x-key-list}}
     {{/isListContainer}}
     {{/isPrimitiveType}}
     {{#isPrimitiveType}}
     {{^isEnum}}
     // The conversion is done automatically by the json library
-    unique_{{paramName}} = request_body;
+    {{{dataType}}} unique_{{paramName}} = request_body;
     {{/isEnum}}
     {{#isEnum}}
-    unique_{{paramName}}_ = {{vendorExtensions.x-enum-class}}::string_to_{{{dataType}}}(request_body);
+    {{{dataType}}} unique_{{paramName}}_ = {{vendorExtensions.x-enum-class}}::string_to_{{{dataType}}}(request_body);
     {{/isEnum}}
     {{/isPrimitiveType}}
     {{/bodyParam}}
