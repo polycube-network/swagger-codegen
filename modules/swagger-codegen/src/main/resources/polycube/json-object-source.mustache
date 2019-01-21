@@ -23,10 +23,16 @@ namespace {{this}} {
 
 {{classname}}JsonObject::{{classname}}JsonObject(nlohmann::json& val) {
 {{#vars}}
-{{#isPrimitiveType}}{{^isListContainer}}
+{{#isPrimitiveType}}{{^isListContainer}}{{#vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-required}}
+  // Item with a default value
+  {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
+  {{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{#vendorExtensions.x-is-required}}
+  // Mandatory item
+  {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
+  {{/vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-required}}
   if (val.find("{{baseName}}") != val.end()) {
     {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
-  }{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
+  }{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
   m_{{name}}.clear();
   for (auto& item : val["{{baseName}}"]) {
   {{#isPrimitiveType}}
