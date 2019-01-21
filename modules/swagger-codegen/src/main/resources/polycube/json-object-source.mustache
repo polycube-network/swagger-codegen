@@ -28,21 +28,20 @@ namespace {{this}} {
   m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isPrimitiveType}}{{^isPrimitiveType}}
   m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isPrimitiveType}}{{/isListContainer}}{{#isListContainer}}
   m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isListContainer}}{{/vars}} { {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-required}}
-  if (val.find("{{baseName}}") != val.end()) {
+  if (val.count("{{baseName}}") != 0) {
     {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
   }{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
   m_{{name}}.clear();
-  for (auto& item : val["{{baseName}}"]) {
-  {{#isPrimitiveType}}
+  for (auto& item : val["{{baseName}}"]) { {{#isPrimitiveType}}
     m_{{name}}.push_back(item);{{/isPrimitiveType}}{{^isPrimitiveType}}{{#items.isString}}
     m_{{name}}.push_back(item);{{/items.isString}}{{^items.isString}}{{#items.isDateTime}}
     m_{{name}}.push_back(item);{{/items.isDateTime}}{{^items.isDateTime}}
     {{{items.datatype}}}JsonObject newItem { item };
     m_{{name}}.push_back(newItem);{{/items.isDateTime}}{{/items.isString}}
-    m_{{name}}IsSet = true;{{/isPrimitiveType}}
   }
+  m_{{name}}IsSet = !m_{{name}}.empty();{{/isPrimitiveType}}
   {{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}
-  if (val.find("{{baseName}}") != val.end()) {
+  if (val.count("{{baseName}}") != 0) {
   {{#isString}}    {{setter}}(val.at("{{baseName}}"));{{/isString}}{{^isString}}
   {{#isDateTime}}    {{setter}}(val.at("{{baseName}}"));{{/isDateTime}}{{^isDateTime}}
     if (!val["{{baseName}}"].is_null()) {
