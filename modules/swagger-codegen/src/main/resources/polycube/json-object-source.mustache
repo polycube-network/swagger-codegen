@@ -208,9 +208,10 @@ bool {{classname}}JsonObject::{{name}}IsSet() const {
   return m_{{name}}IsSet;
 }
 
+{{^vendorExtensions.x-is-required}}
 void {{classname}}JsonObject::unset{{nameInCamelCase}}() {
   m_{{name}}IsSet = false;
-}
+}{{/vendorExtensions.x-is-required}}
 
 {{#isEnum}}
 std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}}} &value){
