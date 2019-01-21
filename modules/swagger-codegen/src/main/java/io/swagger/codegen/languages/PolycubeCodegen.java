@@ -579,7 +579,7 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
 
                     //If we have a key, it should also be required
                     if (p.vendorExtensions.containsKey("x-is-key") && Boolean.TRUE.equals(p.vendorExtensions.get("x-is-key"))) {
-                        p.vendorExtensions.put("x-is-required", false);
+                        p.vendorExtensions.put("x-is-required", true);
                     }
 
                     if (lenum != null) {//if it is not empty
