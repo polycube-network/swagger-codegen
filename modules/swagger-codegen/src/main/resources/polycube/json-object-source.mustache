@@ -11,16 +11,15 @@
 namespace {{this}} {
 {{/modelNamespaceDeclarations}}
 
-{{classname}}JsonObject::{{classname}}JsonObject() {
+{{classname}}JsonObject::{{classname}}JsonObject() :
 {{#vars}}{{#vendorExtensions.x-has-default-value}}{{#isNotContainer}}{{#isPrimitiveType}}
-  m_{{name}} = {{{defaultValue}}};{{/isPrimitiveType}}{{^isPrimitiveType}}{{#isString}}
-  m_{{name}} = {{{defaultValue}}};{{/isString}}{{#isDateTime}}
-  m_{{name}} = {{{defaultValue}}};{{/isDateTime}}{{#isEnum}}
-  m_{{name}} = {{{defaultValue}}};{{/isEnum}}{{/isPrimitiveType}}{{/isNotContainer}}
-  m_{{name}}IsSet = true;{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}
-  m_{{name}}IsSet = false;{{/vendorExtensions.x-has-default-value}}
-{{/vars}}
-}
+  m_{{name}} ({{{defaultValue}}}),{{/isPrimitiveType}}{{^isPrimitiveType}}{{#isString}}
+  m_{{name}} { {{{defaultValue}}} },{{/isString}}{{#isDateTime}}
+  m_{{name}} { {{{defaultValue}}} },{{/isDateTime}}{{#isEnum}}
+  m_{{name}} { {{{defaultValue}}} },{{/isEnum}}{{/isPrimitiveType}}{{/isNotContainer}}
+  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}
+{{/vars}} { }
 
 {{classname}}JsonObject::{{classname}}JsonObject(nlohmann::json& val) {
 {{#vars}}
