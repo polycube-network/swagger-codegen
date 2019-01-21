@@ -11,25 +11,23 @@
 namespace {{this}} {
 {{/modelNamespaceDeclarations}}
 
-{{classname}}JsonObject::{{classname}}JsonObject() :
-{{#vars}}{{#vendorExtensions.x-has-default-value}}{{#isNotContainer}}{{#isPrimitiveType}}
-  m_{{name}} ({{{defaultValue}}}),{{/isPrimitiveType}}{{^isPrimitiveType}}{{#isString}}
-  m_{{name}} { {{{defaultValue}}} },{{/isString}}{{#isDateTime}}
-  m_{{name}} { {{{defaultValue}}} },{{/isDateTime}}{{#isEnum}}
-  m_{{name}} { {{{defaultValue}}} },{{/isEnum}}{{/isPrimitiveType}}{{/isNotContainer}}
-  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}
-  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}
-{{/vars}} { }
+{{classname}}JsonObject::{{classname}}JsonObject() {{#hasVars}}:{{/hasVars}} {{#vars}}{{^isListContainer}}{{#isPrimitiveType}}{{#vendorExtensions.x-has-default-value}}
+  m_{{name}} ({{{defaultValue}}}),
+  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{/isPrimitiveType}}{{^isPrimitiveType}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isPrimitiveType}}{{^vendorExtensions.x-has-default-value}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{/isListContainer}}{{#isListContainer}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isListContainer}}{{/vars}} { }
 
-{{classname}}JsonObject::{{classname}}JsonObject(nlohmann::json& val) {
-{{#vars}}
-{{#isPrimitiveType}}{{^isListContainer}}{{#vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-required}}
+{{classname}}JsonObject::{{classname}}JsonObject(nlohmann::json& val) {{#hasVars}}:{{/hasVars}} {{#vars}}{{^isListContainer}}{{#isPrimitiveType}}{{#vendorExtensions.x-has-default-value}}
   // Item with a default value
-  {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
-  {{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{#vendorExtensions.x-is-required}}
+  m_{{name}} ({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}").get<std::string>()){{/isEnum}}{{^isEnum}}val.at("{{baseName}}").get<{{{datatype}}}>(){{/isEnum}}),
+  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}{{#vendorExtensions.x-is-required}}
   // Mandatory item
-  {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
-  {{/vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-required}}
+  m_{{name}} ({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}").get<std::string>()){{/isEnum}}{{^isEnum}}val.at("{{baseName}}").get<{{{datatype}}}>(){{/isEnum}}),
+  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{^vendorExtensions.x-is-required}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isPrimitiveType}}{{^isPrimitiveType}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isPrimitiveType}}{{/isListContainer}}{{#isListContainer}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isListContainer}}{{/vars}} { {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-required}}
   if (val.find("{{baseName}}") != val.end()) {
     {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
   }{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
