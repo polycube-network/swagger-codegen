@@ -19,12 +19,13 @@ namespace {{this}} {
   m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isListContainer}}{{/vars}} { }
 
 {{classname}}JsonObject::{{classname}}JsonObject(nlohmann::json& val) {{#hasVars}}:{{/hasVars}} {{#vars}}{{^isListContainer}}{{#isPrimitiveType}}{{#vendorExtensions.x-has-default-value}}
-  // Item with a default value
+  // Item with a default value, granted to be part of the request body
   m_{{name}} ({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}").get<std::string>()){{/isEnum}}{{^isEnum}}val.at("{{baseName}}").get<{{{datatype}}}>(){{/isEnum}}),
-  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}{{#vendorExtensions.x-is-required}}
+  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-key}}{{#vendorExtensions.x-is-required}}
   // Mandatory item
   m_{{name}} ({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}").get<std::string>()){{/isEnum}}{{^isEnum}}val.at("{{baseName}}").get<{{{datatype}}}>(){{/isEnum}}),
-  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{^vendorExtensions.x-is-required}}
+  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-is-key}}{{#vendorExtensions.x-is-key}}
+  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-key}}{{^vendorExtensions.x-is-required}}
   m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isPrimitiveType}}{{^isPrimitiveType}}
   m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isPrimitiveType}}{{/isListContainer}}{{#isListContainer}}
   m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isListContainer}}{{/vars}} { {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-required}}
