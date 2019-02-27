@@ -49,26 +49,25 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         apiPackage = "io.swagger.server.api";
         modelPackage = "io.swagger.server.model";
 
-        modelTemplateFiles.put("json-object-header.mustache", "JsonObject.h");
-        modelTemplateFiles.put("json-object-source.mustache", "JsonObject.cpp");
+        modelTemplateFiles.put("src/serializer/JsonObject.h.mustache", "JsonObject.h");
+        modelTemplateFiles.put("src/serializer/JsonObject.cpp.mustache", "JsonObject.cpp");
 
-        modelTemplateFiles.put("interface.mustache", "Interface.h");
+        modelTemplateFiles.put("src/interface/Interface.h.mustache", "Interface.h");
 
-        modelTemplateFiles.put("object-header.mustache", ".h");
-        modelTemplateFiles.put("object-source.mustache", ".cpp");
-        modelTemplateFiles.put("object-source-defaultimpl.mustache", "DefaultImpl.cpp");
+        modelTemplateFiles.put("src/object-header.mustache", ".h");
+        modelTemplateFiles.put("src/object-source.mustache", ".cpp");
+        modelTemplateFiles.put("src/default-src/DefaultImpl.cpp.mustache", "DefaultImpl.cpp");
 
-        apiTemplateFiles.put("api-header.mustache", ".h");
-        apiTemplateFiles.put("api-source.mustache", ".cpp");
+        apiTemplateFiles.put("src/api/Api.h.mustache", ".h");
+        apiTemplateFiles.put("src/api/Api.cpp.mustache", ".cpp");
 
         embeddedTemplateDir = templateDir = "polycube";
 
         reservedWords = new HashSet<>();
 
-        supportingFiles.add(new SupportingFile("json-object-base-header.mustache", "src/serializer", "JsonObjectBase.h"));
-        supportingFiles.add(new SupportingFile("json-object-base-source.mustache", "src/serializer", "JsonObjectBase.cpp"));
-        //supportingFiles.add(new SupportingFile("cmake.mustache", "control_api", "CMakeLists.txt"));
-        supportingFiles.add(new SupportingFile("service-cmake.mustache", "", "CMakeLists.txt"));
+        supportingFiles.add(new SupportingFile("src/serializer/JsonObjectBase.h.mustache", "src/serializer", "JsonObjectBase.h"));
+        supportingFiles.add(new SupportingFile("src/serializer/JsonObjectBase.cpp.mustache", "src/serializer", "JsonObjectBase.cpp"));
+        supportingFiles.add(new SupportingFile("CMakeLists.txt.mustache", "", "CMakeLists.txt"));
         supportingFiles.add(new SupportingFile("swagger-codegen-ignore.mustache", "", ".swagger-codegen-ignore"));
 
 
@@ -114,11 +113,8 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         additionalProperties.put(POLYCUBE_SERVER_UPDATE, this.polycubeServerUpdate);
 
         if (!this.polycubeServerUpdate) {
-            apiTemplateFiles.put("api-impl-header.mustache", ".h");
-            apiTemplateFiles.put("api-impl-source.mustache", ".cpp");
-
-            //apiTemplateFiles.put("service-header.mustache", ".h");
-            //apiTemplateFiles.put("service-source-api.mustache", ".cpp");
+            apiTemplateFiles.put("src/api/ApiImpl.h.mustache", "ApiImpl.h");
+            apiTemplateFiles.put("src/api/ApiImpl.cpp.mustache", "ApiImpl.cpp");
         }
 
         additionalProperties.put("modelNamespaceDeclarations", modelPackage.split("\\."));
@@ -924,9 +920,9 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         // Files that are use to generate a server stub
         if (!this.polycubeServerUpdate) {
             //supportingFiles.add(new SupportingFile("service-source.mustache", "src", service_name_camel_case + ".cpp"));
-            supportingFiles.add(new SupportingFile("service-dp.mustache", "src", service_name_camel_case + "_dp.h"));
-            supportingFiles.add(new SupportingFile("service-lib.mustache", "src", service_name_camel_case + "-lib.cpp"));
-            supportingFiles.add(new SupportingFile("service-src-cmake.mustache", "src", "CMakeLists.txt"));
+            supportingFiles.add(new SupportingFile("src/service-dp.mustache", "src", service_name_camel_case + "_dp.h"));
+            supportingFiles.add(new SupportingFile("src/service-lib.mustache", "src", service_name_camel_case + "-lib.cpp"));
+            supportingFiles.add(new SupportingFile("src/CMakeLists.txt.mustache", "src", "CMakeLists.txt"));
         }
 
         return objs;
@@ -937,23 +933,16 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
     public String apiFilename(String templateName, String tag) {
         String result = super.apiFilename(templateName, tag);
 
-        if (templateName.endsWith("impl-header.mustache")) {
-            int ix = result.lastIndexOf('/');
-            result = result.substring(0, ix) + result.substring(ix, result.length() - 2) + "Impl.h";
-            result = result.replace(apiFileFolder(), implFileFolder());
-        } else if (templateName.endsWith("impl-source.mustache")) {
-            int ix = result.lastIndexOf('/');
-            result = result.substring(0, ix) + result.substring(ix, result.length() - 4) + "Impl.cpp";
-            result = result.replace(apiFileFolder(), implFileFolder());
-        } else if (templateName.endsWith("service-header.mustache")) {
-            int ix = result.lastIndexOf('/');
-            result = result.substring(0, ix) + result.substring(ix, result.length() - 5) + ".h";
-            result = result.replace(apiFileFolder(), outputFolder + "/src");
-        } else if (templateName.endsWith("service-source-api.mustache")) {
-            int ix = result.lastIndexOf('/');
-            result = result.substring(0, ix) + result.substring(ix, result.length() - 7) + "Api.cpp";
-            result = result.replace(apiFileFolder(), outputFolder + "/src");
-        }
+        //if (templateName.endsWith("Impl.h.mustache")) {
+        //    int ix = result.lastIndexOf('/');
+        //    result = result.substring(0, ix) + result.substring(ix, result.length() - 2) + "Impl.h";
+        //    result = result.replace(apiFileFolder(), implFileFolder());
+        //} else if (templateName.endsWith("Impl.cpp.mustache")) {
+        //    int ix = result.lastIndexOf('/');
+        //    result = result.substring(0, ix) + result.substring(ix, result.length() - 4) + "Impl.cpp";
+        //    result = result.replace(apiFileFolder(), implFileFolder());
+        //}
+
         return result;
     }
 
@@ -1122,10 +1111,10 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         boolean shouldSkipModelProcess;
         CodegenModel model = (CodegenModel) models.get("model");
         if (model.vendorExtensions.containsKey("x-is-yang-action-object") &&
-                (templateName.equals("object-header.mustache") ||
-                        templateName.equals("object-source.mustache") ||
-                        templateName.equals("interface.mustache") ||
-                        templateName.equals("object-source-defaultimpl.mustache"))) {
+                (templateName.equals("src/object-header.mustache") ||
+                        templateName.equals("src/object-source.mustache") ||
+                        templateName.equals("src/interface/Interface.h.mustache") ||
+                        templateName.equals("src/default-src/DefaultImpl.cpp.mustache"))) {
             shouldSkipModelProcess = true;
         } else if (model.vendorExtensions.containsKey("x-is-yang-grouping")) {
             shouldSkipModelProcess = (Boolean) model.vendorExtensions.get("x-is-yang-grouping");
@@ -1173,10 +1162,10 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         sourceFolder.mkdir();
         for (File f : listOfFiles) {
             if (f.getName().contains("Interface.h")) {
-                f.renameTo(new File(outputFolder + "/src/interface/" + f.getName()));
+                f.renameTo(new File(outputFolder + "/src/src/interface/" + f.getName()));
             }
             else if (f.getName().contains("JsonObject.h") || f.getName().contains("JsonObject.cpp")) {
-                f.renameTo(new File(outputFolder + "/src/serializer/" + f.getName()));
+                f.renameTo(new File(outputFolder + "/src/src/serializer/" + f.getName()));
             }
             else if ((f.getName().contains("DefaultImpl.cpp") || f.getName().contains(".h")) && !f.getName().contains("_dp.h"))
                 f.renameTo(new File(outputFolder + "/src/src/" + f.getName()));
@@ -1185,13 +1174,12 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
 
     @Override
     public String toModelFileFolder(String modelName, String templateName) {
-        if (templateName.equals("json-object-header.mustache") ||
-                templateName.equals("json-object-source.mustache")) {
+        if (templateName.equals("src/serializer/JsonObject.h.mustache") ||
+                templateName.equals("src/serializer/JsonObject.cpp.mustache")) {
             return modelFileFolder() + File.separator + "serializer";
-        } else if (templateName.equals("interface.mustache")) {
+        } else if (templateName.equals("src/interface/Interface.h.mustache")) {
             return modelFileFolder() + File.separator + "interface";
-        } else if (templateName.equals("object-source-defaultimpl.mustache") ||
-                templateName.equals("object-header-defaultimpl.mustache")) {
+        } else if (templateName.equals("src/default-src/DefaultImpl.cpp.mustache")) {
             return modelFileFolder() + File.separator + "default-src";
         } else {
             return modelFileFolder();
