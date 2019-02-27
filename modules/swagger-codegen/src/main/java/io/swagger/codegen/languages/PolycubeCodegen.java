@@ -20,6 +20,11 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.*;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
     protected static final Logger LOGGER = LoggerFactory.getLogger(PolycubeCodegen.class);
     protected String implFolder = "/src/api";
@@ -67,6 +72,7 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
 
         supportingFiles.add(new SupportingFile("src/serializer/JsonObjectBase.h.mustache", "src/serializer", "JsonObjectBase.h"));
         supportingFiles.add(new SupportingFile("src/serializer/JsonObjectBase.cpp.mustache", "src/serializer", "JsonObjectBase.cpp"));
+        supportingFiles.add(new SupportingFile("cmake/LoadFileAsVariable.cmake", "cmake", "LoadFileAsVariable.cmake"));
         supportingFiles.add(new SupportingFile("CMakeLists.txt.mustache", "", "CMakeLists.txt"));
         supportingFiles.add(new SupportingFile("swagger-codegen-ignore.mustache", "", ".swagger-codegen-ignore"));
 
@@ -113,8 +119,8 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         additionalProperties.put(POLYCUBE_SERVER_UPDATE, this.polycubeServerUpdate);
 
         if (!this.polycubeServerUpdate) {
-            apiTemplateFiles.put("src/api/ApiImpl.h.mustache", "ApiImpl.h");
-            apiTemplateFiles.put("src/api/ApiImpl.cpp.mustache", "ApiImpl.cpp");
+            apiTemplateFiles.put("src/api/ApiImpl.h.mustache", "Impl.h");
+            apiTemplateFiles.put("src/api/ApiImpl.cpp.mustache", "Impl.cpp");
         }
 
         additionalProperties.put("modelNamespaceDeclarations", modelPackage.split("\\."));
@@ -223,12 +229,13 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
 
         //at this point only ports has this vendorExtensions
         if (codegenModel.vendorExtensions.get("x-inherits-from") != null)
-            codegenModel.vendorExtensions.put("x-classname-inherited", "Port");
+            codegenModel.vendorExtensions.put("x-classname-inherited", "std::shared_ptr<polycube::service::PortIface>");
 
         if (codegenModel.vendorExtensions.get("x-parent") != null) {
             if (codegenModel.vendorExtensions.get("x-parent").equals(codegenModel.name)) {
                 codegenModel.vendorExtensions.remove("x-parent");
-                codegenModel.vendorExtensions.put("x-inherits-from", "polycube::service::Cube");
+                // TODO: hardcoded value for port class here.
+                codegenModel.vendorExtensions.put("x-inherits-from", "polycube::service::Cube<Ports>");
             }
         }
 
@@ -627,7 +634,8 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                 }
 
                 //Add vendor extension to recognize the class Ports
-                if (model.vendorExtensions.containsKey("x-inherits-from") && ((String) model.vendorExtensions.get("x-inherits-from")).equals("polycube::service::Port")) {
+                if (model.vendorExtensions.containsKey("x-inherits-from") &&
+                    ((String) model.vendorExtensions.get("x-inherits-from")).equals("polycube::service::Port")) {
                     model.vendorExtensions.put("x-is-port-class", true);
                     portsClassName = model.classname;
 
@@ -656,7 +664,8 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                     }
                 }
 
-                if (model.vendorExtensions.containsKey("x-inherits-from") && ((String) model.vendorExtensions.get("x-inherits-from")).equals("polycube::service::Cube")) {
+                if (model.vendorExtensions.containsKey("x-inherits-from") &&
+                    ((String) model.vendorExtensions.get("x-inherits-from")).equals("polycube::service::Cube<Ports>")) {
                     model.vendorExtensions.put("x-is-root-object", true);
                     rootObjectModel = model;
 
@@ -866,26 +875,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         return objs;
     }
 
-    private String read_yang_file(String yang_path) {
-        try (BufferedReader br = new BufferedReader(new FileReader(yang_path))) {
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-
-            while (line != null) {
-                sb.append(line);
-                //sb.append("\\");
-                sb.append(System.lineSeparator());
-                line = br.readLine();
-            }
-            return sb.toString();
-        } catch (IOException e) {
-            LOGGER.info("Unable to read file " + yang_path);
-        }
-
-        return null;
-    }
-
-
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, Object> postProcessSupportingFileData(Map<String, Object> objs) {
@@ -896,16 +885,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
             objs.put("pyangGitRepoId", swagger.getInfo().getVendorExtensions().get("x-pyang-git-info"));
         }
 
-        if (swagger.getInfo().getVendorExtensions().containsKey("x-yang-path")) {
-            //Let's read the data model and put it into a variable
-            String yang = read_yang_file((String) swagger.getInfo().getVendorExtensions().get("x-yang-path"));
-            if (yang != null)
-                objs.put("yangDataModel", yang);
-        }
-
-        if (swagger.getInfo().getVendorExtensions().containsKey("x-service-min-kernel-version")) {
-            objs.put("service-min-kernel-version", swagger.getInfo().getVendorExtensions().get("x-service-min-kernel-version"));
-        }
 
         String api_classname = (String) apis.get(0).get("classname");
         objs.put("apiClassnameCamelCase", api_classname);
@@ -917,10 +896,29 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         String service_name_camel_case = service_name.substring(0, 1).toUpperCase() + service_name.substring(1);
         objs.put("serviceNameCamelCase", service_name_camel_case);
 
+        if (swagger.getInfo().getVendorExtensions().containsKey("x-yang-path")) {
+            String yang_path = (String) swagger.getInfo().getVendorExtensions().get("x-yang-path");
+            objs.put("x-yang-path", yang_path);
+
+            // copy yang to service module
+            String dest_yang_path = outputFolder + File.separator + "datamodel" + File.separator + service_name + ".yang";
+            try {
+              File directory = new File(outputFolder + File.separator + "datamodel");
+              if (!directory.exists()){
+                directory.mkdir();
+              }
+              Files.copy(Paths.get(yang_path), Paths.get(dest_yang_path),
+                         StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+               LOGGER.info("Error copying datamodel file: " + e);
+            }
+
+        }
+
         // Files that are use to generate a server stub
         if (!this.polycubeServerUpdate) {
             //supportingFiles.add(new SupportingFile("service-source.mustache", "src", service_name_camel_case + ".cpp"));
-            supportingFiles.add(new SupportingFile("src/service-dp.mustache", "src", service_name_camel_case + "_dp.h"));
+            supportingFiles.add(new SupportingFile("src/service_dp.c.mustache", "src", service_name_camel_case + "_dp.c"));
             supportingFiles.add(new SupportingFile("src/service-lib.mustache", "src", service_name_camel_case + "-lib.cpp"));
             supportingFiles.add(new SupportingFile("src/CMakeLists.txt.mustache", "src", "CMakeLists.txt"));
         }

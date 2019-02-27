@@ -32,18 +32,20 @@ class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{
   friend class {{vendorExtensions.x-child-ports-classname}};
 {{/vendorExtensions.x-parent}}
  public:
-{{^vendorExtensions.x-parent}}
-  {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, CubeType type = CubeType::TYPE_CLS);
-{{/vendorExtensions.x-parent}}
-{{#vendorExtensions.x-parent}}
-  {{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf);
-{{/vendorExtensions.x-parent}}
+{{#vendorExtensions.x-is-root-object}}
+  {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, CubeType type = CubeType::TC);
+{{/vendorExtensions.x-is-root-object}}
+{{#vendorExtensions.x-is-port-class}}
+  {{classname}}(polycube::service::Cube<Ports> &parent, {{#vendorExtensions.x-classname-inherited}}{{{this}}} port, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf);
+{{/vendorExtensions.x-is-port-class}}
+{{^vendorExtensions.x-is-root-object}}{{^vendorExtensions.x-is-port-class}}
+  {{classname}}({{{vendorExtensions.x-parent}}} &parent, const {{classname}}JsonObject &conf);
+{{/vendorExtensions.x-is-port-class}}{{/vendorExtensions.x-is-root-object}}
+
   virtual ~{{classname}}();
-{{^vendorExtensions.x-parent}}
-  std::string generate_code();
-  std::vector<std::string> generate_code_vector();
-  void packet_in(polycube::service::Port &port, polycube::service::PacketInMetadata &md, const std::vector<uint8_t> &packet) override;
-{{/vendorExtensions.x-parent}}
+{{#vendorExtensions.x-is-root-object}}
+  void packet_in({{vendorExtensions.x-child-ports-classname}} &port, polycube::service::PacketInMetadata &md, const std::vector<uint8_t> &packet) override;
+{{/vendorExtensions.x-is-root-object}}
 
 {{#vendorExtensions.x-parent}}
   static void create({{{this}}} &parent, {{#vendorExtensions.x-key-list}}const {{{type}}} &{{{varName}}}, {{/vendorExtensions.x-key-list}}const {{classname}}JsonObject &conf);
@@ -104,9 +106,6 @@ class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{
 private:
 {{#vendorExtensions.x-parent}}
 {{this}}   &parent_;
-{{/vendorExtensions.x-parent}}
-{{^vendorExtensions.x-parent}}
-  std::unordered_map<std::string, {{vendorExtensions.x-child-ports-classname}}> ports_;
 {{/vendorExtensions.x-parent}}
 };
 
