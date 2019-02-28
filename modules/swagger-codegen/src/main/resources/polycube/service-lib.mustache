@@ -10,8 +10,15 @@
 #define SERVICE_PYANG_GIT "{{pyangGitRepoId}}"
 #define SERVICE_SWAGGER_CODEGEN_GIT "{{gitRepoId}}"
 #define SERVICE_REQUIRED_KERNEL_VERSION "{{service-min-kernel-version}}"
+
 const std::string SERVICE_DATA_MODEL = R"POLYCUBE_DM(
 {{{yangDataModel}}}
 )POLYCUBE_DM";
+
+extern "C" const char *data_model() {
+  return SERVICE_DATA_MODEL.c_str();
+}
+
+
 {{/swagger}}
 #include <polycube/services/shared_library.h>
