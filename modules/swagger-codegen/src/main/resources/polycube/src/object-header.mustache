@@ -23,9 +23,6 @@ class {{{this}}};
 {{/vendorExtensions.x-parent}}
 
 using namespace io::swagger::server::model;
-{{^vendorExtensions.x-parent}}
-using polycube::service::CubeType;
-{{/vendorExtensions.x-parent}}
 
 class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{/vendorExtensions.x-inherits-from}}public {{classname}}Interface {
 {{^vendorExtensions.x-parent}}
@@ -33,7 +30,7 @@ class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{
 {{/vendorExtensions.x-parent}}
  public:
 {{#vendorExtensions.x-is-root-object}}
-  {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, CubeType type = CubeType::TC);
+  {{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf);
 {{/vendorExtensions.x-is-root-object}}
 {{#vendorExtensions.x-is-port-class}}
   {{classname}}(polycube::service::Cube<Ports> &parent, {{#vendorExtensions.x-classname-inherited}}{{{this}}} port, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf);
@@ -63,6 +60,8 @@ class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{
   void update(const {{classname}}JsonObject &conf) override;
   {{classname}}JsonObject toJsonObject() override;
 {{#vars}}
+{{^vendorExtensions.x-has-default-impl}}
+{{^vendorExtensions.x-is-base-datamodel}}
 
   /// <summary>
   ///{{#description}} {{description}}{{/description}}
@@ -96,6 +95,8 @@ class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{
 {{/vendorExtensions.x-is-key}}
 {{/isPrimitiveType}}
 {{/isNotContainer}}
+{{/vendorExtensions.x-is-base-datamodel}}
+{{/vendorExtensions.x-has-default-impl}}
 {{/vars}}
 
 {{#vendorExtensions.x-has-yang-actions}}
@@ -103,9 +104,9 @@ class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{
 {{#x-yang-action-has-output}}  {{x-yang-action-output-object}}JsonObject{{/x-yang-action-has-output}}{{^x-yang-action-has-output}}void{{/x-yang-action-has-output}} {{x-yang-action-name-lower-camelcase}}({{#x-yang-action-has-input}}{{x-yang-action-input-object}}JsonObject input{{/x-yang-action-has-input}}) override;
 {{/vendorExtensions.x-yang-actions}}
 {{/vendorExtensions.x-has-yang-actions}}
-private:
 {{#vendorExtensions.x-parent}}
-{{this}}   &parent_;
+ private:
+  {{this}}   &parent_;
 {{/vendorExtensions.x-parent}}
 };
 

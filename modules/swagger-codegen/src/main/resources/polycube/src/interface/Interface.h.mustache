@@ -30,6 +30,8 @@ public:
   virtual void update(const {{classname}}JsonObject &conf) = 0;
   virtual {{classname}}JsonObject toJsonObject() = 0;
   {{#vars}}
+  {{^vendorExtensions.x-is-base-datamodel}}
+  {{^vendorExtensions.x-has-default-impl}}
 
   /// <summary>
   ///{{#description}} {{description}}{{/description}}
@@ -63,6 +65,8 @@ public:
   {{/vendorExtensions.x-is-key}}
   {{/isPrimitiveType}}
   {{/isNotContainer}}
+  {{/vendorExtensions.x-has-default-impl}}
+  {{/vendorExtensions.x-is-base-datamodel}}
   {{/vars}}
   {{#vendorExtensions.x-has-yang-actions}}
   {{#vendorExtensions.x-yang-actions}}

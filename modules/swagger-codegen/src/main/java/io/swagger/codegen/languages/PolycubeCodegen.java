@@ -589,15 +589,7 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                         List<Map<String, String>> l = new ArrayList<>();
                         for (int j = 0; j < lenum.size(); j++) {
                             Map<String, String> mv = new HashMap<>();
-                            if (model.vendorExtensions.get("x-parent") == null && p.baseName.trim().equals("type")) {
-                                mv.put("stringValue", lenum.get(j).toLowerCase());//here because if it is TYPE_TC the string value must be type_tc and no type_cls
-                                if (lenum.get(j).equals("TYPE_TC")) {
-                                    lenum.set(j, "TYPE_CLS");
-                                    mv.put("stringValue", "TYPE_TC".toLowerCase());
-                                }
-                                p.datatype = "CubeType";
-                                p.vendorExtensions.put("x-is-cube-type", "true");
-                            } else {
+                            if (!(model.vendorExtensions.get("x-parent") == null && p.baseName.trim().equals("type"))) {
                                 if (p.vendorExtensions.get("x-typedef") != null) {
                                     p.datatype = toUpperCamelCase(initialCaps((String) p.vendorExtensions.get("x-typedef")) + "Enum");
                                     p.datatypeWithEnum = toUpperCamelCase(p.datatype.toUpperCase());//used in ifndef clause
@@ -618,9 +610,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                             p.allowableValues.put("values", l); //add allowable values to enum
 
                         if (p.isEnum && p.defaultValue != null && !p.defaultValue.isEmpty() && !p.defaultValue.contains("\"\"")) {
-                            if (p.defaultValue.trim().equals("TYPE_TC")) {
-                                p.defaultValue = "TYPE_CLS";
-                            }
                             p.defaultValue = String.format("%s::%s", p.datatype, p.defaultValue);
                         }
                     }
@@ -638,63 +627,12 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                     ((String) model.vendorExtensions.get("x-inherits-from")).equals("polycube::service::Port")) {
                     model.vendorExtensions.put("x-is-port-class", true);
                     portsClassName = model.classname;
-
-                    for (CodegenProperty cp : lp) {
-                        switch (cp.baseName.toLowerCase()) {
-                            case "status":
-                                cp.vendorExtensions.put("x-is-port-status", true);
-                                cp.vendorExtensions.put("x-has-default-impl", true);
-                                break;
-                            case "peer":
-                                cp.vendorExtensions.put("x-is-port-peer", true);
-                                cp.vendorExtensions.put("x-has-default-impl", true);
-                                break;
-                            case "name":
-                                cp.vendorExtensions.put("x-is-port-name", true);
-                                cp.vendorExtensions.put("x-has-default-impl", true);
-                                break;
-                            case "uuid":
-                                cp.vendorExtensions.put("x-is-port-uuid", true);
-                                cp.vendorExtensions.put("x-has-default-impl", true);
-                                break;
-                            default:
-                                cp.vendorExtensions.put("x-has-default-impl", false);
-                                break;
-                        }
-                    }
                 }
 
                 if (model.vendorExtensions.containsKey("x-inherits-from") &&
                     ((String) model.vendorExtensions.get("x-inherits-from")).equals("polycube::service::Cube<Ports>")) {
                     model.vendorExtensions.put("x-is-root-object", true);
                     rootObjectModel = model;
-
-                    for (CodegenProperty cp : lp) {
-                        switch (cp.baseName.toLowerCase()) {
-                            case "name":
-                                cp.vendorExtensions.put("x-is-cube-name", true);
-                                cp.vendorExtensions.put("x-has-default-impl", true);
-                                break;
-                            case "uuid":
-                                cp.vendorExtensions.put("x-is-cube-uuid", true);
-                                cp.vendorExtensions.put("x-has-default-impl", true);
-                                break;
-                            case "type":
-                                cp.vendorExtensions.put("x-is-cube-type", true);
-                                cp.vendorExtensions.put("x-has-default-impl", true);
-                                break;
-                            case "ports":
-                                cp.vendorExtensions.put("x-is-port-class", true);
-                                break;
-                            case "loglevel":
-                                cp.vendorExtensions.put("x-is-cube-debug", true);
-                                cp.vendorExtensions.put("x-has-default-impl", true);
-                                break;
-                            default:
-                                cp.vendorExtensions.put("x-has-default-impl", false);
-                                break;
-                        }
-                    }
                 }
             }
         }
@@ -836,9 +774,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                     op.bodyParam.dataType = toUpperCamelCase(initialCaps((String) op.bodyParam.vendorExtensions.get("x-typedef")) + "Enum");
                 else
                     op.bodyParam.dataType = toUpperCamelCase(name + initialCaps(op.bodyParam.baseName) + "Enum"); //enum dataType
-                if (op.bodyParam.dataType.equals(s)) {
-                    op.bodyParam.dataType = "CubeType";
-                }
             } else if (op.bodyParam != null && op.bodyParam.vendorExtensions.get("x-is-enum") != null &&
                     op.bodyParam.vendorExtensions.get("x-is-enum").equals(Boolean.FALSE)) {
 
@@ -851,8 +786,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                             op.returnType = initialCaps((String) r.vendorExtensions.get("x-typedef")) + "Enum";
                         else
                             op.returnType = name + initialCaps(var) + "Enum";
-                        if (op.returnType.equals(s + "Enum"))
-                            op.returnType = "CubeType";
                         op.returnBaseType = initialCaps(var);
                         op.returnSimpleType = false;
                         op.vendorExtensions.put("x-enum-class", name + "JsonObject");

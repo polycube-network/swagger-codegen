@@ -27,6 +27,7 @@ using namespace {{modelNamespace}};
 
 namespace {{classname}}Impl {
   {{#operation}}
+  {{^vendorExtensions.x-is-base-datamodel}}
   {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}} {{operationIdSnakeCase}}({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
   {{#vendorExtensions.x-is-list}}
   {{^bodyParams}}
@@ -37,6 +38,7 @@ namespace {{classname}}Impl {
   {{/responses}}
   {{/bodyParams}}
   {{/vendorExtensions.x-is-list}}
+  {{/vendorExtensions.x-is-base-datamodel}}
   {{/operation}}  
 }
 {{#apiNamespaceDeclarations}}

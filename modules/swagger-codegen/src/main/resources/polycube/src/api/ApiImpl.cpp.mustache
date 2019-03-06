@@ -29,19 +29,15 @@ std::shared_ptr<{{baseName}}> get_cube(const std::string &name) {
 
 }
 
-/*
-* These functions include a default basic implementation.  The user could
-* extend adapt this implementation to his needs.
-*/
 void create_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &jsonObject) {
   {
     // check if name is valid before creating it
     std::lock_guard<std::mutex> guard(cubes_mutex);
     if (cubes.count(name) != 0) {
-      throw std::runtime_error("There is already an Cube with name " + name);
+      throw std::runtime_error("There is already a cube with name " + name);
     }
   }
-  auto ptr = std::make_shared<{{baseName}}>(name, jsonObject, jsonObject.getType());
+  auto ptr = std::make_shared<{{baseName}}>(name, jsonObject);
   std::unordered_map<std::string, std::shared_ptr<{{baseName}}>>::iterator iter;
   bool inserted;
 
@@ -49,7 +45,7 @@ void create_{{classVarName}}_by_id(const std::string &name, const {{baseName}}Js
   std::tie(iter, inserted) = cubes.emplace(name, std::move(ptr));
 
   if (!inserted) {
-    throw std::runtime_error("There is already an Cube with name " + name);
+    throw std::runtime_error("There is already a cube with name " + name);
   }
 }
 
@@ -63,11 +59,6 @@ void delete_{{classVarName}}_by_id(const std::string &name) {
     throw std::runtime_error("Cube " + name + " does not exist");
   }
   cubes.erase(name);
-}
-
-std::string read_{{classVarName}}_uuid_by_id(const std::string &name) {
-  auto m = get_cube(name);
-  return m->getUuid();
 }
 
 std::vector<{{baseName}}JsonObject> read_{{classVarName}}_list_by_id() {
@@ -89,92 +80,8 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> read_{{classVarName}}_
   return r;
 }
 
-/*
-* Ports list related functions
-*/
-void create_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
-  auto m = get_cube(name);
-  m->addPortsList(ports);
-}
-
-std::vector<PortsJsonObject> read_{{classVarName}}_ports_list_by_id(const std::string &name) {
-  std::vector<PortsJsonObject> vect;
-  auto m = get_cube(name);
-  for (auto &i : m->getPortsList()) {
-    vect.push_back(i->toJsonObject());
-  }
-  return vect;
-}
-
-void replace_{{classVarName}}_ports_list_by_id(const std::string &name, const std::vector<PortsJsonObject> &ports) {
-  throw std::runtime_error("Method not supported");
-}
-
-void delete_{{classVarName}}_ports_list_by_id(const std::string &name) {
-  auto m = get_cube(name);
-  m->delPortsList();
-}
-
-std::vector<nlohmann::fifo_map<std::string, std::string>> read_{{classVarName}}_ports_list_by_id_get_list(const std::string &name) {
-  std::vector<nlohmann::fifo_map<std::string, std::string>> r;
-  auto m = get_cube(name);
-  for(auto &i : m->getPortsList()){
-    nlohmann::fifo_map<std::string, std::string> m;
-    m["name"] = i->getName();
-    r.push_back(std::move(m));
-  }
-  return r;
-}
-
-/*
-* Ports related functions
-*/
-void create_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
-  auto m = get_cube(name);
-  return m->addPorts(portsName, ports);
-}
-
-PortsJsonObject read_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
-  auto m = get_cube(name);
-  return m->getPorts(portsName)->toJsonObject();
-}
-
-void replace_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName, const PortsJsonObject &ports) {
-  auto m = get_cube(name);
-  m->replacePorts(portsName, ports);
-}
-
-void delete_{{classVarName}}_ports_by_id(const std::string &name, const std::string &portsName) {
-  auto m = get_cube(name);
-  m->delPorts(portsName);
-}
-
-std::string read_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName) {
-  auto m = get_cube(name);
-  auto p = m->getPorts(portsName);
-  return p->getPeer();
-}
-
-PortsStatusEnum read_{{classVarName}}_ports_status_by_id(const std::string &name, const std::string &portsName) {
-  auto m = get_cube(name);
-  auto p = m->getPorts(portsName);
-  return p->getStatus();
-}
-
-std::string read_{{classVarName}}_ports_uuid_by_id(const std::string &name, const std::string &portsName) {
-  auto m = get_cube(name);
-  auto p = m->getPorts(portsName);
-  return p->getUuid();
-}
-
-void update_{{classVarName}}_ports_peer_by_id(const std::string &name, const std::string &portsName, const std::string &peer) {
-  auto m = get_cube(name);
-  auto p = m->getPorts(portsName);
-  p->setPeer(peer);
-}
-
-
 {{#operation}}
+{{^vendorExtensions.x-is-base-datamodel}}
 {{^vendorExtensions.x-has-default-impl}}
 /**
 * @brief   {{summary}}
@@ -269,6 +176,7 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> {{operationIdSnakeCase
 {{/vendorExtensions.x-is-list}}
 
 {{/vendorExtensions.x-has-default-impl}}
+{{/vendorExtensions.x-is-base-datamodel}}
 {{/operation}}
 }
 {{#apiNamespaceDeclarations}}

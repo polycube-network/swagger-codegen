@@ -25,7 +25,9 @@ extern "C" {
 #endif
 
 {{#operation}}
+{{^vendorExtensions.x-is-base-datamodel}}
 Response {{operationIdSnakeCase}}_handler(const char *name, const Key *keys, size_t num_keys{{#hasBodyParam}}, const char *value{{/hasBodyParam}});
+{{/vendorExtensions.x-is-base-datamodel}}
 {{/operation}}
 
 {{#operation}}
