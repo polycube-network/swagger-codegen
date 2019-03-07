@@ -7,11 +7,11 @@
 {{#vendorExtensions.x-root-object}}
 #include "{{vendorExtensions.x-root-object}}.h"
 {{/vendorExtensions.x-root-object}}
-{{^vendorExtensions.x-parent}}
+{{#vendorExtensions.x-is-root-object}}
 #include "{{classname}}_dp.h"
 
 {{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf, CubeType type)
-  : Cube(name, generate_code(), type, conf.getPolycubeLoglevel()) {
+  : Cube(name, { {{classVarName}}_code }, {}, type, conf.getPolycubeLoglevel()) {
   logger()->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [{{classname}}] [%n] [%l] %v");
   logger()->info("Creating {{classname}} instance");
 {{#vars}}{{^isNotContainer}}  add{{nameInCamelCase}}List(conf.{{getter}}());{{/isNotContainer}}{{#isNotContainer}}{{^vendorExtensions.x-is-key}}{{^isReadOnly}}{{^vendorExtensions.x-is-required}}{{^vendorExtensions.x-has-default-value}}
@@ -24,13 +24,20 @@
   }{{/vendorExtensions.x-has-default-value}}{{/vendorExtensions.x-is-required}}{{/isReadOnly}}{{/vendorExtensions.x-is-key}}
 {{/isNotContainer}}{{/vars}}
 }
-{{/vendorExtensions.x-parent}}
+{{/vendorExtensions.x-is-root-object}}
 
-{{#vendorExtensions.x-parent}}
-{{classname}}::{{classname}}({{{this}}} &parent, {{#vendorExtensions.x-classname-inherited}}{{this}} &p, {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf): parent_(parent){{#vendorExtensions.x-classname-inherited}}, {{this}}(p){{/vendorExtensions.x-classname-inherited}} {
+{{#vendorExtensions.x-is-port-class}}
+{{classname}}::{{classname}}(polycube::service::Cube<Ports> &parent,
+    {{#vendorExtensions.x-classname-inherited}}{{{this}}} port,
+    {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf)
+    : Port(port), parent_(static_cast<{{vendorExtensions.x-parent}} &>(parent)) {
   logger()->info("Creating {{classname}} instance");
-}
-{{/vendorExtensions.x-parent}}
+}{{/vendorExtensions.x-is-port-class}}
+
+{{^vendorExtensions.x-is-root-object}}{{^vendorExtensions.x-is-port-class}}
+{{classname}}::{{classname}}({{{vendorExtensions.x-parent}}} &parent, const {{classname}}JsonObject &conf): parent_(parent) {
+  logger()->info("Creating {{classname}} instance");
+}{{/vendorExtensions.x-is-port-class}}{{/vendorExtensions.x-is-root-object}}
 
 {{classname}}::~{{classname}}() { }
 
@@ -71,15 +78,9 @@ void {{classname}}::update(const {{classname}}JsonObject &conf) {
 }
 
 {{^vendorExtensions.x-parent}}
-std::string {{classname}}::generate_code(){
-  return {{classVarName}}_code;
-}
-
-std::vector<std::string> {{classname}}::generate_code_vector(){
-  throw std::runtime_error("Method not implemented");
-}
-
-void {{classname}}::packet_in(polycube::service::Port &port, polycube::service::PacketInMetadata &md, const std::vector<uint8_t> &packet){
+void {{classname}}::packet_in({{vendorExtensions.x-child-ports-classname}} &port,
+    polycube::service::PacketInMetadata &md,
+    const std::vector<uint8_t> &packet){
   logger()->info("Packet received from port {0}", port.name());
 }
 
@@ -90,18 +91,9 @@ void {{classname}}::create({{{this}}} &parent, {{#vendorExtensions.x-key-list}}c
   // Please remember to call here the create static method for all sub-objects of {{classname}}.
 
 {{#vendorExtensions.x-is-port-class}}
-  if (parent.ports_.count(name) != 0) {
-    throw std::runtime_error("port already exists");
-  }
-
-  auto p = parent.Cube::add_port(name);
-  std::unordered_map<std::string, {{classname}}>::iterator iter;
-  bool inserted;
-
-  std::tie(iter, inserted) = parent.ports_.emplace(std::piecewise_construct,
-                                                   std::forward_as_tuple(name),
-                                                   std::forward_as_tuple(parent, p, conf));
-  //logger()->info("New port create with name {0}", name);
+  // This method creates the actual Ports object given the key param.
+  parent.add_port<PortsJsonObject>(name, conf);
+  parent.logger()->info("New port created with name {0}", name);
 {{/vendorExtensions.x-is-port-class}}
 {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method create not implemented");
@@ -111,8 +103,7 @@ void {{classname}}::create({{{this}}} &parent, {{#vendorExtensions.x-key-list}}c
 std::shared_ptr<{{classname}}> {{classname}}::getEntry({{{this}}} &parent{{#vendorExtensions.x-key-list}}{{#lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}{{#vendorExtensions.x-key-list}} const {{{type}}} &{{{varName}}}{{^lastKey}},{{/lastKey}}{{/vendorExtensions.x-key-list}}){
   // This method retrieves the pointer to {{classname}} object specified by its keys.
 {{#vendorExtensions.x-is-port-class}}
-  //logger()->info("Called getEntry with name: {0}", name);
-  return std::shared_ptr<{{classname}}>(&parent.ports_.at(name), []({{classname}}*){});
+  return parent.get_port(name);
 {{/vendorExtensions.x-is-port-class}}
 {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method getEntry not implemented");
@@ -123,8 +114,7 @@ void {{classname}}::removeEntry({{{this}}} &parent{{#vendorExtensions.x-key-list
   // This method removes the single {{classname}} object specified by its keys.
   // Remember to call here the remove static method for all-sub-objects of {{classname}}.
 {{#vendorExtensions.x-is-port-class}}
-  parent.Cube::remove_port(name);
-  parent.ports_.erase(name);
+  parent.remove_port(name);
 {{/vendorExtensions.x-is-port-class}}
 {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method removeEntry not implemented");
@@ -135,11 +125,7 @@ void {{classname}}::removeEntry({{{this}}} &parent{{#vendorExtensions.x-key-list
 std::vector<std::shared_ptr<{{classname}}>> {{classname}}::get({{vendorExtensions.x-parent}} &parent){
   // This methods get the pointers to all the {{classname}} objects in {{vendorExtensions.x-parent}}.
 {{#vendorExtensions.x-is-port-class}}
-  std::vector<std::shared_ptr<{{classname}}>> ports_vect;
-  for(auto &it : parent.ports_)
-    ports_vect.push_back({{classname}}::getEntry(parent, it.first));
-
-  return ports_vect;
+  return parent.get_ports();
 {{/vendorExtensions.x-is-port-class}}
 {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method get not implemented");
@@ -150,14 +136,10 @@ void {{classname}}::remove({{vendorExtensions.x-parent}} &parent){
   // This method removes all {{classname}} objects in {{vendorExtensions.x-parent}}.
   // Remember to call here the remove static method for all-sub-objects of {{classname}}.
 {{#vendorExtensions.x-is-port-class}}
-  for(auto it = parent.ports_.begin(); it != parent.ports_.end();) {
-    int port_id = it->second.index();
-    auto tmp = it;
-    it++;
-    {{classname}}::removeEntry(parent, tmp->second.name());
-  }
-
-
+ auto ports = parent.get_ports();
+ for (auto it : ports) {
+   removeEntry(parent, it->name());
+ }
 {{/vendorExtensions.x-is-port-class}}
 {{^vendorExtensions.x-is-port-class}}
   throw std::runtime_error("[{{classname}}]: Method remove not implemented");

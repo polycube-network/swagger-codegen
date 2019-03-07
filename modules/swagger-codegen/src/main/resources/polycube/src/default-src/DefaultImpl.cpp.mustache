@@ -4,9 +4,6 @@
 
 {{#models}}{{#model}}
 #include "../{{classname}}.h"
-{{^vendorExtensions.x-parent}}
-#include "../{{classname}}_dp.h"
-{{/vendorExtensions.x-parent}}
 
 {{#vendorExtensions.x-parent}}{{#vendorExtensions.x-is-list}}
 nlohmann::fifo_map<std::string, std::string>  {{classname}}::getKeys() {
