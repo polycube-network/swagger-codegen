@@ -15,6 +15,7 @@ extern "C" {
 #endif
 
 {{#operation}}
+{{^vendorExtensions.x-is-base-datamodel}}
 Response {{operationIdSnakeCase}}_handler(
   const char *name, const Key *keys,
   size_t num_keys {{#hasBodyParam}},
@@ -24,10 +25,17 @@ Response {{operationIdSnakeCase}}_handler(
   std::string unique_name { name };{{/vendorExtensions.x-is-cube-name}}{{^vendorExtensions.x-is-cube-name}}
   {{dataType}} unique_{{paramName}};
   for (size_t i = 0; i < num_keys; ++i) {
-    if (!strcmp(keys[i].name, "{{baseName}}")) { {{^isFloat}}{{^isDouble}}
-      unique_{{paramName}} = {{#isString}}std::string { {{/isString}}keys[i].value.{{vendorExtensions.x-value-type}}{{#isString}} }{{/isString}};{{/isDouble}}{{/isFloat}}{{#isFloat}}
-      unique_{{paramName}} = std::stof(keys[i].value.{{vendorExtensions.x-value-type}});{{/isFloat}}{{#isDouble}}
-      unique_{{paramName}} = std::stod(keys[i].value.{{vendorExtensions.x-value-type}});{{/isDouble}}
+    if (!strcmp(keys[i].name, "{{baseName}}")) {
+  {{^isFloat}}
+  {{^isDouble}}
+      unique_{{paramName}} = {{#isString}}std::string { {{/isString}}keys[i].value.{{vendorExtensions.x-value-type}}{{#isString}} }{{/isString}};{{/isDouble}}
+  {{/isFloat}}
+  {{#isFloat}}
+      unique_{{paramName}} = std::stof(keys[i].value.{{vendorExtensions.x-value-type}});
+  {{/isFloat}}
+  {{#isDouble}}
+      unique_{{paramName}} = std::stod(keys[i].value.{{vendorExtensions.x-value-type}});
+  {{/isDouble}}
       break;
     }
   }
@@ -66,8 +74,11 @@ Response {{operationIdSnakeCase}}_handler(
     {{^vendorExtensions.x-is-list}}
     // Getting the body param
     {{{dataType}}} unique_{{paramName}} { request_body };
-    {{/vendorExtensions.x-is-list}}{{#vendorExtensions.x-key-list}}
-    unique_{{paramName}}.{{setter}}(unique_{{keyParamName}}{{#isEnum}}_{{/isEnum}});{{/vendorExtensions.x-key-list}}
+    {{/vendorExtensions.x-is-list}}
+
+    {{#vendorExtensions.x-key-list}}
+    unique_{{paramName}}.{{setter}}(unique_{{keyParamName}}{{#isEnum}}_{{/isEnum}});
+    {{/vendorExtensions.x-key-list}}
     {{/isListContainer}}
     {{/isPrimitiveType}}
     {{#isPrimitiveType}}
@@ -114,6 +125,7 @@ Response {{operationIdSnakeCase}}_handler(
   }
 }
 
+{{/vendorExtensions.x-is-base-datamodel}}
 {{/operation}}
 
 {{#operation}}
@@ -126,10 +138,18 @@ Response {{vendorExtensions.x-help-name}}_help(
   std::string unique_name { name };{{/vendorExtensions.x-is-cube-name}}{{^vendorExtensions.x-is-cube-name}}
   {{dataType}} unique_{{paramName}};
   for (size_t i = 0; i < num_keys; ++i) {
-    if (!strcmp(keys[i].name, "{{baseName}}")) { {{^isFloat}}{{^isDouble}}
-      unique_{{paramName}} = {{#isString}}std::string { {{/isString}}keys[i].value.{{vendorExtensions.x-value-type}}{{#isString}} }{{/isString}};{{/isDouble}}{{/isFloat}}{{#isFloat}}
-      unique_{{paramName}} = std::stof(keys[i].value.{{vendorExtensions.x-value-type}});{{/isFloat}}{{#isDouble}}
-      unique_{{paramName}} = std::stod(keys[i].value.{{vendorExtensions.x-value-type}});{{/isDouble}}
+    if (!strcmp(keys[i].name, "{{baseName}}")) {
+{{^isFloat}}
+{{^isDouble}}
+      unique_{{paramName}} = {{#isString}}std::string { {{/isString}}keys[i].value.{{vendorExtensions.x-value-type}}{{#isString}} }{{/isString}};
+{{/isDouble}}
+{{/isFloat}}
+{{#isFloat}}
+      unique_{{paramName}} = std::stof(keys[i].value.{{vendorExtensions.x-value-type}});
+{{/isFloat}}
+{{#isDouble}}
+      unique_{{paramName}} = std::stod(keys[i].value.{{vendorExtensions.x-value-type}});
+{{/isDouble}}
       break;
     }
   }

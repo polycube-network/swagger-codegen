@@ -11,75 +11,179 @@
 namespace {{this}} {
 {{/modelNamespaceDeclarations}}
 
-{{classname}}JsonObject::{{classname}}JsonObject() {{#hasVars}}:{{/hasVars}} {{#vars}}{{^isListContainer}}{{#isPrimitiveType}}{{#vendorExtensions.x-has-default-value}}
-  m_{{name}} ({{{defaultValue}}}),
-  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{/isPrimitiveType}}{{^isPrimitiveType}}
-  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isPrimitiveType}}{{^vendorExtensions.x-has-default-value}}
-  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{/isListContainer}}{{#isListContainer}}
-  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isListContainer}}{{/vars}} { }
+{{classname}}JsonObject::{{classname}}JsonObject() {
+  {{#vars}}
+  {{^vendorExtensions.x-is-base-datamodel}}
+  {{^isListContainer}}
+  {{#isPrimitiveType}}
+  {{#vendorExtensions.x-has-default-value}}
+  m_{{name}} = {{{defaultValue}}};
+  m_{{name}}IsSet = true;
+  {{/vendorExtensions.x-has-default-value}}
+  {{/isPrimitiveType}}
+  {{^isPrimitiveType}}
+  m_{{name}}IsSet = false;
+  {{/isPrimitiveType}}
+  {{^vendorExtensions.x-has-default-value}}
+  m_{{name}}IsSet = false;
+  {{/vendorExtensions.x-has-default-value}}
+  {{/isListContainer}}
+  {{#isListContainer}}
+  m_{{name}}IsSet = false;
+  {{/isListContainer}}
+  {{/vendorExtensions.x-is-base-datamodel}}
+  {{/vars}}
+}
 
-{{classname}}JsonObject::{{classname}}JsonObject(nlohmann::json& val) {{#hasVars}}:{{/hasVars}} {{#vars}}{{^isListContainer}}{{#isPrimitiveType}}{{#vendorExtensions.x-has-default-value}}
-  // Item with a default value, granted to be part of the request body
-  m_{{name}} ({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}").get<std::string>()){{/isEnum}}{{^isEnum}}val.at("{{baseName}}").get<{{{datatype}}}>(){{/isEnum}}),
-  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-key}}{{#vendorExtensions.x-is-required}}
-  // Mandatory item
-  m_{{name}} ({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}").get<std::string>()){{/isEnum}}{{^isEnum}}val.at("{{baseName}}").get<{{{datatype}}}>(){{/isEnum}}),
-  m_{{name}}IsSet (true){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-is-key}}{{#vendorExtensions.x-is-key}}
-  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-key}}{{^vendorExtensions.x-is-required}}
-  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isPrimitiveType}}{{^isPrimitiveType}}
-  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isPrimitiveType}}{{/isListContainer}}{{#isListContainer}}
-  m_{{name}}IsSet (false){{#hasMore}},{{/hasMore}}{{/isListContainer}}{{/vars}} { {{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^vendorExtensions.x-has-default-value}}{{^vendorExtensions.x-is-required}}
-  if (val.count("{{baseName}}") != 0) {
-    {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}")){{/isEnum}}{{^isEnum}}val.at("{{baseName}}"){{/isEnum}});
-  }{{/vendorExtensions.x-is-required}}{{/vendorExtensions.x-has-default-value}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}
-  m_{{name}}.clear();
-  for (auto& item : val["{{baseName}}"]) { {{#isPrimitiveType}}
-    m_{{name}}.push_back(item);{{/isPrimitiveType}}{{^isPrimitiveType}}{{#items.isString}}
-    m_{{name}}.push_back(item);{{/items.isString}}{{^items.isString}}{{#items.isDateTime}}
-    m_{{name}}.push_back(item);{{/items.isDateTime}}{{^items.isDateTime}}
-    {{{items.datatype}}}JsonObject newItem { item };
-    m_{{name}}.push_back(newItem);{{/items.isDateTime}}{{/items.isString}}
-  }
-  m_{{name}}IsSet = !m_{{name}}.empty();{{/isPrimitiveType}}
-  {{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}
-  if (val.count("{{baseName}}") != 0) {
-  {{#isString}}    {{setter}}(val.at("{{baseName}}"));{{/isString}}{{^isString}}
-  {{#isDateTime}}    {{setter}}(val.at("{{baseName}}"));{{/isDateTime}}{{^isDateTime}}
+{{classname}}JsonObject::{{classname}}JsonObject(const nlohmann::json &val) :
+  JsonObjectBase(val) {
+  {{#vars}}
+  {{^vendorExtensions.x-is-base-datamodel}}
+  m_{{name}}IsSet = false;
+  {{/vendorExtensions.x-is-base-datamodel}}
+  {{/vars}}
+
+  {{#vars}}
+  {{^vendorExtensions.x-is-base-datamodel}}
+
+  if (val.count("{{baseName}}")) {
+  {{#isPrimitiveType}}
+  {{^isListContainer}}
+    {{setter}}({{#isEnum}}string_to_{{{datatype}}}(val.at("{{baseName}}").get<std::string>()){{/isEnum}}{{^isEnum}}val.at("{{baseName}}").get<{{{datatype}}}>(){{/isEnum}});
+  {{/isListContainer}}
+  {{/isPrimitiveType}}
+  {{#isListContainer}}
+    for (auto& item : val["{{baseName}}"]) {
+      {{#isPrimitiveType}}
+      m_{{name}}.push_back(item);
+      {{/isPrimitiveType}}
+      {{^isPrimitiveType}}
+      {{#items.isString}}
+      m_{{name}}.push_back(item);
+      {{/items.isString}}
+      {{^items.isString}}
+      {{#items.isDateTime}}
+      m_{{name}}.push_back(item);
+      {{/items.isDateTime}}
+      {{^items.isDateTime}}
+      {{{items.datatype}}}JsonObject newItem{ item };
+      m_{{name}}.push_back(newItem);
+      {{/items.isDateTime}}
+      {{/items.isString}}
+    }
+
+    m_{{name}}IsSet = true;
+    {{/isPrimitiveType}}
+    {{/isListContainer}}
+    {{^isListContainer}}
+    {{^isPrimitiveType}}
+    {{#isString}}
+      {{setter}}(val.at("{{baseName}}"));
+    {{/isString}}
+    {{^isString}}
+    {{#isDateTime}}
+      {{setter}}(val.at("{{baseName}}"));
+    {{/isDateTime}}
+    {{^isDateTime}}
     if (!val["{{baseName}}"].is_null()) {
       {{{datatype}}}JsonObject newItem { val["{{baseName}}"] };
       {{setter}}(newItem);
-    }{{/isDateTime}}{{/isString}}
-  }{{/isPrimitiveType}}{{/isListContainer}}
+    }
+    {{/isDateTime}}
+    {{/isString}}
+    {{/isPrimitiveType}}
+    {{/isListContainer}}
+  }
+{{/vendorExtensions.x-is-base-datamodel}}
 {{/vars}}
 }
 
 nlohmann::json {{classname}}JsonObject::toJson() const {
   nlohmann::json val = nlohmann::json::object();
-
-{{#vars}}{{#isPrimitiveType}}{{^isListContainer}}{{^vendorExtensions.x-is-required}}  if (m_{{name}}IsSet) {
-    val["{{baseName}}"] = {{#isEnum}}{{{datatype}}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
+  if (!getBase().is_null()) {
+    val.update(getBase());
   }
 
-{{/vendorExtensions.x-is-required}}{{#vendorExtensions.x-is-required}}  val["{{baseName}}"] = {{#isEnum}}{{{datatype}}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
-{{/vendorExtensions.x-is-required}}{{/isListContainer}}{{/isPrimitiveType}}{{#isListContainer}}  {
+{{#vars}}
+{{^vendorExtensions.x-is-base-datamodel}}
+{{#isPrimitiveType}}
+{{^isListContainer}}
+  if (m_{{name}}IsSet) {
+    val["{{baseName}}"] = {{#isEnum}}{{{datatype}}}_to_string(m_{{name}}){{/isEnum}}{{^isEnum}}m_{{name}}{{/isEnum}};
+  }
+{{/isListContainer}}
+{{/isPrimitiveType}}
+{{#isListContainer}}  {
     nlohmann::json jsonArray;
     for (auto& item : m_{{name}}) {
       jsonArray.push_back(JsonObjectBase::toJson(item));
     }
-{{#vendorExtensions.x-is-required}}    val["{{baseName}}"] = jsonArray;
-{{/vendorExtensions.x-is-required}}{{^vendorExtensions.x-is-required}}
+
     if (jsonArray.size() > 0) {
       val["{{baseName}}"] = jsonArray;
     }
-{{/vendorExtensions.x-is-required}}
   }
-{{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}{{^vendorExtensions.x-is-required}}  if (m_{{name}}IsSet) {
+{{/isListContainer}}{{^isListContainer}}{{^isPrimitiveType}}  if (m_{{name}}IsSet) {
     val["{{baseName}}"] = JsonObjectBase::toJson(m_{{name}});
   }
-{{/vendorExtensions.x-is-required}}{{#vendorExtensions.x-is-required}}  val["{{baseName}}"] = JsonObjectBase::toJson(m_{{name}});
-{{/vendorExtensions.x-is-required}}{{/isPrimitiveType}}{{/isListContainer}}{{/vars}}
+{{/isPrimitiveType}}{{/isListContainer}}
+{{/vendorExtensions.x-is-base-datamodel}}
+{{/vars}}
   return val;
 }
+
+{{#vars}}
+{{^vendorExtensions.x-is-base-datamodel}}
+{{^isNotContainer}}const std::vector<{{complexType}}JsonObject>& {{classname}}JsonObject::{{getter}}() const{
+  return m_{{name}};
+}
+
+void {{classname}}JsonObject::add{{complexType}}({{complexType}}JsonObject value) {
+  m_{{name}}.push_back(value);
+  m_{{name}}IsSet = true;
+}
+
+{{/isNotContainer}}{{#isNotContainer}}{{{datatype}}}{{^isPrimitiveType}}JsonObject{{/isPrimitiveType}} {{classname}}JsonObject::{{getter}}() const {
+  return m_{{name}};
+}
+
+void {{classname}}JsonObject::{{setter}}({{{datatype}}}{{^isPrimitiveType}}JsonObject{{/isPrimitiveType}} value) {
+  m_{{name}} = value;
+  m_{{name}}IsSet = true;
+}
+{{/isNotContainer}}
+
+bool {{classname}}JsonObject::{{name}}IsSet() const {
+  return m_{{name}}IsSet;
+}
+
+{{^vendorExtensions.x-is-required}}
+void {{classname}}JsonObject::unset{{nameInCamelCase}}() {
+  m_{{name}}IsSet = false;
+}{{/vendorExtensions.x-is-required}}
+
+{{#isEnum}}
+std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}}} &value){
+  switch(value) {
+    {{#allowableValues.values}}
+    case {{{datatype}}}::{{value}}:
+      return std::string("{{stringValue}}");
+    {{/allowableValues.values}}
+    default:
+      throw std::runtime_error("Bad {{classname}} {{name}}");
+  }
+}
+
+{{{datatype}}} {{classname}}JsonObject::string_to_{{{datatype}}}(const std::string &str){
+  {{#allowableValues.values}}
+  if (JsonObjectBase::iequals("{{stringValue}}", str))
+    return {{{datatype}}}::{{value}};
+  {{/allowableValues.values}}
+  throw std::runtime_error("{{classname}} {{name}} is invalid");
+}
+{{/isEnum}}
+{{/vendorExtensions.x-is-base-datamodel}}
+{{/vars}}
 
 nlohmann::json {{classname}}JsonObject::helpKeys() {
   nlohmann::json val = nlohmann::json::object();
@@ -188,75 +292,6 @@ std::vector<std::string> {{classname}}JsonObject::helpActions() {
   {{/vendorExtensions.x-has-yang-actions}}
   return val;
 }
-
-{{#vars}}{{^isNotContainer}}const std::vector<{{complexType}}JsonObject>& {{classname}}JsonObject::{{getter}}() const{
-  return m_{{name}};
-}
-
-void {{classname}}JsonObject::add{{complexType}}({{complexType}}JsonObject value) {
-  m_{{name}}.push_back(value);
-}
-
-{{/isNotContainer}}{{#isNotContainer}}{{{datatype}}}{{^isPrimitiveType}}JsonObject{{/isPrimitiveType}} {{classname}}JsonObject::{{getter}}() const {
-  return m_{{name}};
-}
-
-void {{classname}}JsonObject::{{setter}}({{{datatype}}}{{^isPrimitiveType}}JsonObject{{/isPrimitiveType}} value) {
-  m_{{name}} = value;
-  m_{{name}}IsSet = true;
-}
-{{/isNotContainer}}
-
-bool {{classname}}JsonObject::{{name}}IsSet() const {
-  return m_{{name}}IsSet;
-}
-
-{{^vendorExtensions.x-is-required}}
-void {{classname}}JsonObject::unset{{nameInCamelCase}}() {
-  m_{{name}}IsSet = false;
-}{{/vendorExtensions.x-is-required}}
-
-{{#isEnum}}
-std::string {{classname}}JsonObject::{{{datatype}}}_to_string(const {{{datatype}}} &value){
-  switch(value){
-    {{#allowableValues.values}}
-    case {{{datatype}}}::{{value}}:
-      return std::string("{{stringValue}}");
-    {{/allowableValues.values}}
-    default:
-      throw std::runtime_error("Bad {{classname}} {{name}}");
-  }
-}
-
-{{{datatype}}} {{classname}}JsonObject::string_to_{{{datatype}}}(const std::string &str){
-  {{#allowableValues.values}}
-  if (JsonObjectBase::iequals("{{stringValue}}", str))
-    return {{{datatype}}}::{{value}};
-  {{/allowableValues.values}}
-  throw std::runtime_error("{{classname}} {{name}} is invalid");
-}
-{{/isEnum}}
-
-{{#vendorExtensions.x-is-cube-debug}}
-  polycube::LogLevel {{classname}}JsonObject::getPolycubeLoglevel() const {
-    switch(m_{{name}}) {
-      case {{{datatype}}}::TRACE:
-        return polycube::LogLevel::TRACE;
-      case {{{datatype}}}::DEBUG:
-        return polycube::LogLevel::DEBUG;
-      case {{{datatype}}}::INFO:
-        return polycube::LogLevel::INFO;
-      case {{{datatype}}}::WARN:
-        return polycube::LogLevel::WARN;
-      case {{{datatype}}}::ERR:
-        return polycube::LogLevel::ERR;
-      case {{{datatype}}}::CRITICAL:
-        return polycube::LogLevel::CRITICAL;
-      case {{{datatype}}}::OFF:
-        return polycube::LogLevel::OFF;
-    }
-  }{{/vendorExtensions.x-is-cube-debug}}
-{{/vars}}
 
 {{#modelNamespaceDeclarations}}
 }
