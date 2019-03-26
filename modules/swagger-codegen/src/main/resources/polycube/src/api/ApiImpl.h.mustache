@@ -29,17 +29,22 @@ namespace {{classname}}Impl {
   {{#operation}}
   {{^vendorExtensions.x-is-base-datamodel}}
   {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}} {{operationIdSnakeCase}}({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
-  {{#vendorExtensions.x-is-list}}
-  {{^bodyParams}}
-  {{#responses}}
-  {{^primitiveType}}
-  std::vector<nlohmann::fifo_map<std::string, std::string>> {{operationIdSnakeCase}}_get_list({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
-  {{/primitiveType}}
-  {{/responses}}
-  {{/bodyParams}}
-  {{/vendorExtensions.x-is-list}}
   {{/vendorExtensions.x-is-base-datamodel}}
-  {{/operation}}  
+  {{/operation}}
+
+  /* help related */
+  {{#operation}}
+  {{#vendorExtensions.x-needs-help}}
+  {{^vendorExtensions.x-is-base-datamodel}}
+  {{!^vendorExtensions.x-has-default-impl}}
+  {{#vendorExtensions.x-is-list}}
+  std::vector<nlohmann::fifo_map<std::string, std::string>> {{operationIdSnakeCase}}_get_list({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
+  {{/vendorExtensions.x-is-list}}
+  {{!/vendorExtensions.x-has-default-impl}}
+  {{/vendorExtensions.x-is-base-datamodel}}
+  {{/vendorExtensions.x-needs-help}}
+  {{/operation}}
+
 }
 {{#apiNamespaceDeclarations}}
 }

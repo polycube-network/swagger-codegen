@@ -32,14 +32,10 @@ Response {{operationIdSnakeCase}}_handler(const char *name, const Key *keys, siz
 
 {{#operation}}
 {{#vendorExtensions.x-needs-help}}
-Response {{vendorExtensions.x-help-name}}_help(HelpType type, const char *name, const Key *keys, size_t num_keys);
+{{#vendorExtensions.x-is-list}}
+Response {{vendorExtensions.x-help-name}}_help(const char *name, const Key *keys, size_t num_keys);
+{{/vendorExtensions.x-is-list}}
 {{/vendorExtensions.x-needs-help}}
-{{/operation}}
-
-{{#operation}}
-{{#vendorExtensions.x-is-yang-action}}
-Response {{vendorExtensions.x-help-name}}_help(HelpType type, const char *name, const Key *keys, size_t num_keys);
-{{/vendorExtensions.x-is-yang-action}}
 {{/operation}}
 
 

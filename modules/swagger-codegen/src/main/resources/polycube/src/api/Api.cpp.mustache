@@ -130,9 +130,9 @@ Response {{operationIdSnakeCase}}_handler(
 
 {{#operation}}
 {{#vendorExtensions.x-needs-help}}
+{{#vendorExtensions.x-is-list}}
 Response {{vendorExtensions.x-help-name}}_help(
-  HelpType type, const char *name,
-  const Key *keys, size_t num_keys) {
+  const char *name, const Key *keys, size_t num_keys) {
   {{#hasPathParams}}
   // Getting the path params{{#pathParams}}{{#vendorExtensions.x-is-cube-name}}
   std::string unique_name { name };{{/vendorExtensions.x-is-cube-name}}{{^vendorExtensions.x-is-cube-name}}
@@ -168,64 +168,13 @@ Response {{vendorExtensions.x-help-name}}_help(
   {{/hasBodyParam}}
   {{/vendorExtensions.x-is-list}}
 
-  nlohmann::json val = nlohmann::json::object();
-  switch (type) {
-  case HelpType::SHOW:
-    {{#vendorExtensions.x-is-list}}
-    val["params"] = {{returnBaseType}}JsonObject::helpKeys();
-    val["elements"] = {{operationIdSnakeCase}}_get_list({{#allParams}}unique_{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
-    {{/vendorExtensions.x-is-list}}
-    {{^vendorExtensions.x-is-list}}
-    val["params"] = {{returnBaseType}}JsonObject::helpElements();
-    {{/vendorExtensions.x-is-list}}
-  break;{{#vendorExtensions.x-is-list}}
-  case HelpType::ADD:
-    val["params"] = {{returnBaseType}}JsonObject::helpKeys();
-    val["optional-params"] = {{returnBaseType}}JsonObject::helpWritableLeafs();
-  break;{{/vendorExtensions.x-is-list}}{{^vendorExtensions.x-is-list}}
-  case HelpType::SET:
-    val["params"] = {{returnBaseType}}JsonObject::helpWritableLeafs();
-  break;{{/vendorExtensions.x-is-list}}{{#vendorExtensions.x-is-list}}
-  case HelpType::DEL:
-    val["params"] = {{returnBaseType}}JsonObject::helpKeys();
-    val["elements"] = {{operationIdSnakeCase}}_get_list({{#allParams}}unique_{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
-  break;{{/vendorExtensions.x-is-list}}
-  case HelpType::NONE:
-    {{#vendorExtensions.x-is-list}}
-    val["commands"] = {"add", "del", "show"};
-    val["params"] = {{returnBaseType}}JsonObject::helpKeys();
-    val["elements"] = {{operationIdSnakeCase}}_get_list({{#allParams}}unique_{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
-    {{/vendorExtensions.x-is-list}}
-    {{^vendorExtensions.x-is-list}}
-    val["commands"] = {"set", "show"};
-    val["params"] = {{returnBaseType}}JsonObject::helpComplexElements();
-    val["actions"] = {{returnBaseType}}JsonObject::helpActions();
-    {{/vendorExtensions.x-is-list}}
-  break;
-  default:
-    return { kBadRequest, nullptr };
-  }
+  nlohmann::json val = {{operationIdSnakeCase}}_get_list({{#allParams}}unique_{{paramName}}{{#isEnum}}_{{/isEnum}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
+
   return { kOk, ::strdup(val.dump().c_str()) };
 }
 
+{{/vendorExtensions.x-is-list}}
 {{/vendorExtensions.x-needs-help}}
-{{/operation}}
-{{#operation}}
-{{#vendorExtensions.x-is-yang-action}}
-
-Response {{vendorExtensions.x-help-name}}_help(
-  HelpType type, const char *name,
-  const Key *keys, size_t num_keys) {
-  nlohmann::json val = nlohmann::json::object();
-  {{#bodyParam}}
-  {{^isPrimitiveType}}
-  val["in"] = {{dataType}}::helpElements();
-  {{/isPrimitiveType}}
-  {{/bodyParam}}
-
-  return { kOk, ::strdup(val.dump().c_str()) };
-}
-{{/vendorExtensions.x-is-yang-action}}
 {{/operation}}
 #ifdef __cplusplus
 }
