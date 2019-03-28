@@ -51,7 +51,6 @@ class {{classname}} : {{#vendorExtensions.x-inherits-from}}public {{{this}}}, {{
 {{#vendorExtensions.x-is-list}}
   static std::vector<std::shared_ptr<{{classname}}>> get({{vendorExtensions.x-parent}} &parent);
   static void remove({{vendorExtensions.x-parent}} &parent);
-  nlohmann::fifo_map<std::string, std::string> getKeys();
 {{/vendorExtensions.x-is-list}}
 {{/vendorExtensions.x-parent}}
 {{#vendorExtensions.x-parent}}

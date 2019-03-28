@@ -130,55 +130,58 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> read_{{classVarName}}_
 {{/vendorExtensions.x-is-list-update}}
 }
 
-{{#vendorExtensions.x-is-list}}
-{{^bodyParams}}
-{{#responses}}
-{{^primitiveType}}
-#define IMPLEMENT_POLYCUBE_GET_LIST
-{{/primitiveType}}
-{{/responses}}
-{{/bodyParams}}
-{{/vendorExtensions.x-is-list}}
+{{/vendorExtensions.x-has-default-impl}}
+{{/vendorExtensions.x-is-base-datamodel}}
+{{/operation}}
 
-{{#vendorExtensions.x-is-list}}
-#ifdef IMPLEMENT_POLYCUBE_GET_LIST
+
+/*
+ * help related
+ */
+
+{{#operation}}
+{{#vendorExtensions.x-needs-help}}
+{{^vendorExtensions.x-has-default-impl}}
 std::vector<nlohmann::fifo_map<std::string, std::string>> {{operationIdSnakeCase}}_get_list({{#allParams}}const {{{dataType}}} &{{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) {
   std::vector<nlohmann::fifo_map<std::string, std::string>> r;
-{{^vendorExtensions.x-is-list-update}}
+{{!!^vendorExtensions.x-is-list-update}}
 {{#vendorExtensions.x-call-sequence-method}}
 {{^lastCall}}
   auto &&{{{varName}}} = {{{methodCall}}};
 {{/lastCall}}
 {{#lastCall}}
 
-{{#vendorExtensions.x-is-list}}
   auto &&{{{varName}}} = {{{methodCall}}};
   for(auto &i : {{{varName}}}) {
-    r.push_back(i->getKeys());
+    nlohmann::fifo_map<std::string, std::string> keys;
+
+    {{#vendorExtensions.x-key-list}}
+    {{#isEnum}}
+    keys["{{keyParamName}}"] = {{classname}}JsonObject::{{{datatype}}}_to_string(i->{{getter}}());
+    {{/isEnum}}
+    {{^isEnum}}
+    {{#isString}}
+    keys["{{keyParamName}}"] = i->{{getter}}();
+    {{/isString}}
+    {{^isString}}
+    keys["{{keyParamName}}"] = std::to_string(i->{{getter}}());
+    {{/isString}}
+    {{/isEnum}}
+    {{/vendorExtensions.x-key-list}}
+
+    r.push_back(keys);
   }
   return r;
-{{/vendorExtensions.x-is-list}}
 {{/lastCall}}
 {{/vendorExtensions.x-call-sequence-method}}
-{{/vendorExtensions.x-is-list-update}}
 }
-#endif
-{{/vendorExtensions.x-is-list}}
-
-{{#vendorExtensions.x-is-list}}
-{{^bodyParams}}
-{{#responses}}
-{{^primitiveType}}
-#undef IMPLEMENT_POLYCUBE_GET_LIST
-{{/primitiveType}}
-{{/responses}}
-{{/bodyParams}}
-{{/vendorExtensions.x-is-list}}
 
 {{/vendorExtensions.x-has-default-impl}}
-{{/vendorExtensions.x-is-base-datamodel}}
+{{/vendorExtensions.x-needs-help}}
 {{/operation}}
+
 }
+
 {{#apiNamespaceDeclarations}}
 }
 {{/apiNamespaceDeclarations}}

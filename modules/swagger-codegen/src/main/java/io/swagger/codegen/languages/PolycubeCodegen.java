@@ -247,12 +247,13 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                                           Map<String, Model> definitions, Swagger swagger) {
         CodegenOperation op = super.fromOperation(path, httpMethod, operation, definitions, swagger);
 
-
         //check the kind of httpMethod and basing on it
         //initialize the method string and add response code
         String method = null;
         //get the bodyParam
         CodegenParameter bodyParam = op.bodyParam;
+
+        Boolean needs_help = false;
 
         if (op.httpMethod.equals("POST")) {
             op.vendorExtensions.put("x-response-code", "Created");
@@ -275,11 +276,63 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                 method = "update";
         } else if (op.httpMethod.equals("GET")) {
             op.vendorExtensions.put("x-response-code", "Ok");
-            if (!op.responses.get(0).primitiveType) {
+            method = "get";
+
+            if (op.operationId.contains("List") && !op.responses.get(0).primitiveType) {
+                needs_help = true;
                 op.vendorExtensions.put("x-needs-help", true);
                 op.vendorExtensions.put("x-help-name", toSnakeCase(op.operationId.substring(4)));
+
+                // save list of keys as a vendor extension
+                CodegenModel codegenModel = fromModel(op.returnBaseType, definitions.get(op.returnBaseType), definitions);
+
+                ArrayList<Map<String, Object>> keysList = new ArrayList<>();
+
+                List<CodegenProperty> cpl = codegenModel.vars;
+                for (CodegenProperty cp : cpl) {
+                    String name = cp.name;
+
+                    Map<String,Object> extensions = cp.vendorExtensions;
+                    if (extensions == null) {
+                        continue;
+                    }
+
+                    if (!extensions.containsKey("x-is-key") ||
+                        !extensions.get("x-is-key").equals(Boolean.TRUE)) {
+                        continue;
+                    }
+
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("keyParamName", toLowerCamelCase(name));
+                    map.put("getter", toLowerCamelCase("get" + getterAndSetterCapitalize(name)));
+                    map.put("setter", toLowerCamelCase("set" + getterAndSetterCapitalize(name)));
+                    map.put("isEnum", cp.isEnum);
+                    map.put("isString", cp.isString);
+
+                    if (cp.isEnum) {
+                        //System.out.println("datatypeWithEnum: " + cp.datatypeWithEnum);
+                        //System.out.println("datatype: " + cp.datatype);
+                        String datatype;
+
+                        if (extensions.get("x-typedef") != null) {
+                            datatype = toUpperCamelCase(initialCaps((String) cp.vendorExtensions.get("x-typedef")) + "Enum");
+                        } else {
+                            datatype = toUpperCamelCase(op.returnBaseType + cp.nameInCamelCase + "Enum");
+                        }
+
+                        map.put("datatype", datatype);
+                        map.put("classname", op.returnBaseType);
+                    }
+
+                    if (!map.isEmpty()) {
+                        keysList.add(map);
+                    }
+                }
+
+                if (!keysList.isEmpty()) {
+                    op.vendorExtensions.put("x-key-list", keysList);
+                }
             }
-            method = "get";
         }
 
         if (op.operationId.contains("List")) {
@@ -341,7 +394,12 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                 }
                 if (!keysList.isEmpty()) {
                     bodyParam.vendorExtensions.put("x-key-list", keysList);
+                    if (needs_help) {
+                        op.vendorExtensions.put("x-key-list", keysList);
+                    }
                 }
+
+
             }
 
         } else if (op.returnBaseType != null && definitions.containsKey(op.returnBaseType)) {
@@ -358,11 +416,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         }
 
         op.vendorExtensions.put("x-call-sequence-method", getCallMethodSequence(method, path, op));
-        //Remove initial service name
-        String pathForRouter = path.replaceAll("\\/[^\\/]*\\/(.*)", "$1");
-        pathForRouter = pathForRouter.replaceAll("\\{(.*?)}", ":$1");
-        op.vendorExtensions.put("x-codegen-polycube-router-path", pathForRouter);
-
         return op;
     }
 
@@ -863,17 +916,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
     @Override
     public String apiFilename(String templateName, String tag) {
         String result = super.apiFilename(templateName, tag);
-
-        //if (templateName.endsWith("Impl.h.mustache")) {
-        //    int ix = result.lastIndexOf('/');
-        //    result = result.substring(0, ix) + result.substring(ix, result.length() - 2) + "Impl.h";
-        //    result = result.replace(apiFileFolder(), implFileFolder());
-        //} else if (templateName.endsWith("Impl.cpp.mustache")) {
-        //    int ix = result.lastIndexOf('/');
-        //    result = result.substring(0, ix) + result.substring(ix, result.length() - 4) + "Impl.cpp";
-        //    result = result.replace(apiFileFolder(), implFileFolder());
-        //}
-
         return result;
     }
 

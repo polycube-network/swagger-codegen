@@ -5,16 +5,6 @@
 {{#models}}{{#model}}
 #include "../{{classname}}.h"
 
-{{#vendorExtensions.x-parent}}{{#vendorExtensions.x-is-list}}
-nlohmann::fifo_map<std::string, std::string>  {{classname}}::getKeys() {
-  nlohmann::fifo_map<std::string, std::string>  r;
-{{#vars}}{{#vendorExtensions.x-is-key}}
-  r["{{name}}"] = {{#isEnum}}{{classname}}JsonObject::{{{datatype}}}_to_string({{getter}}()){{/isEnum}}{{^isEnum}}{{getter}}(){{/isEnum}};
-{{/vendorExtensions.x-is-key}}{{/vars}}
-  return r;
-}
-{{/vendorExtensions.x-is-list}}{{/vendorExtensions.x-parent}}
-
 {{#vars}}
 {{^isNotContainer}}
 std::shared_ptr<{{complexType}}> {{classname}}::get{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}const {{type}} &{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}){

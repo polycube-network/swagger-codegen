@@ -49,19 +49,8 @@ public:
   {{classname}}JsonObject();
   {{classname}}JsonObject(const nlohmann::json &json);
   ~{{classname}}JsonObject() final = default;
-
-  /////////////////////////////////////////////
-  /// JsonObjectBase overrides
-
   nlohmann::json toJson() const final;
 
-  static nlohmann::json helpKeys();
-  static nlohmann::json helpElements();
-  static nlohmann::json helpWritableLeafs();
-  static nlohmann::json helpComplexElements();
-  static std::vector<std::string> helpActions();
-  /////////////////////////////////////////////
-  /// {{classname}}JsonObject members
   {{#vars}}
   {{^vendorExtensions.x-is-base-datamodel}}
 
