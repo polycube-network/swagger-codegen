@@ -2,11 +2,9 @@ include(${PROJECT_SOURCE_DIR}/cmake/LoadFileAsVariable.cmake)
 
 aux_source_directory(serializer SERIALIZER_SOURCES)
 aux_source_directory(api API_SOURCES)
-aux_source_directory(default-src SRC_SOURCES)
 
 include_directories(serializer)
 include_directories(interface)
-include_directories(default-src)
 
 # Needed to load files as variables
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
