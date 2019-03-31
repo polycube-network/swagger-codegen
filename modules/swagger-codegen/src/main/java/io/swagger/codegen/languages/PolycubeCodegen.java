@@ -61,7 +61,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
 
         modelTemplateFiles.put("src/object-header.mustache", ".h");
         modelTemplateFiles.put("src/object-source.mustache", ".cpp");
-        modelTemplateFiles.put("src/default-src/DefaultImpl.cpp.mustache", "DefaultImpl.cpp");
 
         apiTemplateFiles.put("src/api/Api.h.mustache", ".h");
         apiTemplateFiles.put("src/api/Api.cpp.mustache", ".cpp");
@@ -1086,8 +1085,7 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         if (model.vendorExtensions.containsKey("x-is-yang-action-object") &&
                 (templateName.equals("src/object-header.mustache") ||
                         templateName.equals("src/object-source.mustache") ||
-                        templateName.equals("src/interface/Interface.h.mustache") ||
-                        templateName.equals("src/default-src/DefaultImpl.cpp.mustache"))) {
+                        templateName.equals("src/interface/Interface.h.mustache"))) {
             shouldSkipModelProcess = true;
         } else if (model.vendorExtensions.containsKey("x-is-yang-grouping")) {
             shouldSkipModelProcess = (Boolean) model.vendorExtensions.get("x-is-yang-grouping");
@@ -1152,8 +1150,6 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
             return modelFileFolder() + File.separator + "serializer";
         } else if (templateName.equals("src/interface/Interface.h.mustache")) {
             return modelFileFolder() + File.separator + "interface";
-        } else if (templateName.equals("src/default-src/DefaultImpl.cpp.mustache")) {
-            return modelFileFolder() + File.separator + "default-src";
         } else {
             return modelFileFolder();
         }
