@@ -128,7 +128,7 @@ void {{classname}}Base::del{{nameInCamelCase}}List() {
     {{#vendorExtensions.x-key-list}}
     {{type}} {{varName}}_ = i->{{getter}}();
     {{/vendorExtensions.x-key-list}}
-    del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}}_);
+    del{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}_{{^lastKey}}, {{/lastKey}}{{/vendorExtensions.x-key-list}});
   }
 }
 {{/isNotContainer}}
