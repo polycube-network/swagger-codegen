@@ -103,12 +103,12 @@ std::vector<nlohmann::fifo_map<std::string, std::string>> read_{{classVarName}}_
 {{#lastCall}}
 {{^vendorExtensions.x-is-list}}
 {{#vendorExtensions.x-is-yang-action}}
-{{#returnType}}return {{{methodCall}}};{{/returnType}}
+{{#returnType}}  return {{{methodCall}}};{{/returnType}}
 {{/vendorExtensions.x-is-yang-action}}
 {{^vendorExtensions.x-is-yang-action}}
 {{#returnType}}  return {{{methodCall}}}{{^returnTypeIsPrimitive}}toJsonObject(){{/returnTypeIsPrimitive}};{{/returnType}}
 {{/vendorExtensions.x-is-yang-action}}
-{{^returnType}}  {{{methodCall}}};{{/returnType}}
+{{^returnType}}  return {{{methodCall}}};{{/returnType}}
 {{/vendorExtensions.x-is-list}}
 {{#vendorExtensions.x-is-list}}
 {{^returnType}}
