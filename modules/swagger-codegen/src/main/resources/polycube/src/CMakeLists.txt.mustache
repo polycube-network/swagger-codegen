@@ -5,7 +5,12 @@ aux_source_directory(api API_SOURCES)
 aux_source_directory(base BASE_SOURCES)
 
 include_directories(serializer)
-include_directories(interface)
+
+if (POLYCUBE_STANDALONE_SERVICE)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(POLYCUBE libpolycube)
+  include_directories(${POLYCUBE_INCLUDE_DIRS})
+endif(POLYCUBE_STANDALONE_SERVICE)
 
 # Needed to load files as variables
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -33,10 +38,7 @@ load_file_as_variable(pcn-{{serviceNameLowerCase}}
   ../datamodel/{{serviceNameLowerCase}}.yang
   {{serviceNameLowerCase}}_datamodel)
 
-target_link_libraries(pcn-{{serviceNameLowerCase}}
-  polycube
-  tins
-  uuid)
+target_link_libraries(pcn-{{serviceNameLowerCase}} ${POLYCUBE_LIBRARIES})
 
 # Specify shared library install directory
 
