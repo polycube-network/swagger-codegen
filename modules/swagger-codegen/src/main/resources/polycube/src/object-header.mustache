@@ -79,7 +79,7 @@ class {{classname}} : public {{classname}}Base {
 {{#vendorExtensions.x-has-yang-actions}}
 
 {{#vendorExtensions.x-yang-actions}}
-{{#x-yang-action-has-output}}  {{x-yang-action-output-object}}JsonObject{{/x-yang-action-has-output}}{{^x-yang-action-has-output}}void{{/x-yang-action-has-output}} {{x-yang-action-name-lower-camelcase}}({{#x-yang-action-has-input}}{{x-yang-action-input-object}}JsonObject input{{/x-yang-action-has-input}}) override;
+  {{#x-yang-action-has-output}}{{x-yang-action-output-object}}JsonObject{{/x-yang-action-has-output}}{{^x-yang-action-has-output}}void{{/x-yang-action-has-output}} {{x-yang-action-name-lower-camelcase}}({{#x-yang-action-has-input}}{{x-yang-action-input-object}}JsonObject input{{/x-yang-action-has-input}}) override;
 {{/vendorExtensions.x-yang-actions}}
 {{/vendorExtensions.x-has-yang-actions}}
 };
