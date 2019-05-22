@@ -11,7 +11,7 @@
 #include "{{classname}}_dp.h"
 
 {{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf)
-  : Cube(conf.getBase(), { {{classVarName}}_code }, {}),
+  : {{#vendorExtensions.x-is-transparent}}Transparent{{/vendorExtensions.x-is-transparent}}Cube(conf.getBase(), { {{classVarName}}_code }, {}),
     {{classname}}Base({{#vars}}{{#vendorExtensions.x-is-key}}{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}) {
   logger()->info("Creating {{classname}} instance");
 {{#vars}}
@@ -73,13 +73,23 @@
 {{classname}}::~{{classname}}() {
   logger()->info("Destroying {{classname}} instance");
 }
+{{/vendorExtensions.x-parent}}
+{{#vendorExtensions.x-is-standard}}
 
 void {{classname}}::packet_in({{vendorExtensions.x-child-ports-classname}} &port,
     polycube::service::PacketInMetadata &md,
-    const std::vector<uint8_t> &packet){
+    const std::vector<uint8_t> &packet) {
   logger()->debug("Packet received from port {0}", port.name());
 }
-{{/vendorExtensions.x-parent}}
+{{/vendorExtensions.x-is-standard}}
+{{#vendorExtensions.x-is-transparent}}
+
+void {{classname}}::packet_in(polycube::service::Sense sense,
+    polycube::service::PacketInMetadata &md,
+    const std::vector<uint8_t> &packet) {
+    logger()->debug("Packet received");
+}
+{{/vendorExtensions.x-is-transparent}}
 {{#vars}}
 {{^vendorExtensions.x-is-base-datamodel}}
 {{^vendorExtensions.x-has-default-impl}}

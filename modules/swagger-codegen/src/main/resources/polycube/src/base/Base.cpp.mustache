@@ -31,10 +31,10 @@
 
 void {{classname}}Base::update(const {{classname}}JsonObject &conf) {
 {{#vendorExtensions.x-is-root-object}}
-  Cube::set_conf(conf.getBase());
+  set_conf(conf.getBase());
 {{/vendorExtensions.x-is-root-object}}
 {{#vendorExtensions.x-is-port-class}}
-  Port::set_conf(conf.getBase());
+  set_conf(conf.getBase());
 {{/vendorExtensions.x-is-port-class}}
 
 {{#vars}}
@@ -70,10 +70,10 @@ void {{classname}}Base::update(const {{classname}}JsonObject &conf) {
 {{classname}}JsonObject {{classname}}Base::toJsonObject() {
   {{classname}}JsonObject conf;
 {{#vendorExtensions.x-is-root-object}}
-  conf.setBase(Cube::to_json());
+  conf.setBase(to_json());
 {{/vendorExtensions.x-is-root-object}}
 {{#vendorExtensions.x-is-port-class}}
-  conf.setBase(Port::to_json());
+  conf.setBase(to_json());
 {{/vendorExtensions.x-is-port-class}}
 
 {{#vars}}
