@@ -22,9 +22,15 @@
 #include "../{{{this}}}.h"
 {{/vendorExtensions.x-interface-imports}}
 
-{{#vendorExtensions.x-inherits-from}}
+{{#vendorExtensions.x-is-standard}}
 #include "polycube/services/cube.h"
 #include "polycube/services/port.h"
+{{/vendorExtensions.x-is-standard}}
+{{#vendorExtensions.x-is-transparent}}
+#include "polycube/services/transparent_cube.h"
+{{/vendorExtensions.x-is-transparent}}
+
+{{#vendorExtensions.x-inherits-from}}
 #include "polycube/services/utils.h"
 #include "polycube/services/fifo_map.hpp"
 {{/vendorExtensions.x-inherits-from}}

@@ -31,12 +31,18 @@ class {{classname}} : public {{classname}}Base {
 {{/vendorExtensions.x-is-port-class}}
 {{/vendorExtensions.x-is-root-object}}
   virtual ~{{classname}}();
-{{#vendorExtensions.x-is-root-object}}
+{{#vendorExtensions.x-is-standard}}
 
   void packet_in({{vendorExtensions.x-child-ports-classname}} &port,
-      polycube::service::PacketInMetadata &md,
-      const std::vector<uint8_t> &packet) override;
-{{/vendorExtensions.x-is-root-object}}
+                 polycube::service::PacketInMetadata &md,
+                 const std::vector<uint8_t> &packet) override;
+{{/vendorExtensions.x-is-standard}}
+{{#vendorExtensions.x-is-transparent}}
+
+  void packet_in(polycube::service::Sense sense,
+                 polycube::service::PacketInMetadata &md,
+                 const std::vector<uint8_t> &packet) override;
+{{/vendorExtensions.x-is-transparent}}
 {{#vars}}
 {{^vendorExtensions.x-has-default-impl}}
 {{^vendorExtensions.x-is-base-datamodel}}

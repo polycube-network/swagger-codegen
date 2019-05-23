@@ -234,7 +234,10 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
             if (codegenModel.vendorExtensions.get("x-parent").equals(codegenModel.name)) {
                 codegenModel.vendorExtensions.remove("x-parent");
                 // TODO: hardcoded value for port class here.
-                codegenModel.vendorExtensions.put("x-inherits-from", "virtual polycube::service::Cube<Ports>");
+                if (codegenModel.vendorExtensions.get("x-is-transparent") != null)
+                    codegenModel.vendorExtensions.put("x-inherits-from", "virtual polycube::service::TransparentCube");
+                else if (codegenModel.vendorExtensions.get("x-is-standard") != null)
+                    codegenModel.vendorExtensions.put("x-inherits-from", "virtual polycube::service::Cube<Ports>");
             }
         }
 
@@ -675,7 +678,8 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
 
                 // TODO: isn't there a smarter way to check if the objet is the root one?
                 if (model.vendorExtensions.containsKey("x-inherits-from") &&
-                    ((String) model.vendorExtensions.get("x-inherits-from")).equals("virtual polycube::service::Cube<Ports>")) {
+                    (((String) model.vendorExtensions.get("x-inherits-from")).equals("virtual polycube::service::Cube<Ports>") ||
+                     ((String) model.vendorExtensions.get("x-inherits-from")).equals("virtual polycube::service::TransparentCube"))) {
                     model.vendorExtensions.put("x-is-root-object", true);
                     rootObjectModel = model;
                 }
