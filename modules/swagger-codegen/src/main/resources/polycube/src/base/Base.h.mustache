@@ -30,6 +30,12 @@
 #include "polycube/services/transparent_cube.h"
 {{/vendorExtensions.x-is-transparent}}
 
+
+{{#vendorExtensions.x-is-port-class}}
+#include "polycube/services/cube.h"
+#include "polycube/services/port.h"
+{{/vendorExtensions.x-is-port-class}}
+
 {{#vendorExtensions.x-inherits-from}}
 #include "polycube/services/utils.h"
 #include "polycube/services/fifo_map.hpp"
