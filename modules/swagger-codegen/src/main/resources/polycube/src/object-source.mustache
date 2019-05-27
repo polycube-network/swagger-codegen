@@ -9,11 +9,28 @@
 {{/vendorExtensions.x-root-object}}
 {{#vendorExtensions.x-is-root-object}}
 #include "{{classname}}_dp.h"
+{{/vendorExtensions.x-is-root-object}}
 
+{{#vendorExtensions.x-is-root-object}}
 {{classname}}::{{classname}}({{#vars}}{{#vendorExtensions.x-is-key}}const {{{datatype}}} {{{name}}}, {{/vendorExtensions.x-is-key}}{{/vars}}const {{classname}}JsonObject &conf)
   : {{#vendorExtensions.x-is-transparent}}Transparent{{/vendorExtensions.x-is-transparent}}Cube(conf.getBase(), { {{classVarName}}_code }, {}),
     {{classname}}Base({{#vars}}{{#vendorExtensions.x-is-key}}{{{name}}}{{/vendorExtensions.x-is-key}}{{/vars}}) {
   logger()->info("Creating {{classname}} instance");
+{{/vendorExtensions.x-is-root-object}}
+{{#vendorExtensions.x-is-port-class}}
+
+{{classname}}::{{classname}}(polycube::service::Cube<Ports> &parent,
+    {{#vendorExtensions.x-classname-inherited}}{{{this}}} port,
+    {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf)
+    : PortsBase(parent, port) {
+{{/vendorExtensions.x-is-port-class}}
+{{^vendorExtensions.x-is-root-object}}
+{{^vendorExtensions.x-is-port-class}}
+
+{{classname}}::{{classname}}({{{vendorExtensions.x-parent}}} &parent, const {{classname}}JsonObject &conf)
+    : {{classname}}Base(parent) {
+{{/vendorExtensions.x-is-port-class}}
+{{/vendorExtensions.x-is-root-object}}
 {{#vars}}
 {{^vendorExtensions.x-is-base-datamodel}}
 {{^isNotContainer}}
@@ -49,21 +66,6 @@
 {{/vendorExtensions.x-is-base-datamodel}}
 {{/vars}}
 }
-{{/vendorExtensions.x-is-root-object}}
-{{#vendorExtensions.x-is-port-class}}
-
-{{classname}}::{{classname}}(polycube::service::Cube<Ports> &parent,
-    {{#vendorExtensions.x-classname-inherited}}{{{this}}} port,
-    {{/vendorExtensions.x-classname-inherited}}const {{classname}}JsonObject &conf)
-    : PortsBase(parent, port) {}
-{{/vendorExtensions.x-is-port-class}}
-{{^vendorExtensions.x-is-root-object}}
-{{^vendorExtensions.x-is-port-class}}
-
-{{classname}}::{{classname}}({{{vendorExtensions.x-parent}}} &parent, const {{classname}}JsonObject &conf)
-    : {{classname}}Base(parent) {}
-{{/vendorExtensions.x-is-port-class}}
-{{/vendorExtensions.x-is-root-object}}
 
 {{#vendorExtensions.x-parent}}
 {{classname}}::~{{classname}}() {}
