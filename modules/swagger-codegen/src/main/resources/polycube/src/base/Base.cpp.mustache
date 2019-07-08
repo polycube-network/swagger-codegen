@@ -104,6 +104,7 @@ void {{classname}}Base::update(const {{classname}}JsonObject &conf) {
   return conf;
 }
 {{#vars}}
+{{^vendorExtensions.x-is-base-datamodel}}
 {{^isNotContainer}}
 void {{classname}}Base::add{{nameInCamelCase}}List(const std::vector<{{complexType}}JsonObject> &conf) {
   for (auto &i : conf) {
@@ -167,6 +168,7 @@ std::vector<std::shared_ptr<{{complexType}}>> {{classname}}Base::get{{nameInCame
   return get_ports();
 }
 {{/vendorExtensions.x-is-port-class}}
+{{/vendorExtensions.x-is-base-datamodel}}
 {{/vars}}
 
 {{#vendorExtensions.x-parent}}
