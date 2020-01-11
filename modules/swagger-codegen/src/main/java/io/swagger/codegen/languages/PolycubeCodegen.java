@@ -832,7 +832,7 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                 for (CodegenResponse r : op.responses) {
                     if (r.vendorExtensions.get("x-is-enum") != null) {
                         if (r.vendorExtensions.get("x-typedef") != null)
-                            op.returnType = initialCaps((String) r.vendorExtensions.get("x-typedef")) + "Enum";
+                            op.returnType = toUpperCamelCase((String) r.vendorExtensions.get("x-typedef")) + "Enum";
                         else
                             op.returnType = name + initialCaps(var) + "Enum";
                         op.returnBaseType = initialCaps(var);
