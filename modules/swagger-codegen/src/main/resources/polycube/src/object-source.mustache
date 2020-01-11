@@ -86,7 +86,7 @@ void {{classname}}::packet_in({{vendorExtensions.x-child-ports-classname}} &port
 {{/vendorExtensions.x-is-standard}}
 {{#vendorExtensions.x-is-transparent}}
 
-void {{classname}}::packet_in(polycube::service::Sense sense,
+void {{classname}}::packet_in(polycube::service::Direction direction,
     polycube::service::PacketInMetadata &md,
     const std::vector<uint8_t> &packet) {
     logger()->debug("Packet received");
