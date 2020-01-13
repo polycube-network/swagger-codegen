@@ -48,11 +48,7 @@
     {{setter}}(conf.{{getter}}());
 {{/isPrimitiveType}}
 {{^isPrimitiveType}}
-  auto value = conf.{{getter}}();
-{{#vendorExtensions.x-key-list}}
-    {{type}} {{varName}}_ = value.{{getter}}();
-{{/vendorExtensions.x-key-list}}
-  add{{nameInCamelCase}}({{#vendorExtensions.x-key-list}}{{varName}}, {{/vendorExtensions.x-key-list}}conf.{{getter}}());
+  add{{nameInCamelCase}}(conf.{{getter}}());
 {{/isPrimitiveType}}
 {{^vendorExtensions.x-is-required}}
 {{^vendorExtensions.x-has-default-value}}
