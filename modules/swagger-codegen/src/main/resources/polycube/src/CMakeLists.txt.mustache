@@ -22,7 +22,9 @@ add_library(pcn-{{serviceNameLowerCase}} SHARED
   {{#models}}
   {{#model}}
   {{^vendorExtensions.x-is-yang-action-object}}
+  {{^vendorExtensions.x-is-yang-grouping}}
   {{classname}}.cpp
+  {{/vendorExtensions.x-is-yang-grouping}}
   {{/vendorExtensions.x-is-yang-action-object}}
   {{/model}}
   {{/models}}
