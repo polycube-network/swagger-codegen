@@ -33,7 +33,7 @@ add_library(pcn-{{serviceNameLowerCase}} SHARED
 # load ebpf datapath code a variable
 load_file_as_variable(pcn-{{serviceNameLowerCase}}
   {{serviceNameCamelCase}}_dp.c
-  {{serviceNameLowerCase}}_code)
+  {{serviceNameLowerCamelCase}}_code)
 
 # load datamodel in a variable
 load_file_as_variable(pcn-{{serviceNameLowerCase}}

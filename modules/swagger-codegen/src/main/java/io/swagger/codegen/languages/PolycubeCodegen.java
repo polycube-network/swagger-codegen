@@ -873,10 +873,11 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         objs.put("firstClassnameSnakeLowerCase", DefaultCodegen.underscore(api_classname).toLowerCase());
 
         String service_name = (String) apis.get(0).get("classVarName");
-        service_name = service_name.toLowerCase();
-        objs.put("serviceNameLowerCase", service_name);
+        objs.put("serviceNameLowerCamelCase", service_name);
         String service_name_camel_case = service_name.substring(0, 1).toUpperCase() + service_name.substring(1);
         objs.put("serviceNameCamelCase", service_name_camel_case);
+        service_name = service_name.toLowerCase();
+        objs.put("serviceNameLowerCase", service_name);
 
         if (swagger.getInfo().getVendorExtensions().containsKey("x-yang-path")) {
             String yang_path = (String) swagger.getInfo().getVendorExtensions().get("x-yang-path");
