@@ -646,12 +646,12 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                                 }
                                 mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value
                             }
-                            mv.put("value", lenum.get(j).toUpperCase());//save the enum value
+                            mv.put("value", DefaultCodegen.underscore(lenum.get(j)).toUpperCase());//save the enum value
                             l.add(mv);
                             if (j < lenum.size() - 1)
-                                lenum.set(j, lenum.get(j).toUpperCase() + ",");//add comma if the value there are more values
+                                lenum.set(j, DefaultCodegen.underscore(lenum.get(j)).toUpperCase() + ",");//add comma if the value there are more values
                             else
-                                lenum.set(j, lenum.get(j).toUpperCase());
+                                lenum.set(j, DefaultCodegen.underscore(lenum.get(j)).toUpperCase());
                         }
                         if (p.allowableValues != null)
                             p.allowableValues.put("values", l); //add allowable values to enum
@@ -832,7 +832,7 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                 for (CodegenResponse r : op.responses) {
                     if (r.vendorExtensions.get("x-is-enum") != null) {
                         if (r.vendorExtensions.get("x-typedef") != null)
-                            op.returnType = initialCaps((String) r.vendorExtensions.get("x-typedef")) + "Enum";
+                            op.returnType = toUpperCamelCase((String) r.vendorExtensions.get("x-typedef")) + "Enum";
                         else
                             op.returnType = name + initialCaps(var) + "Enum";
                         op.returnBaseType = initialCaps(var);
@@ -873,10 +873,11 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         objs.put("firstClassnameSnakeLowerCase", DefaultCodegen.underscore(api_classname).toLowerCase());
 
         String service_name = (String) apis.get(0).get("classVarName");
-        service_name = service_name.toLowerCase();
-        objs.put("serviceNameLowerCase", service_name);
+        objs.put("serviceNameLowerCamelCase", service_name);
         String service_name_camel_case = service_name.substring(0, 1).toUpperCase() + service_name.substring(1);
         objs.put("serviceNameCamelCase", service_name_camel_case);
+        service_name = service_name.toLowerCase();
+        objs.put("serviceNameLowerCase", service_name);
 
         if (swagger.getInfo().getVendorExtensions().containsKey("x-yang-path")) {
             String yang_path = (String) swagger.getInfo().getVendorExtensions().get("x-yang-path");
