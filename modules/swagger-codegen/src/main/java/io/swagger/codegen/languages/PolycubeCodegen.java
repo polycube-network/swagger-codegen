@@ -646,12 +646,12 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
                                 }
                                 mv.put("stringValue", lenum.get(j).toLowerCase());//save the string value
                             }
-                            mv.put("value", lenum.get(j).toUpperCase());//save the enum value
+                            mv.put("value", DefaultCodegen.underscore(lenum.get(j)).toUpperCase());//save the enum value
                             l.add(mv);
                             if (j < lenum.size() - 1)
-                                lenum.set(j, lenum.get(j).toUpperCase() + ",");//add comma if the value there are more values
+                                lenum.set(j, DefaultCodegen.underscore(lenum.get(j)).toUpperCase() + ",");//add comma if the value there are more values
                             else
-                                lenum.set(j, lenum.get(j).toUpperCase());
+                                lenum.set(j, DefaultCodegen.underscore(lenum.get(j)).toUpperCase());
                         }
                         if (p.allowableValues != null)
                             p.allowableValues.put("values", l); //add allowable values to enum
