@@ -728,6 +728,9 @@ public class PolycubeCodegen extends DefaultCodegen implements CodegenConfig {
         operations.put("classnameSnakeUpperCase", DefaultCodegen.underscore(classname).toUpperCase());
         operations.put("classnameSnakeLowerCase", DefaultCodegen.underscore(classname).toLowerCase());
 
+        String classVarName = (String) operations.get("pathPrefix");
+        operations.put("classVarNameSnakeLowerCase", DefaultCodegen.underscore(classVarName).toLowerCase());
+
         String s = classname.replace("Api", "Type");
 
         List<CodegenOperation> operationList = (List<CodegenOperation>) operations.get("operation");

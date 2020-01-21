@@ -29,7 +29,7 @@ std::shared_ptr<{{baseName}}> get_cube(const std::string &name) {
 
 }
 
-void create_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &jsonObject) {
+void create_{{classVarNameSnakeLowerCase}}_by_id(const std::string &name, const {{baseName}}JsonObject &jsonObject) {
   {
     // check if name is valid before creating it
     std::lock_guard<std::mutex> guard(cubes_mutex);
@@ -49,11 +49,11 @@ void create_{{classVarName}}_by_id(const std::string &name, const {{baseName}}Js
   }
 }
 
-void replace_{{classVarName}}_by_id(const std::string &name, const {{baseName}}JsonObject &bridge){
+void replace_{{classVarNameSnakeLowerCase}}_by_id(const std::string &name, const {{baseName}}JsonObject &bridge){
   throw std::runtime_error("Method not supported!");
 }
 
-void delete_{{classVarName}}_by_id(const std::string &name) {
+void delete_{{classVarNameSnakeLowerCase}}_by_id(const std::string &name) {
   std::lock_guard<std::mutex> guard(cubes_mutex);
   if (cubes.count(name) == 0) {
     throw std::runtime_error("Cube " + name + " does not exist");
@@ -61,7 +61,7 @@ void delete_{{classVarName}}_by_id(const std::string &name) {
   cubes.erase(name);
 }
 
-std::vector<{{baseName}}JsonObject> read_{{classVarName}}_list_by_id() {
+std::vector<{{baseName}}JsonObject> read_{{classVarNameSnakeLowerCase}}_list_by_id() {
   std::vector<{{baseName}}JsonObject> jsonObject_vect;
   for(auto &i : cubes) {
     auto m = get_cube(i.first);
@@ -70,7 +70,7 @@ std::vector<{{baseName}}JsonObject> read_{{classVarName}}_list_by_id() {
   return jsonObject_vect;
 }
 
-std::vector<nlohmann::fifo_map<std::string, std::string>> read_{{classVarName}}_list_by_id_get_list() {
+std::vector<nlohmann::fifo_map<std::string, std::string>> read_{{classVarNameSnakeLowerCase}}_list_by_id_get_list() {
   std::vector<nlohmann::fifo_map<std::string, std::string>> r;
   for (auto &x : cubes) {
     nlohmann::fifo_map<std::string, std::string> m;
